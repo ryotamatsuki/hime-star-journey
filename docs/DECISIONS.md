@@ -164,6 +164,52 @@ P3では敵接触時に `enemySymbolId` / `encounterId` を取得し、既存の
 
 フェーズ2のTitleScreenは維持し、「はじめから」で初期セーブを作成してPrologueScreenへ進む。PrologueScreenの「道後温泉へ進む」からExploreScreenへ遷移する。TitleScreenからの直接デバッグボタンは追加しない。
 
+## 2026-06-03
+
+### P4でも画像生成を必須としプレースホルダー代替で完了扱いにしない
+
+StarMapScreenで使用する `star_map_bg`、星アイコン3種、星地図パネル、道後/松山城バッジは画像生成必須とする。Canvas図形、CSS、単色矩形、汎用プレースホルダー、既存pending画像だけではP4完了扱いにしない。
+
+### P4は画像生成不可のため停止する
+
+このセッションでは組み込み `image_gen` ツールが利用可能ツールとして公開されていなかった。`imagegen` CLIフォールバックは存在するが、`OPENAI_API_KEY` が未設定だったため画像生成を実行できない。ユーザー指定の停止条件に従い、StarMapScreen実装、TravelSystem実装、AssetManifest更新、画面遷移更新には進まず、P4未完了として記録する。
+
+### 既存の星地図関連画像はP4必須生成の代替にしない
+
+`public/assets/generated/backgrounds/star_map_bg.png` と星アイコン3種の旧ファイルは存在するが、今回のP4必須画像生成を実行できていないため、P4完了条件の充足には使わない。画像生成機能が復旧したら、P4要件に沿って再生成し、保存プロンプトとHTTP読み込み確認を行う。
+
+### P4再実行では画像生成必須方針を維持して実装へ進む
+
+前回は画像生成不可で停止したが、今回の再実行では組み込み画像生成ツールを利用できた。Canvas図形、CSS、単色矩形、汎用プレースホルダーで代替完了する方針には戻さず、P4必須7アセットを生成した後にStarMapScreen実装へ進む。
+
+### P4生成アセットの保存先
+
+P4必須アセットは用途別に `public/assets/generated/backgrounds/star_map_bg.png`、`public/assets/generated/ui/star_icon_locked.png`、`public/assets/generated/ui/star_icon_unlocked.png`、`public/assets/generated/ui/star_icon_cleared.png`、`public/assets/generated/ui/star_map_panel_frame.png`、`public/assets/generated/ui/location_badge_dogo.png`、`public/assets/generated/ui/location_badge_castle.png` に保存する。生成プロンプトは `docs/asset-prompts/runtime-assets/` 配下に保存する。
+
+### StarMapScreenのノード配置方針
+
+StarMapScreenは1280x720のCanvas座標でノードを配置する。道後温泉を中央左寄り、松山城をその上側、しまなみ方面・石鎚方面・南予方面を未解放の将来エリアとして周辺に置き、生成背景上で視認しやすい余白を優先する。
+
+### 松山城の解放判定
+
+松山城ノードは `flags.location_castle_unlocked === true` または `unlockedLocations.includes("castle")` のどちらかで解放表示にする。道後温泉は初期状態で選択可能、`collectedStars.includes("dogo")` または `flags.star_dogo_collected` でクリア済み表示にする。
+
+### Prologue / Explore / StarMap の遷移方針
+
+P4では案Aを採用し、PrologueScreen後にStarMapScreenへ遷移する。道後温泉ノードを選ぶと既存のExploreScreenへ進む。既存の探索導線を壊さないため、ExploreScreenからはMキーとUIボタンでStarMapScreenへ戻れるようにする。
+
+### 開発用の道後クリア扱いボタン
+
+松山城解放判定をP4単体で確認できるよう、StarMapScreenに `import.meta.env.DEV` 限定の「デバッグ：道後クリア扱い」ボタンを追加する。本番ビルドでは表示されない開発用導線として扱う。
+
+### 松山城探索本体は後続フェーズに回す
+
+P4ではStarMapScreen上の松山城解放表示と選択時メッセージまでを実装し、松山城2.5D探索マップ本体、敵配置、クエスト、カゲマサ戦は後続フェーズに回す。
+
+### P4ブラウザ自動遷移確認はユーザー指示でスキップする
+
+ヘッドレスブラウザでの自動遷移確認は実行途中でユーザーからスキップ指示があったため、P4ではtypecheck、lint、build、ファイル配置確認を優先し、ブラウザ自動確認は後続で再開できる状態として記録する。
+
 
 
 

@@ -53,8 +53,9 @@ const imageAssets: ImageAssetDefinition[] = [
   {
     id: "bg_star_map",
     src: "/assets/generated/backgrounds/star_map_bg.png",
+    required: true,
     fallbackAssetId: "placeholder_background",
-    description: "Future star map background"
+    description: "Phase 4 generated star map background"
   },
   {
     id: "bg_dogo_explore",
@@ -239,20 +240,44 @@ const imageAssets: ImageAssetDefinition[] = [
   {
     id: "ui_star_icon_locked",
     src: "/assets/generated/ui/star_icon_locked.png",
+    required: true,
     fallbackAssetId: "placeholder_ui_frame",
-    description: "Future locked star icon"
+    description: "Phase 4 generated locked star icon"
   },
   {
     id: "ui_star_icon_unlocked",
     src: "/assets/generated/ui/star_icon_unlocked.png",
+    required: true,
     fallbackAssetId: "placeholder_ui_frame",
-    description: "Future unlocked star icon"
+    description: "Phase 4 generated unlocked star icon"
   },
   {
     id: "ui_star_icon_cleared",
     src: "/assets/generated/ui/star_icon_cleared.png",
+    required: true,
     fallbackAssetId: "placeholder_ui_frame",
-    description: "Future cleared star icon"
+    description: "Phase 4 generated cleared star icon"
+  },
+  {
+    id: "ui_star_map_panel_frame",
+    src: "/assets/generated/ui/star_map_panel_frame.png",
+    required: true,
+    fallbackAssetId: "placeholder_ui_frame",
+    description: "Phase 4 generated star map panel frame"
+  },
+  {
+    id: "ui_location_badge_dogo",
+    src: "/assets/generated/ui/location_badge_dogo.png",
+    required: true,
+    fallbackAssetId: "placeholder_ui_frame",
+    description: "Phase 4 generated Dogo location badge"
+  },
+  {
+    id: "ui_location_badge_castle",
+    src: "/assets/generated/ui/location_badge_castle.png",
+    required: true,
+    fallbackAssetId: "placeholder_ui_frame",
+    description: "Phase 4 generated Matsuyama Castle location badge"
   },
   {
     id: "fx_star_hit",

@@ -2,6 +2,7 @@ import { assetManifest } from "../data/assets";
 import { BattleScreen } from "../screens/BattleScreen";
 import { ExploreScreen } from "../screens/ExploreScreen";
 import { PrologueScreen } from "../screens/PrologueScreen";
+import { StarMapScreen } from "../screens/StarMapScreen";
 import { TitleScreen } from "../screens/TitleScreen";
 import { AssetLoader } from "./AssetLoader";
 import { GameLoop } from "./GameLoop";
@@ -68,6 +69,16 @@ export class GameApp {
 
     this.screenManager.register(
       new ExploreScreen({
+        uiRoot: this.options.uiRoot,
+        screenManager: this.screenManager,
+        saveManager: this.saveManager,
+        inputManager: this.inputManager,
+        assetLoader: this.assetLoader
+      })
+    );
+
+    this.screenManager.register(
+      new StarMapScreen({
         uiRoot: this.options.uiRoot,
         screenManager: this.screenManager,
         saveManager: this.saveManager,

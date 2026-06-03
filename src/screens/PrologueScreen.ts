@@ -45,7 +45,7 @@ export class PrologueScreen implements GameScreen {
     }
 
     if (this.options.inputManager.isActionStarted("confirm")) {
-      this.goToDogoExplore();
+      this.goToStarMap();
     }
   }
 
@@ -104,8 +104,8 @@ export class PrologueScreen implements GameScreen {
     const exploreButton = document.createElement("button");
     exploreButton.className = "menu-button";
     exploreButton.type = "button";
-    exploreButton.textContent = "道後温泉へ進む";
-    exploreButton.addEventListener("click", () => this.goToDogoExplore());
+    exploreButton.textContent = "星地図へ進む";
+    exploreButton.addEventListener("click", () => this.goToStarMap());
 
     const backButton = document.createElement("button");
     backButton.className = "menu-button secondary-button";
@@ -121,15 +121,11 @@ export class PrologueScreen implements GameScreen {
     this.options.uiRoot.append(wrapper);
   }
 
-  private goToDogoExplore(): void {
+  private goToStarMap(): void {
     const saveData =
       this.saveData ??
       this.options.saveManager.save(this.options.saveManager.createInitialSaveData());
 
-    this.options.screenManager.change("explore", {
-      saveData,
-      locationId: "dogo",
-      areaId: "D0"
-    });
+    this.options.screenManager.change("starMap", { saveData });
   }
 }

@@ -105,6 +105,11 @@ export class ExploreScreen implements GameScreen {
       return;
     }
 
+    if (this.options.inputManager.isActionStarted("map")) {
+      this.goToStarMap();
+      return;
+    }
+
     this.player.update(
       deltaTime,
       this.options.inputManager,
@@ -272,10 +277,15 @@ export class ExploreScreen implements GameScreen {
     objective.textContent = "湯けむり通りをすすもう";
     const hints = document.createElement("p");
     hints.className = "explore-hints";
-    hints.textContent = "移動：WASD / 矢印　調べる：Enter / Space　戻る：Esc";
+    hints.textContent = "移動：WASD / 矢印　調べる：Enter / Space　星地図：M　戻る：Esc";
     this.nearbyElement = document.createElement("p");
     this.nearbyElement.className = "nearby-note";
-    quest.append(location, objective, hints, this.nearbyElement);
+    const mapButton = document.createElement("button");
+    mapButton.className = "menu-button explore-map-button";
+    mapButton.type = "button";
+    mapButton.textContent = "星地図";
+    mapButton.addEventListener("click", () => this.goToStarMap());
+    quest.append(location, objective, hints, this.nearbyElement, mapButton);
 
     const minimap = document.createElement("section");
     minimap.className = "explore-minimap";
@@ -395,5 +405,20 @@ export class ExploreScreen implements GameScreen {
     };
 
     this.options.screenManager.change("battle", params);
+  }
+
+  private goToStarMap(): void {
+    if (!this.saveData) {
+      return;
+    }
+
+    const nextSave = this.options.saveManager.save({
+      ...this.saveData,
+      currentScreenId: "starMap",
+      currentLocationId: this.area.locationId,
+      currentAreaId: this.area.id
+    });
+
+    this.options.screenManager.change("starMap", { saveData: nextSave });
   }
 }
