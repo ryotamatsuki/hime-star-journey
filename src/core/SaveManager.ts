@@ -42,7 +42,7 @@ export class SaveManager {
     return {
       version: "0.1.0",
       currentChapterId: "prologue",
-      currentLocationId: "dogo_onsen",
+      currentLocationId: "dogo",
       currentAreaId: "D0",
       currentScreenId: "prologue",
       partyMemberIds: ["hime"],
@@ -57,11 +57,12 @@ export class SaveManager {
       unlockedLoreIds: [],
       defeatedEnemyIds: [],
       clearedQuestIds: [],
-      unlockedLocations: ["dogo_onsen"],
+      unlockedLocations: ["dogo"],
       openedPaths: [],
       acquiredItems: {},
       acquiredCharms: [],
       flags: {
+        location_castle_unlocked: false,
         prologueStarted: true
       },
       lastSynopsis: "ひめは小さな星をめぐる旅に出るところです。",

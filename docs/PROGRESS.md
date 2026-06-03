@@ -2,10 +2,10 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P3 道後温泉探索画面（P2トップページ画像生成必須版の不足対応完了）
-- 状態: P2/P3実装完了、Browserプラグイン検証は環境都合で未完了、Edge headless/CDPで補助確認済み
-- 次に進むフェーズ: P4 StarMapScreen本実装
-- 最終更新日: 2026-06-02
+- 現在フェーズ: P4 星地図画面
+- 状態: P2/P3実装完了。P4は再実行で必須画像生成とStarMapScreen本実装まで完了。ブラウザ自動遷移確認はユーザー指示でスキップ
+- 次に進むフェーズ: P5 複数敵対応BattleScreen本実装
+- 最終更新日: 2026-06-03
 
 ## フェーズ別進捗
 
@@ -15,7 +15,7 @@
 | P1 | 基盤実装 | 90% | 実装完了 | 型・lint・build・HTTP起動確認済み、ブラウザ操作検証未完了 |
 | P2 | トップページ用手描き風アセット生成・表示実装＋2.5Dアニメーション基盤 | 100% | 実装完了 | 型・lint・build・HTTP起動・Edge headless/CDP確認済み |
 | P3 | 探索画面 | 95% | 実装完了 | 型・lint・build・HTTP起動・Edge headless/CDP確認済み、Browserプラグイン検証未完了 |
-| P4 | 星地図 | 0% | 未着手 | 未実行 |
+| P4 | 星地図 | 95% | 実装完了（ブラウザ自動確認はスキップ） | 画像生成・型・lint・build確認済み |
 | P5 | 複数敵対応バトル | 0% | 未着手 | 未実行 |
 | P6 | 道後温泉クエスト | 0% | 未着手 | 未実行 |
 | P7 | 松山城クエスト・カゲマサ戦 | 0% | 未着手 | 未実行 |
@@ -230,7 +230,7 @@
 
 ## 次の判断
 
-P4ではStarMapScreen本実装に入る。P3で保存される `currentLocationId`、`currentAreaId`、`defeatedEnemyIds`、`flags` を前提に、道後温泉から星地図へ戻る導線と、松山城未解放表示を接続する。
+P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarMapScreen`、`TravelSystem`、`flags.location_castle_unlocked`、`collectedStars`、`unlockedLocations` を前提に、道後温泉クリア後の松山城解放へ接続できる状態を維持する。
 
 ## P3 方針変更対応: 道後温泉2.5D探索マップ生成・歩行探索実装
 
@@ -304,6 +304,129 @@ P4ではStarMapScreen本実装に入る。P3で保存される `currentLocationI
 - `npm.cmd run typecheck`: 成功。
 - `npm.cmd run lint`: 成功。
 - `npm.cmd run build`: 成功。
+
+## 2026-06-03 P4停止記録
+
+- フェーズ4名: 星地図画面の画像生成・StarMapScreen本実装。
+- 必須読込対象の仕様、進捗、アセット、判断、不具合、スタイルガイド、アセットマニフェスト、主要ビジュアルREADME/manifestを確認。
+- `docs/visual-reference/key-visuals/06_star_map.png`、`01_title_screen.png`、`02_dogo_exploration.png`、`03_matsuyama_castle_exploration.png` を直接確認。
+- P4では `star_map_bg`、星アイコン3種、星地図パネル、道後/松山城バッジの画像生成が必須。
+- このセッションでは組み込み `image_gen` ツールが利用可能ツールとして公開されていない。
+- `imagegen` CLIフォールバックは存在するが、`OPENAI_API_KEY` が未設定であり、画像生成を実行できない。
+- ユーザー指示の停止条件に従い、Canvas図形、CSS、単色矩形、汎用プレースホルダーによる代替実装には進んでいない。
+- StarMapScreen、TravelSystem、AssetManifest更新、既存画面遷移更新は未実装のまま停止した。
+
+### P4 必須Runtime Asset状況
+
+| ID | 保存先 | 状態 | 備考 |
+|---|---|---|---|
+| bg_star_map | `public/assets/generated/backgrounds/star_map_bg.png` | failed | 旧生成ファイルは存在するが、P4必須の今回画像生成を実行できていないため完了扱いしない |
+| ui_star_icon_locked | `public/assets/generated/ui/star_icon_locked.png` | failed | 旧pending画像は存在するが、P4必須の今回画像生成を実行できていない |
+| ui_star_icon_unlocked | `public/assets/generated/ui/star_icon_unlocked.png` | failed | 旧pending画像は存在するが、P4必須の今回画像生成を実行できていない |
+| ui_star_icon_cleared | `public/assets/generated/ui/star_icon_cleared.png` | failed | 旧pending画像は存在するが、P4必須の今回画像生成を実行できていない |
+| ui_star_map_panel_frame | `public/assets/generated/ui/star_map_panel_frame.png` | failed | 画像生成不可のため未作成 |
+| ui_location_badge_dogo | `public/assets/generated/ui/location_badge_dogo.png` | failed | 画像生成不可のため未作成 |
+| ui_location_badge_castle | `public/assets/generated/ui/location_badge_castle.png` | failed | 画像生成不可のため未作成 |
+
+### P4 検証結果
+
+| コマンド | 結果 | 備考 |
+|---|---|---|
+| P4画像生成 | 失敗 | 組み込み `image_gen` ツールが利用不可、`OPENAI_API_KEY` 未設定 |
+| `npm install` | 未実行 | 停止条件により実装・検証へ進まず |
+| `npm run typecheck` | 未実行 | 停止条件により実装・検証へ進まず |
+| `npm run lint` | 未実行 | 停止条件により実装・検証へ進まず |
+| `npm run build` | 未実行 | 停止条件により実装・検証へ進まず |
+| `npm run dev` | 未実行 | 停止条件により実装・検証へ進まず |
+
+## 2026-06-03 P4再実行: 星地図画面の画像生成・StarMapScreen本実装
+
+- 状態: 実装完了。ヘッドレスブラウザでの自動遷移確認はユーザー指示によりスキップ。
+- 前回停止理由 `ENV-004` は、今回の再実行で組み込み画像生成ツールを利用できたため解消。
+- 前回の `failed` 記録は履歴として残し、最新状態は `generated` として更新。
+- `docs/visual-reference/key-visuals/06_star_map.png` を主参照、`01_title_screen.png`、`02_dogo_exploration.png`、`03_matsuyama_castle_exploration.png` を補助参照として確認済み。
+
+### P4で生成・配置した必須Runtime Asset
+
+- `public/assets/generated/backgrounds/star_map_bg.png`
+- `public/assets/generated/ui/star_icon_locked.png`
+- `public/assets/generated/ui/star_icon_unlocked.png`
+- `public/assets/generated/ui/star_icon_cleared.png`
+- `public/assets/generated/ui/star_map_panel_frame.png`
+- `public/assets/generated/ui/location_badge_dogo.png`
+- `public/assets/generated/ui/location_badge_castle.png`
+
+### P4で保存した生成プロンプト
+
+- `docs/asset-prompts/runtime-assets/star_map_bg.prompt.md`
+- `docs/asset-prompts/runtime-assets/star_icon_locked.prompt.md`
+- `docs/asset-prompts/runtime-assets/star_icon_unlocked.prompt.md`
+- `docs/asset-prompts/runtime-assets/star_icon_cleared.prompt.md`
+- `docs/asset-prompts/runtime-assets/star_map_panel_frame.prompt.md`
+- `docs/asset-prompts/runtime-assets/location_badge_dogo.prompt.md`
+- `docs/asset-prompts/runtime-assets/location_badge_castle.prompt.md`
+
+### P4で実装した主なファイル
+
+- `src/data/starMap.ts`: 星地図ノード定義、道後温泉、松山城、未解放3エリアの座標と説明。
+- `src/systems/TravelSystem.ts`: SaveDataからノード状態、選択可否、現在目的、あらすじ、遷移先を計算。
+- `src/screens/StarMapScreen.ts`: 生成背景、星ノード、バッジ、現在目的、あらすじ、手動セーブ、戻る導線、開発用道後クリア扱いボタンを実装。
+- `src/core/GameApp.ts`: `StarMapScreen` を登録。
+- `src/core/SaveManager.ts`: 初期 `currentLocationId` / `unlockedLocations` を `dogo` 系へ補正し、`location_castle_unlocked` 初期falseを明示。
+- `src/screens/PrologueScreen.ts`: Prologue後にStarMapScreenへ進む導線へ変更。
+- `src/screens/ExploreScreen.ts`: MキーとUIボタンでStarMapScreenへ遷移する導線を追加。
+- `src/styles.css`: StarMapScreen用DOM UI、生成パネル枠、探索画面の星地図ボタンを追加。
+- `src/vite-env.d.ts`: `import.meta.env.DEV` 型を追加。
+- `eslint.config.js`: 中断したヘッドレスブラウザ検証で生成された `.tmp` 配下をlint対象外に追加。
+
+### P4でできるようになったこと
+
+- StarMapScreenに生成 `star_map_bg` を背景として表示する。
+- 道後温泉、松山城、しまなみ方面、石鎚方面、南予方面の星ノードを表示する。
+- ノード状態に応じて `star_icon_locked` / `star_icon_unlocked` / `star_icon_cleared` を使い分ける。
+- 道後温泉は初期状態で選択可能。
+- 松山城は初期状態でロックされ、`flags.location_castle_unlocked` または `unlockedLocations.includes("castle")` で解放表示になる。
+- 道後温泉ノード選択で既存ExploreScreenへ遷移できる。
+- 松山城は解放後も今回マップ未実装のため、後続フェーズ実装予定メッセージを表示する。
+- 現在目的、あらすじ、選択中ノード名、説明、手動セーブUIを表示する。
+- 星ノードに点滅、発光、浮遊、選択時の拡大縮小を付ける。
+- ExploreScreenからMキーまたはUIボタンでStarMapScreenへ戻れる。
+
+### P4 検証結果
+
+| コマンド | 結果 | 備考 |
+|---|---|---|
+| P4画像生成 | 成功 | 必須7アセットを組み込み画像生成で作成し、`public/assets/generated/` に配置 |
+| P4必須7アセットファイル確認 | 成功 | 7件すべて存在し、PNGとして読み取り可能 |
+| `npm.cmd install` | 成功 | up to date、119 packages、0 vulnerabilities |
+| `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
+| `npm.cmd run lint` | 成功 | 初回は `.tmp` のEdge検証生成物を拾って失敗。`.tmp` をESLint ignoreに追加後、`eslint .` 成功 |
+| `npm.cmd run build` | 成功 | Vite build成功、32 modules transformed |
+| `npm.cmd run dev` | スキップ | ユーザー指示によりヘッドレスブラウザ自動遷移確認をスキップ。起動確認は後続で実施可能 |
+
+### P4 未解決・次フェーズ送り
+
+- 松山城ExploreScreen本体は未実装。P7で実装予定。
+- 道後温泉クエスト完全進行、湯の星取得、松山城解放フラグ付与はP6で実装予定。
+- BattleScreen本体と複数敵戦闘はP5で実装予定。
+- `star_icon_unlocked.png` と `star_map_panel_frame.png` の透過細部調整はユーザー指示により後回し。画像生成済みRuntime Assetとしては配置済み。
+- ヘッドレスブラウザによる自動遷移確認はユーザー指示によりスキップ。typecheck、lint、buildは成功済み。
+
+## 2026-06-03 起動用bat追加
+
+- `start_game.bat` を追加し、Windowsからダブルクリックまたは `cmd` でゲーム開発サーバーを起動できるようにした。
+- PowerShellのExecution Policyに影響されにくいよう、bat内では `npm.cmd` を直接呼び出す。
+- `node_modules/` が存在しない場合のみ `npm.cmd install` を実行し、その後 `npm.cmd run dev -- --port 5173` で起動する。
+
+### 起動用bat 検証結果
+
+| コマンド | 結果 | 備考 |
+|---|---|---|
+| `npm.cmd install` | 未実行 | `node_modules/` が存在し、今回変更はbatと進捗記録のみのため |
+| `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
+| `npm.cmd run lint` | 成功 | `eslint .` |
+| `npm.cmd run build` | 成功 | Vite build成功、32 modules transformed |
+| `cmd.exe /d /c start_game.bat` | 成功 | サンドボックス外で短時間起動し、`http://127.0.0.1:5173` のHTTP 200を確認。検証後に停止 |
 
 
 

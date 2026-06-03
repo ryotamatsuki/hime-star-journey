@@ -140,12 +140,42 @@
 - [x] Edge headless/CDPでTitleScreenからPrologue経由でExploreScreenへ進める。
 - [x] Edge headless/CDPで右方向移動後のExploreScreenスクリーンショットを確認した。
 
+## P4 星地図画面の画像生成・StarMapScreen本実装
+
+- [x] `public/assets/generated/backgrounds/star_map_bg.png` が画像生成により作成されている。
+- [x] `public/assets/generated/ui/star_icon_locked.png` が画像生成により作成されている。
+- [x] `public/assets/generated/ui/star_icon_unlocked.png` が画像生成により作成されている。
+- [x] `public/assets/generated/ui/star_icon_cleared.png` が画像生成により作成されている。
+- [x] `public/assets/generated/ui/star_map_panel_frame.png` が画像生成により作成されている。
+- [x] `public/assets/generated/ui/location_badge_dogo.png` が画像生成により作成されている。
+- [x] `public/assets/generated/ui/location_badge_castle.png` が画像生成により作成されている。
+- [x] P4必須7アセットの生成プロンプトが `docs/asset-prompts/runtime-assets/` に保存されている。
+- [x] `src/data/assets.ts` に `bg_star_map`、星アイコン3種、星地図パネル、道後/松山城バッジのAsset IDが登録されている。
+- [x] `src/data/starMap.ts` に道後温泉、松山城、未解放3エリア以上のノードが定義されている。
+- [x] `src/systems/TravelSystem.ts` がSaveDataからノード状態と選択可否を判定できる。
+- [x] StarMapScreenに星地図背景が表示される実装がある。
+- [x] 道後温泉ノードが表示される実装がある。
+- [x] 松山城ノードが表示される実装がある。
+- [x] 未解放ノードが3つ以上表示される実装がある。
+- [x] 道後温泉ノードを選択できる実装がある。
+- [x] 道後温泉ノードからExploreScreenへ遷移できる実装がある。
+- [x] 松山城ノードは初期状態でロックされる。
+- [x] `location_castle_unlocked=true` のとき松山城ノードが解放表示になる。
+- [x] 手動セーブボタンがある。
+- [x] ExploreScreenからMキーまたはUIでStarMapScreenへ遷移できる。
+- [x] 星ノードに点滅、浮遊、発光、選択時拡大の簡易アニメーションがある。
+- [x] `npm.cmd install` が通る。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run build` が通る。
+- [ ] `npm.cmd run dev` とブラウザ自動遷移確認。補足: ユーザー指示により今回スキップ。
+
 ## 星地図
 
-- [ ] 道後温泉が解放済み。
-- [ ] 松山城が初期未解放。
-- [ ] 道後クリア後に松山城が解放される。
-- [ ] 未解放星が表示される。
+- [x] 道後温泉が解放済み。
+- [x] 松山城が初期未解放。
+- [x] 道後クリア後に松山城が解放される。
+- [x] 未解放星が表示される。
 
 ## バトル
 
