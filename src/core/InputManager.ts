@@ -7,6 +7,8 @@ export type InputAction =
   | "cancel"
   | "notebook"
   | "map"
+  | "debugOverlay"
+  | "pathGuide"
   | "card1"
   | "card2"
   | "card3"
@@ -36,6 +38,8 @@ const KEY_BINDINGS = new Map<string, InputAction>([
   ["Escape", "cancel"],
   ["KeyN", "notebook"],
   ["KeyM", "map"],
+  ["KeyG", "debugOverlay"],
+  ["KeyH", "pathGuide"],
   ["Digit1", "card1"],
   ["Digit2", "card2"],
   ["Digit3", "card3"],

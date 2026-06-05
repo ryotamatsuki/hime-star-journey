@@ -334,12 +334,26 @@ button {
   font-size: 17px;
 }
 
+.explore-guide-button,
 .explore-map-button {
   width: 112px;
   min-height: 34px;
   margin-top: 10px;
   font-size: 13px;
   pointer-events: auto;
+}
+
+.explore-guide-button {
+  width: 132px;
+  margin-right: 8px;
+  border-color: rgba(137, 94, 37, 0.84);
+  background:
+    linear-gradient(180deg, rgba(255, 231, 142, 0.96), rgba(239, 164, 64, 0.94));
+}
+
+.explore-guide-button:disabled {
+  color: #6c4f2f;
+  opacity: 0.74;
 }
 
 .star-map-ui {
