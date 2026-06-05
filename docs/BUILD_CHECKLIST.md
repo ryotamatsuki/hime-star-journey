@@ -170,6 +170,28 @@
 - [x] `npm.cmd run build` が通る。
 - [ ] `npm.cmd run dev` とブラウザ自動遷移確認。補足: ユーザー指示により今回スキップ。
 
+## P3.5 道後温泉歩行可能領域の視認性改善
+
+- [x] `src/data/maps.ts` に `walkableRects` が定義されている。
+- [x] `src/data/maps.ts` に将来用の `walkablePolygons` 型がある。
+- [x] 道後温泉 `D0` に歩行可能領域の矩形が7件ある。
+- [x] `collisionRects` が背景画像の建物、植え込み、橋、湯釜、境界に寄せて調整されている。
+- [x] Gキー用の `debugOverlay` 入力がある。
+- [x] Hキー用の `pathGuide` 入力がある。
+- [x] ExploreScreenでGキーにより開発者用debug overlayを切り替える実装がある。
+- [x] debug overlayがcollisionRectsを半透明赤で描画する。
+- [x] debug overlayがwalkableRectsを半透明緑で描画する。
+- [x] debug overlayがカメラ座標に追従する。
+- [x] debug overlayに `DEV DEBUG ONLY` 表示がある。
+- [x] ExploreScreenでHキーまたは「道しるべ」ボタンにより歩ける道を2.8秒だけ淡く光らせる実装がある。
+- [x] 道しるべ表示は金色・みかん色・星粒子を使い、常時表示ではない。
+- [x] 道しるべ表示中もPlayer移動・Companion追従・EnemySymbol接触判定を妨げない描画順になっている。
+- [x] `npm.cmd install` が通る。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run build` が通る。
+- [ ] `npm.cmd run dev` とブラウザ上のG/H手動確認。補足: 自動確認中断のため未完了。
+
 ## 星地図
 
 - [x] 道後温泉が解放済み。

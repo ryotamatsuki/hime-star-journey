@@ -2,10 +2,10 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P4 星地図画面
-- 状態: P2/P3実装完了。P4は再実行で必須画像生成とStarMapScreen本実装まで完了。ブラウザ自動遷移確認はユーザー指示でスキップ
+- 現在フェーズ: P3.5 道後温泉探索マップ歩行可能領域の視認性改善
+- 状態: P3.5実装完了。Gキー開発者用オーバーレイ、Hキー/ボタン道しるべ、walkableRects、collisionRects調整を追加
 - 次に進むフェーズ: P5 複数敵対応BattleScreen本実装
-- 最終更新日: 2026-06-03
+- 最終更新日: 2026-06-05
 
 ## フェーズ別進捗
 
@@ -15,6 +15,7 @@
 | P1 | 基盤実装 | 90% | 実装完了 | 型・lint・build・HTTP起動確認済み、ブラウザ操作検証未完了 |
 | P2 | トップページ用手描き風アセット生成・表示実装＋2.5Dアニメーション基盤 | 100% | 実装完了 | 型・lint・build・HTTP起動・Edge headless/CDP確認済み |
 | P3 | 探索画面 | 95% | 実装完了 | 型・lint・build・HTTP起動・Edge headless/CDP確認済み、Browserプラグイン検証未完了 |
+| P3.5 | 道後温泉歩行可能領域改善 | 95% | 実装完了 | 型・lint・build確認済み、ブラウザ手動確認推奨 |
 | P4 | 星地図 | 95% | 実装完了（ブラウザ自動確認はスキップ） | 画像生成・型・lint・build確認済み |
 | P5 | 複数敵対応バトル | 0% | 未着手 | 未実行 |
 | P6 | 道後温泉クエスト | 0% | 未着手 | 未実行 |
@@ -304,6 +305,49 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 - `npm.cmd run typecheck`: 成功。
 - `npm.cmd run lint`: 成功。
 - `npm.cmd run build`: 成功。
+
+## 2026-06-05 P3.5実装作業
+
+- フェーズ名: 道後温泉探索マップの歩行可能領域の視認性改善。
+- 対象外指定に従い、BattleScreen本実装、NPC会話、旅の手帳、松山城探索、StarMapScreen新規機能追加、新しい背景画像の全面再生成には入っていない。
+- `src/data/maps.ts` に `WalkableRect` / `WalkablePolygon` 型を追加し、道後温泉 `D0` に `walkableRects` を追加。
+- `walkableRects` は中央の石畳、下の広場、左の提灯通り、左下入口道、橋の手前の道、右の湯けむり通り、右下路地の7矩形で構成。
+- 将来polygon化できるよう、`walkablePolygons?: WalkablePolygon[]` も `MapAreaData` に追加。
+- `collisionRects` を `dogo_map_base.png` の建物、植え込み、橋、湯釜、画面境界に合わせて再調整。
+- `playerStart` を左端寄りから中央下の歩行可能路へ移動し、開始直後に地形との関係が分かりやすいようにした。
+- `src/core/InputManager.ts` に `debugOverlay` (`G`) と `pathGuide` (`H`) を追加。
+- `src/screens/ExploreScreen.ts` に開発者用debug overlayを追加。Gキーで表示/非表示を切り替え、collisionRectsを赤、walkableRectsを緑、walkablePolygonsを青でカメラ追従描画する。
+- debug overlayには `DEV DEBUG ONLY` 表示を入れ、本番プレイ用ではなく開発調整用であることを明記。
+- `src/screens/ExploreScreen.ts` にプレイヤー用「道しるべ」を追加。HキーまたはDOMの「道しるべ」ボタンで2.8秒だけ歩行可能領域を金色/みかん色の淡い光と星粒子で表示する。
+- 道しるべ表示は背景の上、キャラクター/敵/前景/湯けむりの下に描画し、移動や接触判定を妨げない。
+- `src/styles.css` に道しるべボタンの見た目とdisabled状態を追加。
+
+### P3.5 walkableRects
+
+| ID | x | y | width | height | 用途 |
+|---|---:|---:|---:|---:|---|
+| `dogo_walk_center_road` | 760 | 176 | 292 | 820 | 中央の石畳 |
+| `dogo_walk_lower_plaza` | 520 | 725 | 520 | 270 | 下の広場 |
+| `dogo_walk_left_lantern_street` | 72 | 330 | 620 | 152 | 左の提灯通り |
+| `dogo_walk_left_entry` | 520 | 560 | 250 | 320 | 左下の入口道 |
+| `dogo_walk_upper_bridge` | 1060 | 170 | 620 | 210 | 橋の手前の道 |
+| `dogo_walk_right_steam_lane` | 1320 | 615 | 500 | 220 | 右の湯けむり通り |
+| `dogo_walk_south_east_lane` | 1135 | 840 | 520 | 156 | 右下の路地 |
+
+### P3.5 検証結果
+
+| コマンド | 結果 | 備考 |
+|---|---|---|
+| `npm.cmd install` | 成功 | up to date、119 packages、0 vulnerabilities |
+| `npm.cmd run typecheck` | 成功 | 初回はpolygon先頭点のundefined型で失敗。guard追加後成功 |
+| `npm.cmd run lint` | 成功 | `eslint .` |
+| `npm.cmd run build` | 成功 | Vite build成功、32 modules transformed |
+| `npm.cmd run dev` | 未完了 | ヘッドレス確認中にdev起動待ちでタイムアウトし、再確認コマンドはユーザー中断。手動起動確認が必要 |
+
+### P3.5 未解決・次フェーズ送り
+
+- debug overlayと道しるべのブラウザ実操作確認は未完了。実装と型/lint/buildは通っているため、手動でG/H動作を確認する。
+- collisionRectsは背景に合わせて大きく調整したが、完全一致ではない。実プレイで細かい引っかかりを見つけたらdebug overlayで再調整する。
 
 ## 2026-06-03 P4停止記録
 

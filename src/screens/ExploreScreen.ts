@@ -11,8 +11,8 @@ import { Player } from "../entities/Player";
 import { getEnemySymbolsForArea } from "../data/enemySymbols";
 import { getEncounterById } from "../data/encounters";
 import { getInteractablesForArea } from "../data/interactables";
-import { dogoArea, getMapArea, type MapAreaData } from "../data/maps";
-import { expandRect, intersects } from "../systems/CollisionSystem";
+import { dogoArea, getMapArea, type MapAreaData, type WalkablePolygon } from "../data/maps";
+import { expandRect, intersects, type Rect } from "../systems/CollisionSystem";
 import type { BattleStartParams } from "../types/battle";
 import type { GameScreen, ScreenId } from "../types/game";
 import type { SaveData } from "../types/save";
@@ -37,6 +37,8 @@ type EnemyContactInfo = {
   encounterName: string;
 };
 
+const PATH_GUIDE_DURATION_MS = 2800;
+
 export class ExploreScreen implements GameScreen {
   readonly id: ScreenId = "explore";
 
@@ -52,10 +54,13 @@ export class ExploreScreen implements GameScreen {
   private transitioningToBattle = false;
   private elapsedTimeMs = 0;
   private lastEnemyContact: EnemyContactInfo | null = null;
+  private debugOverlayVisible = false;
+  private pathGuideRemainingMs = 0;
   private messageElement: HTMLElement | null = null;
   private nearbyElement: HTMLElement | null = null;
   private statusElement: HTMLElement | null = null;
   private miniMapElement: HTMLElement | null = null;
+  private pathGuideButton: HTMLButtonElement | null = null;
 
   constructor(private readonly options: ExploreScreenOptions) {}
 
@@ -88,6 +93,8 @@ export class ExploreScreen implements GameScreen {
     this.transitioningToBattle = false;
     this.nearbyInteractable = null;
     this.lastEnemyContact = null;
+    this.debugOverlayVisible = false;
+    this.pathGuideRemainingMs = 0;
     this.message = "道後温泉に着いた。湯けむり通りをすすもう。";
     this.renderUi();
     this.updateUi();
@@ -109,6 +116,17 @@ export class ExploreScreen implements GameScreen {
       this.goToStarMap();
       return;
     }
+
+    if (this.options.inputManager.isActionStarted("debugOverlay")) {
+      this.debugOverlayVisible = !this.debugOverlayVisible;
+      this.updateUi();
+    }
+
+    if (this.options.inputManager.isActionStarted("pathGuide")) {
+      this.showPathGuide();
+    }
+
+    this.pathGuideRemainingMs = Math.max(0, this.pathGuideRemainingMs - deltaTime * 1000);
 
     this.player.update(
       deltaTime,
@@ -144,9 +162,11 @@ export class ExploreScreen implements GameScreen {
 
     ctx.imageSmoothingEnabled = true;
     this.renderMapLayer(ctx, this.area.backgroundAssetId, 1);
+    this.renderPathGuide(ctx);
     this.renderDepthSortedWorldObjects(ctx);
     this.renderMapLayer(ctx, this.area.foregroundAssetId, 0.86);
     this.renderSteamOverlay(ctx);
+    this.renderDebugOverlay(ctx);
   }
 
   exit(): void {
@@ -155,6 +175,7 @@ export class ExploreScreen implements GameScreen {
     this.nearbyElement = null;
     this.statusElement = null;
     this.miniMapElement = null;
+    this.pathGuideButton = null;
   }
 
   private renderMapLayer(
@@ -277,15 +298,21 @@ export class ExploreScreen implements GameScreen {
     objective.textContent = "湯けむり通りをすすもう";
     const hints = document.createElement("p");
     hints.className = "explore-hints";
-    hints.textContent = "移動：WASD / 矢印　調べる：Enter / Space　星地図：M　戻る：Esc";
+    hints.textContent =
+      "移動：WASD / 矢印　調べる：Enter / Space　道しるべ：H　開発表示：G　星地図：M　戻る：Esc";
     this.nearbyElement = document.createElement("p");
     this.nearbyElement.className = "nearby-note";
+    this.pathGuideButton = document.createElement("button");
+    this.pathGuideButton.className = "menu-button explore-guide-button";
+    this.pathGuideButton.type = "button";
+    this.pathGuideButton.textContent = "道しるべ";
+    this.pathGuideButton.addEventListener("click", () => this.showPathGuide());
     const mapButton = document.createElement("button");
     mapButton.className = "menu-button explore-map-button";
     mapButton.type = "button";
     mapButton.textContent = "星地図";
     mapButton.addEventListener("click", () => this.goToStarMap());
-    quest.append(location, objective, hints, this.nearbyElement, mapButton);
+    quest.append(location, objective, hints, this.nearbyElement, this.pathGuideButton, mapButton);
 
     const minimap = document.createElement("section");
     minimap.className = "explore-minimap";
@@ -325,6 +352,12 @@ export class ExploreScreen implements GameScreen {
       this.messageElement.textContent = this.lastEnemyContact
         ? `接触：${this.lastEnemyContact.enemySymbolId} / ${this.lastEnemyContact.encounterId}`
         : this.message;
+    }
+
+    if (this.pathGuideButton) {
+      this.pathGuideButton.disabled = this.pathGuideRemainingMs > 0;
+      this.pathGuideButton.textContent =
+        this.pathGuideRemainingMs > 0 ? "道しるべ表示中" : "道しるべ";
     }
 
     this.updateMiniMap();
@@ -378,6 +411,203 @@ export class ExploreScreen implements GameScreen {
     this.message = message;
     this.lastEnemyContact = null;
     this.updateUi();
+  }
+
+  private showPathGuide(): void {
+    this.pathGuideRemainingMs = PATH_GUIDE_DURATION_MS;
+    this.message = "星とみかん色の光が、歩ける石畳をそっと照らしました。";
+    this.lastEnemyContact = null;
+    this.updateUi();
+  }
+
+  private renderPathGuide(ctx: CanvasRenderingContext2D): void {
+    if (this.pathGuideRemainingMs <= 0) {
+      return;
+    }
+
+    const progress = this.pathGuideRemainingMs / PATH_GUIDE_DURATION_MS;
+    const ease = Math.sin(progress * Math.PI);
+    const baseAlpha = 0.08 + ease * 0.2;
+
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+
+    for (const rect of this.area.walkableRects) {
+      const screenRect = this.toScreenRect(rect);
+      const gradient = ctx.createLinearGradient(
+        screenRect.x,
+        screenRect.y,
+        screenRect.x + screenRect.width,
+        screenRect.y + screenRect.height
+      );
+      gradient.addColorStop(0, `rgba(255, 181, 71, ${baseAlpha * 0.35})`);
+      gradient.addColorStop(0.48, `rgba(255, 224, 126, ${baseAlpha})`);
+      gradient.addColorStop(1, `rgba(255, 248, 207, ${baseAlpha * 0.28})`);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(screenRect.x, screenRect.y, screenRect.width, screenRect.height);
+      this.drawGuideSparkles(ctx, rect, ease);
+    }
+
+    for (const polygon of this.area.walkablePolygons ?? []) {
+      this.drawWalkablePolygon(ctx, polygon, `rgba(255, 224, 126, ${baseAlpha})`, true);
+    }
+
+    ctx.restore();
+  }
+
+  private renderDebugOverlay(ctx: CanvasRenderingContext2D): void {
+    if (!this.debugOverlayVisible) {
+      return;
+    }
+
+    ctx.save();
+
+    for (const rect of this.area.walkableRects) {
+      this.drawWorldRect(ctx, rect, "rgba(63, 210, 156, 0.22)", "rgba(120, 255, 205, 0.82)");
+      this.drawWorldLabel(ctx, rect.label ?? rect.id, rect.x, rect.y);
+    }
+
+    for (const polygon of this.area.walkablePolygons ?? []) {
+      this.drawWalkablePolygon(ctx, polygon, "rgba(63, 190, 255, 0.22)", false);
+      this.drawWorldLabel(
+        ctx,
+        polygon.label ?? polygon.id,
+        polygon.points[0]?.x ?? 0,
+        polygon.points[0]?.y ?? 0
+      );
+    }
+
+    for (const rect of this.area.collisionRects) {
+      this.drawWorldRect(ctx, rect, "rgba(255, 72, 72, 0.26)", "rgba(255, 125, 125, 0.9)");
+    }
+
+    ctx.fillStyle = "rgba(24, 18, 14, 0.76)";
+    ctx.fillRect(14, 14, 410, 62);
+    ctx.fillStyle = "#fff8df";
+    ctx.font = "700 15px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("DEV DEBUG ONLY: Gで表示切替", 28, 38);
+    ctx.font = "13px sans-serif";
+    ctx.fillText("赤: collisionRects / 緑: walkableRects / カメラ追従", 28, 60);
+
+    ctx.restore();
+  }
+
+  private drawGuideSparkles(ctx: CanvasRenderingContext2D, rect: Rect, ease: number): void {
+    const span = rect.width >= rect.height ? rect.width : rect.height;
+    const count = Math.max(2, Math.min(8, Math.round(span / 120)));
+
+    for (let index = 0; index < count; index += 1) {
+      const t = (index + 0.5) / count;
+      const wave = Math.sin(this.elapsedTimeMs / 360 + index * 1.7) * 0.5 + 0.5;
+      const worldX =
+        rect.width >= rect.height
+          ? rect.x + rect.width * t
+          : rect.x + rect.width * (0.5 + Math.sin(index * 2.3) * 0.18);
+      const worldY =
+        rect.width >= rect.height
+          ? rect.y + rect.height * (0.5 + Math.cos(index * 1.9) * 0.2)
+          : rect.y + rect.height * t;
+      const screen = this.camera.worldToScreen({ x: worldX, y: worldY });
+      const size = 4 + wave * 4;
+      const alpha = (0.18 + wave * 0.34) * ease;
+
+      this.drawTinyStar(ctx, screen.x, screen.y, size, `rgba(255, 226, 126, ${alpha})`);
+      ctx.fillStyle = `rgba(255, 150, 57, ${alpha * 0.42})`;
+      ctx.beginPath();
+      ctx.ellipse(screen.x, screen.y + size * 1.2, size * 1.7, size * 0.55, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  private drawTinyStar(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string): void {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(this.elapsedTimeMs / 1200);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size * 0.28, -size * 0.28);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(size * 0.28, size * 0.28);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size * 0.28, size * 0.28);
+    ctx.lineTo(-size, 0);
+    ctx.lineTo(-size * 0.28, -size * 0.28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  private drawWorldRect(
+    ctx: CanvasRenderingContext2D,
+    rect: Rect,
+    fillStyle: string,
+    strokeStyle: string
+  ): void {
+    const screenRect = this.toScreenRect(rect);
+
+    ctx.fillStyle = fillStyle;
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(screenRect.x, screenRect.y, screenRect.width, screenRect.height);
+    ctx.strokeRect(screenRect.x, screenRect.y, screenRect.width, screenRect.height);
+  }
+
+  private drawWalkablePolygon(
+    ctx: CanvasRenderingContext2D,
+    polygon: WalkablePolygon,
+    fillStyle: string,
+    guideOnly: boolean
+  ): void {
+    if (polygon.points.length < 3) {
+      return;
+    }
+
+    const firstPoint = polygon.points[0];
+    if (!firstPoint) {
+      return;
+    }
+
+    const first = this.camera.worldToScreen(firstPoint);
+    ctx.beginPath();
+    ctx.moveTo(first.x, first.y);
+
+    for (const point of polygon.points.slice(1)) {
+      const screen = this.camera.worldToScreen(point);
+      ctx.lineTo(screen.x, screen.y);
+    }
+
+    ctx.closePath();
+    ctx.fillStyle = fillStyle;
+    ctx.fill();
+
+    if (!guideOnly) {
+      ctx.strokeStyle = "rgba(120, 220, 255, 0.82)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  private drawWorldLabel(ctx: CanvasRenderingContext2D, label: string, worldX: number, worldY: number): void {
+    const screen = this.camera.worldToScreen({ x: worldX, y: worldY });
+
+    ctx.fillStyle = "rgba(25, 20, 16, 0.78)";
+    ctx.fillRect(screen.x + 4, screen.y + 4, Math.max(76, label.length * 10), 20);
+    ctx.fillStyle = "#fff8df";
+    ctx.font = "11px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(label, screen.x + 8, screen.y + 18);
+  }
+
+  private toScreenRect(rect: Rect): Rect {
+    const screen = this.camera.worldToScreen({ x: rect.x, y: rect.y });
+    return {
+      x: screen.x,
+      y: screen.y,
+      width: rect.width,
+      height: rect.height
+    };
   }
 
   private startBattle(enemy: EnemySymbol): void {
