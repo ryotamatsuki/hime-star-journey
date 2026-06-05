@@ -16,13 +16,24 @@
 ### ENV-002: BrowserプラグインでUI操作検証ができない
 
 - 発生日: 2026-06-02
-- フェーズ: P1 / P2 / P3 / P3方針変更
-- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。Edge headless/CDPはサンドボックス外許可により補助確認に利用できた。
+- フェーズ: P1 / P2 / P3 / P3方針変更 / P4仕上げ
+- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。P4仕上げでもBrowserプラグインは同じ理由で利用できなかった。
 - 再現手順: Browserプラグイン接続、またはEdge headlessで `http://127.0.0.1:5173` を検証する。
 - 期待される挙動: Browserプラグインでタイトル表示、はじめからクリック、localStorage保存、リロード後のつづきから有効化を自動確認できる。
-- 実際の挙動: Browserプラグインの自動操作環境が起動しない。P3方針変更対応ではEdge headless/CDPで補助確認は実施できた。
-- 暫定対応: devサーバーのHTTP 200、typecheck、lint、buildを確認済み。Edge headless/CDPでTitleScreen表示、Prologue経由Explore遷移、必須生成アセット表示、MiniMap表示、localStorage保存を補助確認する。
+- 実際の挙動: Browserプラグインの自動操作環境が起動しない。P3方針変更対応とP4仕上げではEdge headless/CDPで補助確認を実施できた。
+- 暫定対応: BrowserプラグインではなくEdge headless/CDPでdevサーバーHTTP 200、P4必須アセットHTTP 200、P3.5/P4通し操作、typecheck、lint、build、distコピー確認を行う。
 - 状態: 未解決。実装コード側の既知不具合ではない。
+
+### ENV-005: サンドボックス内のVite dev起動で親ディレクトリ読み取りエラーが出る
+
+- 発生日: 2026-06-05
+- フェーズ: P4仕上げ
+- 内容: サンドボックス内で `npm.cmd run dev` を起動すると、Vite/esbuildが `vite.config.ts` 解決時にワークスペース親ディレクトリの読み取りで `Access is denied` を出す場合がある。
+- 再現手順: 制限付きサンドボックス内で `npm.cmd run dev -- --host 127.0.0.1 --port <port>` を実行する。
+- 期待される挙動: Vite devサーバーが起動し、`/hime-star-journey/` でHTTP 200を返す。
+- 実際の挙動: サンドボックス内では設定ファイル解決で停止する。サンドボックス外許可では正常起動し、`http://127.0.0.1:5187/hime-star-journey/` およびP4仕上げ再確認時の `http://127.0.0.1:5199/hime-star-journey/` がHTTP 200を返した。
+- 暫定対応: dev確認が必要な場合は承認済みのサンドボックス外実行で起動する。実装コード側の既知不具合ではない。
+- 状態: 環境要因。
 
 ### ENV-003: `Start-Process` が `Path/PATH` 重複でdevサーバー起動に失敗する
 
@@ -57,17 +68,6 @@
 - 暫定対応: P3.5で追加したGキーdebug overlayを使い、実プレイで見つけた箇所を矩形単位で再調整する。
 - 状態: 未解決。手動プレイでの追加調整待ち。
 
-### P3.5-002: G/Hキーのブラウザ実操作確認が未完了
-
-- 発生日: 2026-06-05
-- フェーズ: P3.5
-- 内容: `npm.cmd install`、`typecheck`、`lint`、`build` は成功したが、ヘッドレスブラウザでのExplore到達とG/Hキー確認はdev起動待ちでタイムアウトし、再確認コマンドはユーザー中断となった。
-- 再現手順: `npm.cmd run dev -- --host 127.0.0.1 --port 5173` で起動し、TitleScreenから道後温泉ExploreScreenへ進んでG/Hを押す。
-- 期待される挙動: Gキーでdebug overlayが表示/非表示になり、Hキーまたは道しるべボタンで2.8秒の道しるべ表示が出る。
-- 実際の挙動: コード実装とビルドは成功しているが、ブラウザ上の実操作確認は未完了。
-- 暫定対応: 後続の手動確認でG/H動作を確認する。
-- 状態: 未解決。手動確認待ち。
-
 ## 解決済み
 
 ### ENV-004: P4必須画像生成を実行できない
@@ -81,6 +81,17 @@
 - 実際の挙動: 初回は画像生成を実行できず、P4停止条件に該当した。
 - 対応: P4再実行で組み込み画像生成ツールを利用できたため、必須7アセットを生成し `public/assets/generated/` に配置した。`docs/ASSET_TRACKER.md` の最新状態も `generated` に更新した。
 - 状態: 解決済み。前回停止履歴として記録は残す。
+
+### P3.5-002: G/Hキーのブラウザ実操作確認が未完了
+
+- 発生日: 2026-06-05
+- 解決日: 2026-06-05
+- フェーズ: P3.5 / P4仕上げ
+- 内容: 初回P3.5ではヘッドレスブラウザでのExplore到達とG/Hキー確認が未完了だった。
+- 再現手順: `npm.cmd run dev -- --host 127.0.0.1 --port 5199` で起動し、TitleScreenから道後温泉ExploreScreenへ進んでG/Hを押す。
+- 期待される挙動: Gキーでdebug overlayが表示/非表示になり、Hキーまたは道しるべボタンで2.8秒の道しるべ表示が出る。
+- 対応: P4仕上げでEdge headless/CDPにより、Title -> Prologue -> StarMap -> Exploreへ到達後、Hキーで「道しるべ表示中」になり自動で戻ること、Gキーでdebug overlayによるcanvas差分と赤/緑サンプル増加が出ることを確認した。
+- 状態: 解決済み。
 
 ### BUG-001: P0文書の文字化け
 

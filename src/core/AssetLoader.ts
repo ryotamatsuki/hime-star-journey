@@ -5,6 +5,7 @@ import type {
   LoadedAsset,
   LoadedImageAsset
 } from "../types/assets";
+import { resolvePublicAssetPath } from "./AssetPath";
 
 export class AssetLoader {
   private manifest: AssetManifest = { images: [] };
@@ -107,10 +108,11 @@ export class AssetLoader {
 
   private loadImage(definition: ImageAssetDefinition): Promise<void> {
     const image = new Image();
+    const resolvedSrc = resolvePublicAssetPath(definition.src);
 
     this.assets.set(definition.id, {
       id: definition.id,
-      src: definition.src,
+      src: resolvedSrc,
       type: "image",
       definition,
       image,
@@ -121,7 +123,7 @@ export class AssetLoader {
       image.onload = () => {
         this.assets.set(definition.id, {
           id: definition.id,
-          src: definition.src,
+          src: resolvedSrc,
           type: "image",
           definition,
           image,
@@ -133,7 +135,7 @@ export class AssetLoader {
       image.onerror = () => {
         this.assets.set(definition.id, {
           id: definition.id,
-          src: definition.src,
+          src: resolvedSrc,
           type: "image",
           definition,
           status: "failed",
@@ -142,7 +144,7 @@ export class AssetLoader {
         resolve();
       };
 
-      image.src = definition.src;
+      image.src = resolvedSrc;
     });
   }
 

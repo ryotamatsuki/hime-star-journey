@@ -34,39 +34,64 @@
 - [x] AssetLoader
 - [x] TitleScreen
 - [x] PrologueScreen仮実装
-- [ ] ブラウザ操作による保存フロー自動検証
+- [x] ブラウザ操作による保存フロー自動検証
 
 ## P2 アセット・アニメーション基盤
 
-- [ ] 生成アセットの追加
-- [ ] ひめ歩行スプライト
+- [x] 生成アセットの追加
+- [x] ひめ歩行スプライト
 - [ ] ひめバトルスプライト
-- [ ] シロ浮遊スプライト
+- [x] シロ浮遊スプライト
 - [ ] 通常敵8種
-- [ ] カゲマサ
+- [x] カゲマサ
 - [ ] カードアイコン
-- [ ] UIフレーム
-- [ ] SpriteAnimator
-- [ ] Y座標による奥行き描画
-- [ ] 足元影
-- [ ] 簡易エフェクト
+- [x] UIフレーム
+- [x] SpriteAnimator
+- [x] Y座標による奥行き描画
+- [x] 足元影
+- [x] 簡易エフェクト
 
 ## P3 探索画面
 
-- [ ] ひめ移動
-- [ ] シロ追従
-- [ ] 敵シンボル表示
-- [ ] 敵シンボル接触判定
-- [ ] 一度しずめた敵の非復活
+- [x] ひめ移動
+- [x] シロ追従
+- [x] 敵シンボル表示
+- [x] 敵シンボル接触判定
+- [x] 一度しずめた敵の非復活
 - [ ] 会話UI
-- [ ] 調べ物
+- [x] 調べ物
+
+## P3.5 道後温泉歩行可能領域の視認性改善
+
+- [x] `walkableRects` の追加
+- [x] Gキー開発者用debug overlay
+- [x] Hキー道しるべ表示
+- [x] collisionRectsの軽微調整
+- [x] G/Hキーの実ブラウザ確認
 
 ## P4 星地図
 
+- [x] StarMapScreen本実装
+- [x] PrologueScreenからStarMapScreenへ遷移
+- [x] ExploreScreenからMキー/UIでStarMapScreenへ遷移
+- [x] StarMapScreenから道後温泉ExploreScreenへ遷移
+- [x] 手動セーブ
+- [x] つづきから `starMap` / `explore` 再開
 - [x] 道後温泉解放済み表示
 - [x] 松山城初期未解放表示
 - [x] 道後温泉クリア後の松山城解放
 - [x] 未解放星表示
+- [x] GitHub Pages向けbuild設定
+- [x] GitHub Pages deploy workflow
+- [x] P4全ルートの実ブラウザ確認
+
+## P4.5 DialogueBox・DialogueSystem・NPC基盤
+
+- [ ] DialogueBox
+- [ ] DialogueSystem
+- [ ] NPC基盤
+- [ ] 道後温泉NPC配置
+- [ ] 会話イベント接続
 
 ## P5 複数敵対応バトル
 

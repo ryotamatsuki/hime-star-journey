@@ -1,5 +1,6 @@
 import { renderDepthSorted, type Renderable } from "../systems/RenderDepthSystem";
 import { AssetLoader } from "../core/AssetLoader";
+import { resolvePublicAssetPath } from "../core/AssetPath";
 import { Camera } from "../core/Camera";
 import { InputManager } from "../core/InputManager";
 import { SaveManager } from "../core/SaveManager";
@@ -291,6 +292,10 @@ export class ExploreScreen implements GameScreen {
 
     const quest = document.createElement("section");
     quest.className = "explore-quest-panel generated-quest-panel";
+    quest.style.setProperty(
+      "--quest-panel-frame-image",
+      `url("${resolvePublicAssetPath("/assets/generated/ui/quest_panel_frame.png")}")`
+    );
     const location = document.createElement("p");
     location.className = "ui-kicker";
     location.textContent = "現在地：道後温泉";

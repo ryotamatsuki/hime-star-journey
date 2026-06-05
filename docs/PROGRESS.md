@@ -2,9 +2,9 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P3.5 道後温泉探索マップ歩行可能領域の視認性改善
-- 状態: P3.5実装完了。Gキー開発者用オーバーレイ、Hキー/ボタン道しるべ、walkableRects、collisionRects調整を追加
-- 次に進むフェーズ: P5 複数敵対応BattleScreen本実装
+- 現在フェーズ: P4仕上げ StarMapScreen接続確認・GitHub Pages対応確認
+- 状態: P3.5とP4はmain反映済み。P4接続、P4必須アセット、GitHub Pages向けbase/asset path/build/workflow、Edge headless/CDP通し確認まで完了
+- 次に進むフェーズ: P4.5 DialogueBox・DialogueSystem・NPC基盤
 - 最終更新日: 2026-06-05
 
 ## フェーズ別進捗
@@ -15,8 +15,9 @@
 | P1 | 基盤実装 | 90% | 実装完了 | 型・lint・build・HTTP起動確認済み、ブラウザ操作検証未完了 |
 | P2 | トップページ用手描き風アセット生成・表示実装＋2.5Dアニメーション基盤 | 100% | 実装完了 | 型・lint・build・HTTP起動・Edge headless/CDP確認済み |
 | P3 | 探索画面 | 95% | 実装完了 | 型・lint・build・HTTP起動・Edge headless/CDP確認済み、Browserプラグイン検証未完了 |
-| P3.5 | 道後温泉歩行可能領域改善 | 95% | 実装完了 | 型・lint・build確認済み、ブラウザ手動確認推奨 |
-| P4 | 星地図 | 95% | 実装完了（ブラウザ自動確認はスキップ） | 画像生成・型・lint・build確認済み |
+| P3.5 | 道後温泉歩行可能領域改善 | 100% | 実装完了 | 型・lint・build・HTTP確認済み、Edge headless/CDPでG/H確認済み |
+| P4 | 星地図 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headless/CDPで通し確認済み |
+| P4.5 | DialogueBox・DialogueSystem・NPC基盤 | 0% | 未着手 | 未実行 |
 | P5 | 複数敵対応バトル | 0% | 未着手 | 未実行 |
 | P6 | 道後温泉クエスト | 0% | 未着手 | 未実行 |
 | P7 | 松山城クエスト・カゲマサ戦 | 0% | 未着手 | 未実行 |
@@ -342,11 +343,12 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 | `npm.cmd run typecheck` | 成功 | 初回はpolygon先頭点のundefined型で失敗。guard追加後成功 |
 | `npm.cmd run lint` | 成功 | `eslint .` |
 | `npm.cmd run build` | 成功 | Vite build成功、32 modules transformed |
-| `npm.cmd run dev` | 未完了 | ヘッドレス確認中にdev起動待ちでタイムアウトし、再確認コマンドはユーザー中断。手動起動確認が必要 |
+| `npm.cmd run dev` | 成功 | P4仕上げ時に `http://127.0.0.1:5199/hime-star-journey/` でHTTP 200確認 |
+| Edge headless/CDP G/H確認 | 成功 | Hキーで「道しるべ表示中」になり2.8秒後に戻ること、Gキーでdebug overlayのcanvas差分が出ることを確認 |
 
 ### P3.5 未解決・次フェーズ送り
 
-- debug overlayと道しるべのブラウザ実操作確認は未完了。実装と型/lint/buildは通っているため、手動でG/H動作を確認する。
+- collisionRectsは生成背景に対する完全一致ではないため、実プレイで細部の引っかかりが見つかればGキーdebug overlayを使って追加調整する。
 - collisionRectsは背景に合わせて大きく調整したが、完全一致ではない。実プレイで細かい引っかかりを見つけたらdebug overlayで再調整する。
 
 ## 2026-06-03 P4停止記録
@@ -455,6 +457,36 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 - BattleScreen本体と複数敵戦闘はP5で実装予定。
 - `star_icon_unlocked.png` と `star_map_panel_frame.png` の透過細部調整はユーザー指示により後回し。画像生成済みRuntime Assetとしては配置済み。
 - ヘッドレスブラウザによる自動遷移確認はユーザー指示によりスキップ。typecheck、lint、buildは成功済み。
+
+## 2026-06-05 P4仕上げ: StarMapScreen接続確認・GitHub Pages対応
+
+- P3.5実装とP4 StarMapScreen実装がmain上に存在することを確認。
+- `src/core/GameApp.ts` で `StarMapScreen` がimport/registerされていることを確認。
+- `ScreenId` に `starMap` が含まれ、`PrologueScreen -> StarMapScreen`、`ExploreScreen -> StarMapScreen`、`StarMapScreen -> ExploreScreen` の遷移実装があることを確認。
+- P4必須7アセットが実ファイルとして存在し、`src/data/assets.ts` のAssetManifestと `StarMapScreen` の参照IDが一致することを確認。
+- `vite.config.ts` に GitHub Pages用 `base: "/hime-star-journey/"` を追加。
+- `src/core/AssetPath.ts` を追加し、AssetLoaderとDOM背景画像が `import.meta.env.BASE_URL` を使ってpublic assetsを解決するように修正。
+- `src/styles.css` の固定 `/assets/...` CSS背景をCSS変数経由へ変更し、GitHub Pages配下でもフレーム画像を読めるようにした。
+- `.github/workflows/deploy.yml` を追加し、main push時にtypecheck、lint、build、Pages artifact upload、deployを実行する構成にした。
+- `dist/index.html` が `/hime-star-journey/assets/...` を参照し、`dist/assets/generated/` にP4必須7アセットが含まれることを確認。
+
+### P4仕上げ 検証結果
+
+| コマンド / 確認 | 結果 | 備考 |
+|---|---|---|
+| `npm.cmd install` | 成功 | up to date、119 packages、0 vulnerabilities |
+| `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
+| `npm.cmd run lint` | 成功 | `eslint .` |
+| `npm.cmd run build` | 成功 | Vite build成功、33 modules transformed |
+| `npm.cmd run dev -- --host 127.0.0.1 --port 5187 --strictPort` | 成功 | サンドボックス内ではVite config解決が拒否されたため、許可付きで一時起動。`/hime-star-journey/` がHTTP 200 |
+| P4必須7アセットHTTP確認 | 成功 | devサーバー上の `/hime-star-journey/assets/generated/...` で7件すべてHTTP 200 |
+| dist asset確認 | 成功 | P4必須7アセットが `dist/assets/generated/` に含まれる |
+| Edge headless/CDP通し確認 | 成功 | Title -> Prologue -> StarMap -> Explore -> H道しるべ -> G debug overlay -> MでStarMap -> 手動セーブ -> つづきからStarMap/Explore再開を確認 |
+| StarMap進行判定確認 | 成功 | 松山城初期ロック、`flags.location_castle_unlocked`、`unlockedLocations.includes("castle")` による解放、`collectedStars.includes("dogo")` による道後クリア済み表示を確認 |
+
+### P4仕上げ 未解決・次フェーズ送り
+
+- 起動時に全AssetManifest画像を読み込むため、headlessではTitleScreen表示まで30秒以上かかることがある。P4.5以降で必要なら初期ロード対象の分割を検討する。
 
 ## 2026-06-03 起動用bat追加
 

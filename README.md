@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-現在は **P3: 道後温泉探索画面** の実装完了状態です。次は **P4: StarMapScreen本実装** です。
+現在は **P3.5: 道後温泉探索マップの歩行可能領域改善** と **P4: StarMapScreen本実装** がmainに反映済みです。次は **P4.5: DialogueBox・DialogueSystem・NPC基盤** です。
 
 - プロジェクトルール、技術制約、仕様書、ロードマップ、進捗管理、アセット台帳、生成プロンプトを整備済み。
 - `picture/` の主要ビジュアルを `docs/visual-reference/key-visuals/` に整理済み。
@@ -12,7 +12,10 @@
 - TypeScript/Vite/Canvas/DOM UI/localStorageの最小基盤を実装済み。
 - 優先度AのRuntime Asset、優先度Bの仮PNG、SpriteAnimator、Y座標奥行き描画、Canvasエフェクト、ScreenShakeを実装済み。
 - 道後温泉ExploreScreen、Player、Companion、EnemySymbol、Interactable、CollisionSystem、仮BattleScreenを実装済み。
-- Browserプラグイン検証は環境都合で未完了ですが、Edge headless/CDPで補助確認済みです。
+- P3.5でGキー開発者用オーバーレイ、Hキー/ボタン道しるべ、walkableRectsを追加済み。
+- P4でStarMapScreen、TravelSystem、星地図ノード、手動セーブ、ExploreScreenとのMキー遷移を実装済み。
+- GitHub Pages向けにVite `base: "/hime-star-journey/"`、public assetのbase付き解決、Pages workflowを追加済み。
+- Browserプラグインは環境都合で利用できませんが、Edge headless/CDPでP4までの通し遷移、G/Hキー、Mキー、手動セーブ、つづきからを確認しています。
 
 ## 技術方針
 
@@ -83,6 +86,32 @@ npm run lint
 npm run build
 npm run dev
 ```
+
+Windows PowerShellでは次の形が安定します。
+
+```bash
+npm.cmd install
+npm.cmd run typecheck
+npm.cmd run lint
+npm.cmd run build
+npm.cmd run dev
+```
+
+ViteのbaseをGitHub Pages用に設定しているため、ローカルdevサーバーの確認URLは以下です。
+
+```text
+http://127.0.0.1:5173/hime-star-journey/
+```
+
+## GitHub Pages
+
+公開予定URL:
+
+```text
+https://ryotamatsuki.github.io/hime-star-journey/
+```
+
+`.github/workflows/deploy.yml` を追加済みです。`main` へpush後、GitHub PagesのActionsデプロイで `dist/` が公開される想定です。
 
 
 

@@ -240,7 +240,7 @@ button {
   border: 0;
   background:
     linear-gradient(rgba(255, 247, 225, 0.82), rgba(255, 247, 225, 0.82)),
-    url("/assets/generated/ui/quest_panel_frame.png") center / 100% 100% no-repeat;
+    var(--quest-panel-frame-image, none) center / 100% 100% no-repeat;
   box-shadow: none;
 }
 
@@ -383,7 +383,7 @@ button {
   border: 0;
   background:
     linear-gradient(rgba(255, 247, 225, 0.82), rgba(255, 247, 225, 0.82)),
-    url("/assets/generated/ui/star_map_panel_frame.png") center / 100% 100% no-repeat;
+    var(--star-map-panel-frame-image, none) center / 100% 100% no-repeat;
   box-shadow: none;
 }
 

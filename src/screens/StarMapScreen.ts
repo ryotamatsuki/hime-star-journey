@@ -1,5 +1,6 @@
 import { floatingMotion } from "../animation/Effects";
 import { AssetLoader } from "../core/AssetLoader";
+import { resolvePublicAssetPath } from "../core/AssetPath";
 import { InputManager } from "../core/InputManager";
 import { SaveManager } from "../core/SaveManager";
 import { ScreenManager } from "../core/ScreenManager";
@@ -134,6 +135,10 @@ export class StarMapScreen implements GameScreen {
 
     const panel = document.createElement("section");
     panel.className = "star-map-panel generated-star-map-panel";
+    panel.style.setProperty(
+      "--star-map-panel-frame-image",
+      `url("${resolvePublicAssetPath("/assets/generated/ui/star_map_panel_frame.png")}")`
+    );
 
     const title = document.createElement("p");
     title.className = "ui-kicker";

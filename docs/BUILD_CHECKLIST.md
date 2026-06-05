@@ -168,7 +168,7 @@
 - [x] `npm.cmd run typecheck` が通る。
 - [x] `npm.cmd run lint` が通る。
 - [x] `npm.cmd run build` が通る。
-- [ ] `npm.cmd run dev` とブラウザ自動遷移確認。補足: ユーザー指示により今回スキップ。
+- [x] `npm.cmd run dev` とブラウザ自動遷移確認。補足: P4仕上げでEdge headless/CDPにより通し確認。
 
 ## P3.5 道後温泉歩行可能領域の視認性改善
 
@@ -190,7 +190,40 @@
 - [x] `npm.cmd run typecheck` が通る。
 - [x] `npm.cmd run lint` が通る。
 - [x] `npm.cmd run build` が通る。
-- [ ] `npm.cmd run dev` とブラウザ上のG/H手動確認。補足: 自動確認中断のため未完了。
+- [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。補足: `http://127.0.0.1:5187/hime-star-journey/` で確認。
+- [x] ブラウザ上のG/H確認。補足: Edge headless/CDPでHキー道しるべ表示/自動消灯、Gキーdebug overlay表示差分を確認。
+
+## P4仕上げ StarMapScreen接続確認・GitHub Pages対応
+
+- [x] `src/screens/StarMapScreen.ts` が存在する。
+- [x] `src/core/GameApp.ts` でStarMapScreenが登録されている。
+- [x] `ScreenId` に `starMap` が含まれている。
+- [x] PrologueScreenからStarMapScreenへ遷移する実装がある。
+- [x] ExploreScreenからMキーまたはUIボタンでStarMapScreenへ遷移する実装がある。
+- [x] StarMapScreenから道後温泉ノード選択でExploreScreenへ遷移する実装がある。
+- [x] 手動セーブボタンが `currentScreenId: "starMap"` を保存する。
+- [x] `currentScreenId: "starMap"` のつづきから復帰先が登録済み画面として扱われる。
+- [x] `currentScreenId: "explore"` のつづきから復帰先が登録済み画面として扱われる。
+- [x] P4必須7アセットが実ファイルとして存在する。
+- [x] P4必須7アセットがAssetManifestに登録されている。
+- [x] P4必須7アセットがStarMapScreenで使われている。
+- [x] `vite.config.ts` のbaseが `/hime-star-journey/` である。
+- [x] AssetLoaderが `import.meta.env.BASE_URL` でpublic asset pathを解決する。
+- [x] QuestPanel / StarMapPanelのCSS背景画像がbase付きパスで解決される。
+- [x] `.github/workflows/deploy.yml` が存在する。
+- [x] workflowに `npm ci`、`npm run typecheck`、`npm run lint`、`npm run build`、Pages artifact upload、deployがある。
+- [x] `dist/index.html` が `/hime-star-journey/assets/...` を参照する。
+- [x] `dist/assets/generated/` にpublic assetsが含まれる。
+- [x] P4必須7アセットがdevサーバーでHTTP 200を返す。
+- [x] `npm.cmd install` が通る。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run build` が通る。
+- [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。
+- [x] Edge headlessでTitleScreen出現を確認した。
+- [x] Edge headlessでP3.5/P4の通し自動遷移確認。補足: Title -> Prologue -> StarMap -> Explore -> H/G -> M -> StarMap -> 手動セーブ -> つづきからを確認。
+- [x] 松山城初期ロック、`flags.location_castle_unlocked`、`unlockedLocations.includes("castle")` による解放表示を確認。
+- [x] `collectedStars.includes("dogo")` による道後温泉クリア済み表示を確認。
 
 ## 星地図
 
