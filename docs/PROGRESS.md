@@ -481,7 +481,9 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 | `npm.cmd run dev -- --host 127.0.0.1 --port 5187 --strictPort` | 成功 | サンドボックス内ではVite config解決が拒否されたため、許可付きで一時起動。`/hime-star-journey/` がHTTP 200 |
 | P4必須7アセットHTTP確認 | 成功 | devサーバー上の `/hime-star-journey/assets/generated/...` で7件すべてHTTP 200 |
 | dist asset確認 | 成功 | P4必須7アセットが `dist/assets/generated/` に含まれる |
+| GitHub Pages公開URL確認 | 成功 | `https://ryotamatsuki.github.io/hime-star-journey/` がHTTP 200 |
 | Edge headless/CDP通し確認 | 成功 | Title -> Prologue -> StarMap -> Explore -> H道しるべ -> G debug overlay -> MでStarMap -> 手動セーブ -> つづきからStarMap/Explore再開を確認 |
+| Edge headless/CDP GitHub Pages通し確認 | 成功 | 公開URL上で同じ通し遷移、G/H、手動セーブ、つづきから、松山城解放/道後クリア表示を確認 |
 | StarMap進行判定確認 | 成功 | 松山城初期ロック、`flags.location_castle_unlocked`、`unlockedLocations.includes("castle")` による解放、`collectedStars.includes("dogo")` による道後クリア済み表示を確認 |
 
 ### P4仕上げ 未解決・次フェーズ送り

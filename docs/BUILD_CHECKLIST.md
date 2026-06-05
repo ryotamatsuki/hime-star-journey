@@ -214,6 +214,7 @@
 - [x] workflowに `npm ci`、`npm run typecheck`、`npm run lint`、`npm run build`、Pages artifact upload、deployがある。
 - [x] `dist/index.html` が `/hime-star-journey/assets/...` を参照する。
 - [x] `dist/assets/generated/` にpublic assetsが含まれる。
+- [x] GitHub Pages公開URL `https://ryotamatsuki.github.io/hime-star-journey/` がHTTP 200を返す。
 - [x] P4必須7アセットがdevサーバーでHTTP 200を返す。
 - [x] `npm.cmd install` が通る。
 - [x] `npm.cmd run typecheck` が通る。
@@ -222,6 +223,7 @@
 - [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。
 - [x] Edge headlessでTitleScreen出現を確認した。
 - [x] Edge headlessでP3.5/P4の通し自動遷移確認。補足: Title -> Prologue -> StarMap -> Explore -> H/G -> M -> StarMap -> 手動セーブ -> つづきからを確認。
+- [x] Edge headlessでGitHub Pages公開URLの通し確認。補足: 公開URL上でTitle -> Prologue -> StarMap -> Explore -> H/G -> M -> StarMap -> 手動セーブ -> つづきからを確認。
 - [x] 松山城初期ロック、`flags.location_castle_unlocked`、`unlockedLocations.includes("castle")` による解放表示を確認。
 - [x] `collectedStars.includes("dogo")` による道後温泉クリア済み表示を確認。
 
