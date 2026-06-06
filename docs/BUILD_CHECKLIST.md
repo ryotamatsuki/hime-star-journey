@@ -140,6 +140,28 @@
 - [x] Edge headless/CDPでTitleScreenからPrologue経由でExploreScreenへ進める。
 - [x] Edge headless/CDPで右方向移動後のExploreScreenスクリーンショットを確認した。
 
+## P3.5 道後温泉歩行可能領域の視認性改善
+
+- [x] `src/data/maps.ts` に `walkableRects` が定義されている。
+- [x] 将来のpolygon化に備えた `walkablePolygons` 型がある。
+- [x] 道後温泉 `D0` に歩行可能領域が7件定義されている。
+- [x] `collisionRects` が `dogo_map_base.png` の建物、庭、池、柵、湯釜周辺に合わせて再調整されている。
+- [x] Gキーで開発者用debug overlayを切り替える実装がある。
+- [x] debug overlayで `collisionRects` が半透明赤で表示される。
+- [x] debug overlayで `walkableRects` が半透明緑で表示される。
+- [x] debug overlayはカメラ座標に追従する。
+- [x] debug overlayに `DEV DEBUG ONLY` の明記がある。
+- [x] Hキーで道しるべ表示を発動する実装がある。
+- [x] 画面上の「道しるべ」ボタンで道しるべ表示を発動する実装がある。
+- [x] 道しるべは約2.8秒だけ表示される。
+- [x] 道しるべはみかん色、金色、星粒子で控えめに表示される。
+- [x] 道しるべ表示中もプレイヤー移動を妨げない。
+- [x] `npm.cmd install` が通る。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run build` が通る。
+- [x] `npm.cmd run dev` が起動できる。補足: ポートListen確認。
+
 ## P4 星地図画面の画像生成・StarMapScreen本実装
 
 - [x] `public/assets/generated/backgrounds/star_map_bg.png` が画像生成により作成されている。
@@ -226,6 +248,35 @@
 - [x] Edge headlessでGitHub Pages公開URLの通し確認。補足: 公開URL上でTitle -> Prologue -> StarMap -> Explore -> H/G -> M -> StarMap -> 手動セーブ -> つづきからを確認。
 - [x] 松山城初期ロック、`flags.location_castle_unlocked`、`unlockedLocations.includes("castle")` による解放表示を確認。
 - [x] `collectedStars.includes("dogo")` による道後温泉クリア済み表示を確認。
+
+## P4.5 DialogueBox・DialogueSystem・NPC基盤
+
+- [x] `public/assets/generated/characters/portrait_hime.png` が画像生成により作成されている。
+- [x] `public/assets/generated/characters/portrait_shiro.png` が画像生成により作成されている。
+- [x] `public/assets/generated/characters/npc_dogo_guide.png` が画像生成により作成されている。
+- [x] `public/assets/generated/characters/npc_yumori_grandma.png` が画像生成により作成されている。
+- [x] P4.5必須4アセットの生成プロンプトが `docs/asset-prompts/runtime-assets/` に保存されている。
+- [x] P4.5必須4アセットがdevサーバーでHTTP 200を返す。
+- [x] `dialogue_frame.png` なしでDialogueBoxがDOM/CSS表示される。
+- [x] DialogueBoxが画面下部に表示される。
+- [x] 会話テキストが画像ではなく実テキストとして表示される。
+- [x] 指定font-familyで会話文が表示される。
+- [x] 「次へ」/「閉じる」ボタンで会話送りできる。
+- [x] 道後温泉初回入場時に `dogo_intro_auto` が自動発火する。
+- [x] 自動会話は `dialogue_dogo_intro_seen` が保存された後は繰り返し発火しない。
+- [x] NPCが道後温泉探索画面に2人表示される実装がある。
+- [x] NPCに近づくと「話す」ヒントとDOMの「話す」ボタンが出る。
+- [x] NPCにEnter/SpaceまたはDOMの「話す」ボタンで話しかけられる。
+- [x] 会話中はひめの移動入力を処理しない。
+- [x] 会話終了後に探索へ戻れる。
+- [x] SaveData.flagsに会話既読フラグが保存される。
+- [x] P4までのTitleScreen、StarMapScreen、ExploreScreenが壊れていない。
+- [x] `npm.cmd install` が通る。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run build` が通る。
+- [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。
+- [x] Edge headlessの一時同一オリジンテストで初回自動会話、既読flag保存、案内人NPC会話開始を確認した。
 
 ## 星地図
 

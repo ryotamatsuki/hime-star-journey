@@ -2,6 +2,17 @@
 
 ## 現在の未解決バグ
 
+### P3.5-001: walkableRectsは石畳の斜め形状に完全一致していない
+
+- 発生日: 2026-06-05
+- フェーズ: P3.5
+- 内容: 道後温泉探索マップの歩行可能領域は矩形ベースで定義しているため、背景画像上の斜め道、曲がった石畳、橋周辺の輪郭とは完全一致しない。
+- 再現手順: ExploreScreenでGキーを押し、緑の `walkableRects` と背景の石畳を比較する。
+- 期待される挙動: 歩行可能領域が背景の道と自然に一致する。
+- 実際の挙動: 小学3年生が大きく迷わない程度には改善したが、斜め道の端は矩形の角が残る。
+- 暫定対応: `walkablePolygons` 型を用意済み。プレイテスト後、必要な箇所だけpolygon化する。
+- 状態: 未解決。P3.5時点では許容。
+
 ### ENV-001: PowerShellで `npm run ...` がExecution Policyにより失敗する
 
 - 発生日: 2026-06-02
@@ -16,12 +27,12 @@
 ### ENV-002: BrowserプラグインでUI操作検証ができない
 
 - 発生日: 2026-06-02
-- フェーズ: P1 / P2 / P3 / P3方針変更 / P4仕上げ
-- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。P4仕上げでもBrowserプラグインは同じ理由で利用できなかった。
+- フェーズ: P1 / P2 / P3 / P3方針変更 / P4仕上げ / P4.5
+- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。P4仕上げとP4.5でもBrowserプラグインは同じ理由で利用できなかった。
 - 再現手順: Browserプラグイン接続、またはEdge headlessで `http://127.0.0.1:5173` を検証する。
 - 期待される挙動: Browserプラグインでタイトル表示、はじめからクリック、localStorage保存、リロード後のつづきから有効化を自動確認できる。
 - 実際の挙動: Browserプラグインの自動操作環境が起動しない。P3方針変更対応とP4仕上げではEdge headless/CDPで補助確認を実施できた。
-- 暫定対応: BrowserプラグインではなくEdge headless/CDPでdevサーバーHTTP 200、P4必須アセットHTTP 200、P3.5/P4通し操作、typecheck、lint、build、distコピー確認を行う。
+- 暫定対応: BrowserプラグインではなくEdge headless/CDPまたは一時同一オリジンテストでdevサーバーHTTP 200、P4/P4.5必須アセットHTTP 200、P3.5/P4/P4.5の主要操作、typecheck、lint、build、distコピー確認を行う。
 - 状態: 未解決。実装コード側の既知不具合ではない。
 
 ### ENV-005: サンドボックス内のVite dev起動で親ディレクトリ読み取りエラーが出る
@@ -91,6 +102,17 @@
 - 再現手順: `npm.cmd run dev -- --host 127.0.0.1 --port 5199` で起動し、TitleScreenから道後温泉ExploreScreenへ進んでG/Hを押す。
 - 期待される挙動: Gキーでdebug overlayが表示/非表示になり、Hキーまたは道しるべボタンで2.8秒の道しるべ表示が出る。
 - 対応: P4仕上げでEdge headless/CDPにより、Title -> Prologue -> StarMap -> Exploreへ到達後、Hキーで「道しるべ表示中」になり自動で戻ること、Gキーでdebug overlayによるcanvas差分と赤/緑サンプル増加が出ることを確認した。
+- 状態: 解決済み。
+
+### P4.5-001: 会話終了直後にNPC近接UIが更新されない
+
+- 発生日: 2026-06-05
+- 解決日: 2026-06-05
+- フェーズ: P4.5
+- 内容: `dogo_intro_auto` などの会話を閉じた直後、次のフレームまで `nearbyNpc` / `nearbyInteractable` が再計算されず、「話す」ボタンがすぐ表示されない場合があった。
+- 再現手順: 道後温泉ExploreScreenへ入り、自動会話を閉じた直後に案内人NPCの近接表示を確認する。
+- 期待される挙動: 会話終了後すぐに近接NPCの「話す」ヒントとボタンが表示される。
+- 対応: `ExploreScreen.advanceDialogue()` の会話終了処理で `findNearbyInteractable()` と `findNearbyNpc()` を呼び、`updateUi()` 前に近接対象を再計算するよう修正した。
 - 状態: 解決済み。
 
 ### BUG-001: P0文書の文字化け

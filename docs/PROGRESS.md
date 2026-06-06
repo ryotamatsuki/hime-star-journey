@@ -2,9 +2,9 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P4仕上げ StarMapScreen接続確認・GitHub Pages対応確認
-- 状態: P3.5とP4はmain反映済み。P4接続、P4必須アセット、GitHub Pages向けbase/asset path/build/workflow、Edge headless/CDP通し確認まで完了
-- 次に進むフェーズ: P4.5 DialogueBox・DialogueSystem・NPC基盤
+- 現在フェーズ: P4.5 DialogueBox・DialogueSystem・NPC基盤
+- 状態: P4.5実装完了。DOM/CSS会話枠、自動会話、NPC会話、会話既読flag保存、必須ポートレート/NPC画像生成、型・lint・build・dev HTTP・Edge headless確認まで完了
+- 次に進むフェーズ: P5 複数敵対応BattleScreen本実装
 - 最終更新日: 2026-06-05
 
 ## フェーズ別進捗
@@ -17,7 +17,7 @@
 | P3 | 探索画面 | 95% | 実装完了 | 型・lint・build・HTTP起動・Edge headless/CDP確認済み、Browserプラグイン検証未完了 |
 | P3.5 | 道後温泉歩行可能領域改善 | 100% | 実装完了 | 型・lint・build・HTTP確認済み、Edge headless/CDPでG/H確認済み |
 | P4 | 星地図 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headless/CDPで通し確認済み |
-| P4.5 | DialogueBox・DialogueSystem・NPC基盤 | 0% | 未着手 | 未実行 |
+| P4.5 | DialogueBox・DialogueSystem・NPC基盤 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headlessで自動会話/NPC会話確認済み |
 | P5 | 複数敵対応バトル | 0% | 未着手 | 未実行 |
 | P6 | 道後温泉クエスト | 0% | 未着手 | 未実行 |
 | P7 | 松山城クエスト・カゲマサ戦 | 0% | 未着手 | 未実行 |
@@ -232,7 +232,57 @@
 
 ## 次の判断
 
-P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarMapScreen`、`TravelSystem`、`flags.location_castle_unlocked`、`collectedStars`、`unlockedLocations` を前提に、道後温泉クリア後の松山城解放へ接続できる状態を維持する。
+P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarMapScreen`、`TravelSystem`、`flags.location_castle_unlocked`、`collectedStars`、`unlockedLocations` と、P4.5で整備した `DialogueSystem`、NPC会話、会話既読flagを前提に、道後温泉クエストと戦闘導線へ接続できる状態を維持する。
+
+## 2026-06-05 P4.5 DialogueBox・DialogueSystem・NPC基盤
+
+- 状態: 完了。
+- 会話UIは画像生成せず、`src/ui/DialogueBox.ts` と `src/styles.css` のDOM/CSSで実装した。
+- 会話本文、話者名、次へ/閉じるボタンはすべて実テキストとして表示し、画像内文字にはしていない。
+- 日本語会話文のfont-familyは `"Yu Gothic", "Yu Gothic UI", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif` を使用。
+- `src/types/dialogue.ts`、`src/data/dialogues.ts`、`src/systems/DialogueSystem.ts` を追加し、自動会話、NPC会話、調べる会話、既読flag、完了時flag更新を実装した。
+- `src/entities/NPC.ts` と `src/data/npcs.ts` を追加し、道後温泉に案内人と湯守のおばあさんを配置した。
+- `src/screens/ExploreScreen.ts` にDialogueSystem、DialogueBox、NPCを統合し、会話中はPlayer移動を止めるようにした。
+- `dogo_intro_auto` は道後温泉初回入場時に自動発火し、完了時に `flags.dialogue_dogo_intro_seen = true` を保存する。
+- `dogo_first_enemy_hint_auto` は初回敵近接時に呼べる構造として実装し、発火時は `flags.dialogue_first_enemy_hint_seen = true` を保存する。
+- `dogo_steam_spot` はDialogueSystemの `interactable_steam_hint` へ統合した。その他Interactableは現行の短文message方式を残している。
+- NPC近接時は「Enter：話す」ヒントに加え、DOMの「案内人と話す」ボタンを表示して話しかけられるようにした。Enter/Spaceのconfirm処理も維持している。
+- 会話終了直後に近接対象を再計算し、会話後すぐNPC会話へ戻れるようにした。
+
+### P4.5 生成・配置した必須Runtime Asset
+
+- `public/assets/generated/characters/portrait_hime.png`
+- `public/assets/generated/characters/portrait_shiro.png`
+- `public/assets/generated/characters/npc_dogo_guide.png`
+- `public/assets/generated/characters/npc_yumori_grandma.png`
+
+### P4.5 実装・更新ファイル
+
+- 追加: `src/types/dialogue.ts`
+- 追加: `src/data/dialogues.ts`
+- 追加: `src/systems/DialogueSystem.ts`
+- 追加: `src/ui/DialogueBox.ts`
+- 追加: `src/entities/NPC.ts`
+- 追加: `src/data/npcs.ts`
+- 更新: `src/data/assets.ts`
+- 更新: `src/screens/ExploreScreen.ts`
+- 更新: `src/styles.css`
+
+### P4.5 確認結果
+
+- `npm.cmd install`: 成功。up to date、119 packages、0 vulnerabilities。
+- `npm.cmd run typecheck`: 成功。
+- `npm.cmd run lint`: 成功。
+- `npm.cmd run build`: 成功。
+- `npm.cmd run dev -- --host 127.0.0.1 --port 5201 --strictPort`: HTTP 200確認。
+- P4.5必須4アセットはdevサーバー経由でHTTP 200確認済み。
+- Edge headlessの一時同一オリジンテストで、Title -> Prologue -> StarMap -> Explore到達、`dogo_intro_auto` 表示、`dialogue_dogo_intro_seen` 保存、案内人NPC会話開始を確認した。
+- Browserプラグインとnode_replは引き続き `windows sandbox failed: spawn setup refresh` で利用できないため、Edge headlessとHTTP確認で補助した。
+
+### P4.5 未解決事項
+
+- NPC会話は2人分の短い会話のみ。選択肢、履歴、長文解説、ボイスは未実装。
+- Interactableは湯けむりのみDialogueSystemへ統合済み。看板と湯の星の気配は現行message方式を残し、後続で統合可能。
 
 ## P3 方針変更対応: 道後温泉2.5D探索マップ生成・歩行探索実装
 
@@ -489,6 +539,59 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 ### P4仕上げ 未解決・次フェーズ送り
 
 - 起動時に全AssetManifest画像を読み込むため、headlessではTitleScreen表示まで30秒以上かかることがある。P4.5以降で必要なら初期ロード対象の分割を検討する。
+
+## 2026-06-05 P3.5: 道後温泉探索マップの歩行可能領域の視認性改善
+
+- 状態: 実装完了。
+- 対象外指定に従い、BattleScreen本実装、NPC会話、StarMapScreen新規機能、松山城探索、新しい背景画像の全面再生成には入っていない。
+- P4仕上げ時のEdge headless/CDP確認で、Title -> Prologue -> StarMap -> Explore -> H道しるべ -> G debug overlay -> MでStarMap の通し動作を確認済み。
+
+### 実装した内容
+
+- `src/data/maps.ts` に `WalkableRect`、`WalkablePolygon` 型を追加し、`MapAreaData` に `walkableRects` / `walkablePolygons` を追加。
+- 道後温泉 `D0` に歩行可能な石畳・広場・橋手前・湯けむり通りを示す `walkableRects` 7件を追加。
+- `collisionRects` を `dogo_map_base.png` の建物、庭、池、柵、湯釜周辺に合わせて再調整。
+- `playerStart` を歩行可能領域内の下側広場へ移動し、開始直後に植え込みへ見える位置へ出ないよう調整。
+- `InputManager` に `debugOverlay`（Gキー）と `pathGuide`（Hキー）を追加。
+- `ExploreScreen` に開発者用デバッグオーバーレイを追加。
+  - Gキーで表示/非表示を切り替え。
+  - 赤: `collisionRects`。
+  - 緑: `walkableRects`。
+  - 青: 将来用 `walkablePolygons`。
+  - カメラ座標に追従して描画。
+  - 画面左上に `DEV DEBUG ONLY` と用途を明記。
+- `ExploreScreen` にプレイヤー用「道しるべ」を追加。
+  - HキーまたはDOMボタンで発動。
+  - 約2.8秒だけ歩行可能領域をみかん色・金色・星粒子で淡く光らせる。
+  - 背景の上、キャラクターの下に描画し、移動や敵接触を妨げない。
+- `styles.css` に「道しるべ」ボタンの見た目を追加。
+
+### walkableRects
+
+- `dogo_walk_center_road`: 中央の石畳。
+- `dogo_walk_lower_plaza`: 下の広場。
+- `dogo_walk_left_lantern_street`: 左の提灯通り。
+- `dogo_walk_left_entry`: 左下の入口道。
+- `dogo_walk_upper_bridge`: 橋の手前の道。
+- `dogo_walk_right_steam_lane`: 右の湯けむり通り。
+- `dogo_walk_south_east_lane`: 右下の路地。
+
+### P3.5 検証結果
+
+| コマンド | 結果 | 備考 |
+|---|---|---|
+| `npm.cmd install` | 成功 | up to date、119 packages、0 vulnerabilities |
+| `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
+| `npm.cmd run lint` | 成功 | `eslint .` |
+| `npm.cmd run build` | 成功 | Vite build成功、32 modules transformed |
+| `npm.cmd run dev -- --host 127.0.0.1 --port 5182 --strictPort` | 起動確認 | コマンドは常駐のためtimeout。ポート5182のListenを確認し、検証用プロセスを停止 |
+| Gキー debug overlay | 成功 | P4仕上げのEdge headless/CDP通し確認で、ExploreScreen上のGキー押下を確認済み |
+| Hキー 道しるべ | 成功 | P4仕上げのEdge headless/CDP通し確認で、ExploreScreen上のHキー押下を確認済み |
+
+### P3.5 未解決・次フェーズ送り
+
+- `walkableRects` は矩形ベースの初期調整であり、背景画像の石畳輪郭と完全一致はしていない。
+- 将来、実際のプレイ感に合わせて `walkablePolygons` 化すると、道の斜め形状により自然に合わせられる。
 
 ## 2026-06-03 起動用bat追加
 

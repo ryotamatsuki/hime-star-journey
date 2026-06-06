@@ -88,6 +88,12 @@ const imageAssets: ImageAssetDefinition[] = [
     description: "Phase 2 generated Hime idle art"
   },
   {
+    id: "portrait_hime",
+    src: "/assets/generated/characters/portrait_hime.png",
+    required: true,
+    description: "Phase 4.5 generated Hime dialogue portrait"
+  },
+  {
     id: "hime_walk_sheet",
     src: "/assets/generated/characters/hime_walk_sheet.png",
     required: true,
@@ -106,10 +112,28 @@ const imageAssets: ImageAssetDefinition[] = [
     description: "Phase 2 generated Shiro idle art"
   },
   {
+    id: "portrait_shiro",
+    src: "/assets/generated/characters/portrait_shiro.png",
+    required: true,
+    description: "Phase 4.5 generated Shiro dialogue portrait"
+  },
+  {
     id: "shiro_fly_sheet",
     src: "/assets/generated/characters/shiro_fly_sheet.png",
     required: true,
     description: "Phase 3 generated Shiro fly sheet"
+  },
+  {
+    id: "npc_dogo_guide",
+    src: "/assets/generated/characters/npc_dogo_guide.png",
+    required: true,
+    description: "Phase 4.5 generated Dogo guide NPC"
+  },
+  {
+    id: "npc_yumori_grandma",
+    src: "/assets/generated/characters/npc_yumori_grandma.png",
+    required: true,
+    description: "Phase 4.5 generated Yumori grandma NPC"
   },
   {
     id: "enemy_dogo_oni",
@@ -206,12 +230,6 @@ const imageAssets: ImageAssetDefinition[] = [
     src: "/assets/generated/cards/card_star_seal.png",
     fallbackAssetId: "placeholder_card",
     description: "Future star seal card"
-  },
-  {
-    id: "ui_dialogue_frame",
-    src: "/assets/generated/ui/dialogue_frame.png",
-    fallbackAssetId: "placeholder_ui_frame",
-    description: "Dialogue frame"
   },
   {
     id: "ui_title_menu_frame",

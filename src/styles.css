@@ -440,6 +440,118 @@ button {
   font-size: 12px;
 }
 
+.dialogue-box {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 18px;
+  width: min(1040px, calc(100% - 48px));
+  min-height: 150px;
+  padding: 22px 26px;
+  border: 4px solid #8b5a2b;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 24px 20px, rgba(255, 213, 96, 0.28), transparent 26px),
+    linear-gradient(180deg, rgba(255, 249, 226, 0.96), rgba(248, 229, 182, 0.96));
+  box-shadow:
+    0 12px 28px rgba(66, 42, 20, 0.28),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.45);
+  color: #3e2a18;
+  font-family:
+    "Yu Gothic",
+    "Yu Gothic UI",
+    "Hiragino Maru Gothic ProN",
+    "Hiragino Sans",
+    "Meiryo",
+    sans-serif;
+  pointer-events: auto;
+  transform: translateX(-50%);
+}
+
+.dialogue-box::before,
+.dialogue-box::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.dialogue-box::before {
+  top: -14px;
+  right: 34px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 177, 60, 0.94) 0 24%, transparent 25%),
+    conic-gradient(from 0deg, rgba(255, 233, 150, 0.85), rgba(245, 137, 44, 0.78), rgba(255, 233, 150, 0.85));
+  box-shadow: 0 0 14px rgba(255, 196, 82, 0.38);
+}
+
+.dialogue-box::after {
+  right: 78px;
+  bottom: 18px;
+  width: 18px;
+  height: 18px;
+  background: #ffd86a;
+  clip-path: polygon(50% 0, 61% 36%, 100% 50%, 61% 64%, 50% 100%, 39% 64%, 0 50%, 39% 36%);
+  opacity: 0.78;
+}
+
+.dialogue-box.is-hidden {
+  display: none;
+}
+
+.dialogue-box-no-portrait {
+  grid-template-columns: 1fr;
+}
+
+.dialogue-portrait {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  align-self: start;
+}
+
+.dialogue-speaker {
+  margin: 0 0 8px;
+  color: #6a3f1d;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.dialogue-text {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.65;
+  letter-spacing: 0;
+}
+
+.dialogue-next {
+  display: block;
+  min-width: 96px;
+  margin-top: 10px;
+  margin-left: auto;
+  padding: 8px 18px;
+  border: 2px solid #8b5a2b;
+  border-radius: 999px;
+  background: rgba(255, 244, 206, 0.9);
+  color: #3e2a18;
+  cursor: pointer;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.dialogue-next:hover,
+.dialogue-next:focus-visible {
+  background: #fff1ba;
+  outline: 2px solid rgba(137, 90, 43, 0.35);
+  outline-offset: 2px;
+}
+
 @media (max-width: 760px) {
   .title-menu {
     width: min(340px, calc(100vw - 44px));
@@ -495,5 +607,33 @@ button {
 
   .generated-star-map-panel {
     padding: 26px 28px 28px;
+  }
+
+  .dialogue-box {
+    bottom: 10px;
+    grid-template-columns: 72px 1fr;
+    width: calc(100% - 20px);
+    min-height: 132px;
+    padding: 16px 18px;
+    border-radius: 20px;
+  }
+
+  .dialogue-portrait {
+    width: 66px;
+    height: 66px;
+  }
+
+  .dialogue-speaker {
+    font-size: 17px;
+  }
+
+  .dialogue-text {
+    font-size: 19px;
+    line-height: 1.55;
+  }
+
+  .dialogue-next {
+    min-height: 38px;
+    font-size: 15px;
   }
 }

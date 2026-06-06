@@ -87,11 +87,11 @@
 
 ## P4.5 DialogueBox・DialogueSystem・NPC基盤
 
-- [ ] DialogueBox
-- [ ] DialogueSystem
-- [ ] NPC基盤
-- [ ] 道後温泉NPC配置
-- [ ] 会話イベント接続
+- [x] DialogueBox
+- [x] DialogueSystem
+- [x] NPC基盤
+- [x] 道後温泉NPC配置
+- [x] 会話イベント接続
 
 ## P5 複数敵対応バトル
 

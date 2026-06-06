@@ -8,15 +8,19 @@ import { ScreenManager } from "../core/ScreenManager";
 import { Companion } from "../entities/Companion";
 import { EnemySymbol } from "../entities/EnemySymbol";
 import { Interactable } from "../entities/Interactable";
+import { NPC } from "../entities/NPC";
 import { Player } from "../entities/Player";
 import { getEnemySymbolsForArea } from "../data/enemySymbols";
 import { getEncounterById } from "../data/encounters";
 import { getInteractablesForArea } from "../data/interactables";
 import { dogoArea, getMapArea, type MapAreaData, type WalkablePolygon } from "../data/maps";
+import { getNpcsForArea } from "../data/npcs";
 import { expandRect, intersects, type Rect } from "../systems/CollisionSystem";
+import { DialogueSystem } from "../systems/DialogueSystem";
 import type { BattleStartParams } from "../types/battle";
 import type { GameScreen, ScreenId } from "../types/game";
 import type { SaveData } from "../types/save";
+import { DialogueBox } from "../ui/DialogueBox";
 
 type ExploreScreenOptions = {
   uiRoot: HTMLElement;
@@ -39,10 +43,12 @@ type EnemyContactInfo = {
 };
 
 const PATH_GUIDE_DURATION_MS = 2800;
+const FIRST_ENEMY_HINT_RADIUS = 132;
 
 export class ExploreScreen implements GameScreen {
   readonly id: ScreenId = "explore";
 
+  private readonly dialogueSystem = new DialogueSystem();
   private saveData: SaveData | null = null;
   private area: MapAreaData = dogoArea;
   private camera = new Camera(1280, 720, dogoArea.worldWidth, dogoArea.worldHeight);
@@ -50,7 +56,9 @@ export class ExploreScreen implements GameScreen {
   private companion = new Companion(dogoArea.playerStart.x + 62, dogoArea.playerStart.y - 42);
   private enemySymbols: EnemySymbol[] = [];
   private interactables: Interactable[] = [];
+  private npcs: NPC[] = [];
   private nearbyInteractable: Interactable | null = null;
+  private nearbyNpc: NPC | null = null;
   private message = "道後温泉に着いた。湯けむり通りをすすもう。";
   private transitioningToBattle = false;
   private elapsedTimeMs = 0;
@@ -61,7 +69,9 @@ export class ExploreScreen implements GameScreen {
   private nearbyElement: HTMLElement | null = null;
   private statusElement: HTMLElement | null = null;
   private miniMapElement: HTMLElement | null = null;
+  private talkButton: HTMLButtonElement | null = null;
   private pathGuideButton: HTMLButtonElement | null = null;
+  private dialogueBox: DialogueBox | null = null;
 
   constructor(private readonly options: ExploreScreenOptions) {}
 
@@ -91,14 +101,22 @@ export class ExploreScreen implements GameScreen {
     this.interactables = getInteractablesForArea(this.area.locationId, this.area.id).map(
       (interactable) => new Interactable(interactable, (target) => this.showMessage(target.message))
     );
+    this.npcs = getNpcsForArea(this.area.locationId, this.area.id).map((npc) => new NPC(npc));
     this.transitioningToBattle = false;
     this.nearbyInteractable = null;
+    this.nearbyNpc = null;
     this.lastEnemyContact = null;
     this.debugOverlayVisible = false;
     this.pathGuideRemainingMs = 0;
     this.message = "道後温泉に着いた。湯けむり通りをすすもう。";
     this.renderUi();
+    this.dialogueBox = new DialogueBox({
+      uiRoot: this.options.uiRoot,
+      assetLoader: this.options.assetLoader,
+      onAdvance: () => this.advanceDialogue()
+    });
     this.updateUi();
+    this.tryStartDialogue("dogo_intro_auto");
   }
 
   update(deltaTime: number): void {
@@ -107,6 +125,23 @@ export class ExploreScreen implements GameScreen {
     }
 
     this.elapsedTimeMs += deltaTime * 1000;
+
+    if (this.dialogueSystem.isActive()) {
+      if (this.options.inputManager.isActionStarted("confirm")) {
+        this.advanceDialogue();
+      }
+
+      this.companion.update(deltaTime, this.player);
+      for (const enemy of this.enemySymbols) {
+        enemy.update(deltaTime);
+      }
+      for (const npc of this.npcs) {
+        npc.update(deltaTime);
+      }
+      this.camera.follow(this.player.x, this.player.y);
+      this.updateUi();
+      return;
+    }
 
     if (this.options.inputManager.isActionStarted("cancel")) {
       this.options.screenManager.change("title");
@@ -141,11 +176,34 @@ export class ExploreScreen implements GameScreen {
       enemy.update(deltaTime);
     }
 
+    for (const npc of this.npcs) {
+      npc.update(deltaTime);
+    }
+
     this.camera.follow(this.player.x, this.player.y);
     this.nearbyInteractable = this.findNearbyInteractable();
+    this.nearbyNpc = this.findNearbyNpc();
+
+    if (this.nearbyNpc && this.options.inputManager.isActionStarted("confirm")) {
+      this.tryStartDialogue(this.nearbyNpc.dialogueId);
+      this.updateUi();
+      return;
+    }
 
     if (this.nearbyInteractable && this.options.inputManager.isActionStarted("confirm")) {
+      if (this.nearbyInteractable.id === "dogo_steam_spot") {
+        this.tryStartDialogue("interactable_steam_hint");
+        this.updateUi();
+        return;
+      }
+
       this.nearbyInteractable.interact();
+    }
+
+    if (this.shouldStartFirstEnemyHint()) {
+      this.tryStartDialogue("dogo_first_enemy_hint_auto");
+      this.updateUi();
+      return;
     }
 
     const touchedEnemy = this.findTouchedEnemy();
@@ -176,7 +234,10 @@ export class ExploreScreen implements GameScreen {
     this.nearbyElement = null;
     this.statusElement = null;
     this.miniMapElement = null;
+    this.talkButton = null;
     this.pathGuideButton = null;
+    this.dialogueBox?.destroy();
+    this.dialogueBox = null;
   }
 
   private renderMapLayer(
@@ -247,6 +308,12 @@ export class ExploreScreen implements GameScreen {
         depthY: enemy.getDepthY(),
         render: (targetCtx) => enemy.render(targetCtx, this.options.assetLoader, this.camera)
       })),
+      ...this.npcs.map((npc): Renderable => ({
+        id: npc.id,
+        depthY: npc.getDepthY(),
+        render: (targetCtx) =>
+          npc.render(targetCtx, this.options.assetLoader, this.camera, npc === this.nearbyNpc)
+      })),
       {
         id: "companion_shiro",
         depthY: this.companion.getDepthY(),
@@ -307,6 +374,17 @@ export class ExploreScreen implements GameScreen {
       "移動：WASD / 矢印　調べる：Enter / Space　道しるべ：H　開発表示：G　星地図：M　戻る：Esc";
     this.nearbyElement = document.createElement("p");
     this.nearbyElement.className = "nearby-note";
+    this.talkButton = document.createElement("button");
+    this.talkButton.className = "menu-button explore-talk-button";
+    this.talkButton.type = "button";
+    this.talkButton.textContent = "話す";
+    this.talkButton.hidden = true;
+    this.talkButton.addEventListener("click", () => {
+      if (this.nearbyNpc) {
+        this.tryStartDialogue(this.nearbyNpc.dialogueId);
+        this.updateUi();
+      }
+    });
     this.pathGuideButton = document.createElement("button");
     this.pathGuideButton.className = "menu-button explore-guide-button";
     this.pathGuideButton.type = "button";
@@ -317,7 +395,15 @@ export class ExploreScreen implements GameScreen {
     mapButton.type = "button";
     mapButton.textContent = "星地図";
     mapButton.addEventListener("click", () => this.goToStarMap());
-    quest.append(location, objective, hints, this.nearbyElement, this.pathGuideButton, mapButton);
+    quest.append(
+      location,
+      objective,
+      hints,
+      this.nearbyElement,
+      this.talkButton,
+      this.pathGuideButton,
+      mapButton
+    );
 
     const minimap = document.createElement("section");
     minimap.className = "explore-minimap";
@@ -348,9 +434,15 @@ export class ExploreScreen implements GameScreen {
     }
 
     if (this.nearbyElement) {
-      this.nearbyElement.textContent = this.nearbyInteractable
-        ? `近く：${this.nearbyInteractable.label}`
-        : "気になる場所に近づくと調べられます。";
+      if (this.dialogueSystem.isActive()) {
+        this.nearbyElement.textContent = "会話中：Enter / Spaceで次へ";
+      } else if (this.nearbyNpc) {
+        this.nearbyElement.textContent = `Enter：話す ${this.nearbyNpc.name}`;
+      } else if (this.nearbyInteractable) {
+        this.nearbyElement.textContent = `Enter：調べる ${this.nearbyInteractable.label}`;
+      } else {
+        this.nearbyElement.textContent = "気になる場所や人に近づくと、話したり調べたりできます。";
+      }
     }
 
     if (this.messageElement) {
@@ -365,6 +457,14 @@ export class ExploreScreen implements GameScreen {
         this.pathGuideRemainingMs > 0 ? "道しるべ表示中" : "道しるべ";
     }
 
+    if (this.talkButton) {
+      const canTalk = !this.dialogueSystem.isActive() && this.nearbyNpc !== null;
+      this.talkButton.hidden = !canTalk;
+      this.talkButton.disabled = !canTalk;
+      this.talkButton.textContent = this.nearbyNpc ? `${this.nearbyNpc.name}と話す` : "話す";
+    }
+
+    this.syncDialogueBox();
     this.updateMiniMap();
   }
 
@@ -407,9 +507,23 @@ export class ExploreScreen implements GameScreen {
     );
   }
 
+  private findNearbyNpc(): NPC | null {
+    const interactionRect = this.player.getCollider();
+    return this.npcs.find((npc) => intersects(interactionRect, npc.getInteractionRect())) ?? null;
+  }
+
   private findTouchedEnemy(): EnemySymbol | null {
     const playerCollider = this.player.getCollider();
     return this.enemySymbols.find((enemy) => intersects(playerCollider, enemy.getCollider())) ?? null;
+  }
+
+  private shouldStartFirstEnemyHint(): boolean {
+    if (!this.saveData || this.saveData.flags.dialogue_first_enemy_hint_seen) {
+      return false;
+    }
+
+    const hintRect = expandRect(this.player.getCollider(), FIRST_ENEMY_HINT_RADIUS);
+    return this.enemySymbols.some((enemy) => intersects(hintRect, enemy.getCollider()));
   }
 
   private showMessage(message: string): void {
@@ -423,6 +537,50 @@ export class ExploreScreen implements GameScreen {
     this.message = "星とみかん色の光が、歩ける石畳をそっと照らしました。";
     this.lastEnemyContact = null;
     this.updateUi();
+  }
+
+  private tryStartDialogue(dialogueId: string): boolean {
+    if (!this.saveData) {
+      return false;
+    }
+
+    const started = this.dialogueSystem.start(dialogueId, this.saveData);
+    if (started) {
+      this.lastEnemyContact = null;
+      this.syncDialogueBox();
+    }
+
+    return started;
+  }
+
+  private advanceDialogue(): void {
+    if (!this.saveData || !this.dialogueSystem.isActive()) {
+      return;
+    }
+
+    this.dialogueSystem.next(this.saveData);
+
+    if (this.dialogueSystem.isFinished()) {
+      this.saveData = this.options.saveManager.save(this.saveData);
+      this.nearbyInteractable = this.findNearbyInteractable();
+      this.nearbyNpc = this.findNearbyNpc();
+      this.dialogueBox?.hide();
+    } else {
+      this.syncDialogueBox();
+    }
+
+    this.updateUi();
+  }
+
+  private syncDialogueBox(): void {
+    const line = this.dialogueSystem.getCurrentLine();
+
+    if (!line) {
+      this.dialogueBox?.hide();
+      return;
+    }
+
+    this.dialogueBox?.show(line, this.dialogueSystem.isCurrentLineLast());
   }
 
   private renderPathGuide(ctx: CanvasRenderingContext2D): void {
