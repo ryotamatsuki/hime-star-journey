@@ -278,6 +278,23 @@
 - [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。
 - [x] Edge headlessの一時同一オリジンテストで初回自動会話、既読flag保存、案内人NPC会話開始を確認した。
 
+## P4.6 P4生成UIアセットの透過処理・表示品質仕上げ
+
+- [x] `public/assets/generated/ui/star_icon_unlocked.png` の緑クロマキー背景が透明化されている。
+- [x] `public/assets/generated/ui/star_icon_unlocked.png` の四隅alphaが0である。
+- [x] `public/assets/generated/ui/star_icon_unlocked.png` が `Format32bppArgb` の透明PNGとして読み取れる。
+- [x] `public/assets/generated/ui/star_map_panel_frame.png` のマゼンタクロマキー背景が透明化されている。
+- [x] `public/assets/generated/ui/star_map_panel_frame.png` の四隅alphaが0である。
+- [x] `public/assets/generated/ui/star_map_panel_frame.png` が `Format32bppArgb` の透明PNGとして読み取れる。
+- [x] StarMapScreen相当の星地図背景合成プレビューで、解放済み星アイコンが四角い背景なしで表示される。
+- [x] StarMapScreen相当の星地図背景合成プレビューで、星地図パネル枠が四角い背景なしで表示される。
+- [x] `docs/BUGS.md` の `P4-001` が解決済みとして記録されている。
+- [x] `docs/ASSET_TRACKER.md` で `ui_star_icon_unlocked` と `ui_star_map_panel_frame` が `generated` かつ透過処理済みとして記録されている。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run build` が通る。
+- [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。
+
 ## 星地図
 
 - [x] 道後温泉が解放済み。

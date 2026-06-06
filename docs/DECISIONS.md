@@ -304,6 +304,16 @@ P4.5では `portrait_hime`、`portrait_shiro`、`npc_dogo_guide`、`npc_yumori_g
 
 Browserプラグインとnode_replは引き続き `windows sandbox failed: spawn setup refresh` で使えなかった。P4.5では一時的な同一オリジンHTMLを使い、Edge headlessで実アプリをiframe操作して、Title -> Prologue -> StarMap -> Explore、初回自動会話、既読flag保存、案内人NPC会話開始を確認した。一時HTMLは確認後に削除した。
 
+## 2026-06-06
+
+### P4.6では既存生成画像を再生成せず透過処理で仕上げる
+
+`star_icon_unlocked.png` と `star_map_panel_frame.png` はP4で生成済みで、絵柄そのものはStarMapScreenの画風に合っていた。今回の問題は緑/マゼンタのクロマキー背景と境界の透過品質に限定されるため、新規画像生成ではなく、元画像をバックアップしたうえでローカルのクロマキー除去、soft matte、despillにより透明PNGへ仕上げる方針にした。
+
+### P4.6ではStarMapScreenの機能追加をしない
+
+今回の目的はP5前の表示品質仕上げであり、星地図ノード、進行判定、遷移、手動セーブなどのP4機能は変更しない。P5 BattleScreen本実装、カード効果、NPC会話追加、松山城探索、道後クエスト完了処理も対象外として維持する。
+
 
 
 

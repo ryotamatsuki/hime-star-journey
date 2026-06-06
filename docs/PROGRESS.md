@@ -2,10 +2,10 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P4.5 DialogueBox・DialogueSystem・NPC基盤
-- 状態: P4.5実装完了。DOM/CSS会話枠、自動会話、NPC会話、会話既読flag保存、必須ポートレート/NPC画像生成、型・lint・build・dev HTTP・Edge headless確認まで完了
+- 現在フェーズ: P4.6 P4生成UIアセットの透過処理・表示品質仕上げ
+- 状態: P4.6実装完了。`star_icon_unlocked.png` と `star_map_panel_frame.png` のクロマキー背景を透明化し、型・lint・build・dev HTTP確認まで完了
 - 次に進むフェーズ: P5 複数敵対応BattleScreen本実装
-- 最終更新日: 2026-06-05
+- 最終更新日: 2026-06-06
 
 ## フェーズ別進捗
 
@@ -18,6 +18,7 @@
 | P3.5 | 道後温泉歩行可能領域改善 | 100% | 実装完了 | 型・lint・build・HTTP確認済み、Edge headless/CDPでG/H確認済み |
 | P4 | 星地図 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headless/CDPで通し確認済み |
 | P4.5 | DialogueBox・DialogueSystem・NPC基盤 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headlessで自動会話/NPC会話確認済み |
+| P4.6 | P4生成UIアセットの透過処理・表示品質仕上げ | 100% | 実装完了 | 透過PNG化・星地図背景上の合成プレビュー・型・lint・build・HTTP確認済み |
 | P5 | 複数敵対応バトル | 0% | 未着手 | 未実行 |
 | P6 | 道後温泉クエスト | 0% | 未着手 | 未実行 |
 | P7 | 松山城クエスト・カゲマサ戦 | 0% | 未着手 | 未実行 |
@@ -592,6 +593,42 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 
 - `walkableRects` は矩形ベースの初期調整であり、背景画像の石畳輪郭と完全一致はしていない。
 - 将来、実際のプレイ感に合わせて `walkablePolygons` 化すると、道の斜め形状により自然に合わせられる。
+
+## 2026-06-06 P4.6: P4生成UIアセットの透過処理・表示品質仕上げ
+
+- 状態: 実装完了。
+- 対象外指定に従い、P5 BattleScreen本実装、カード効果、NPC会話追加、新しい星地図機能、松山城探索、道後クエスト完了処理には入っていない。
+- `public/assets/generated/ui/star_icon_unlocked.png` と `public/assets/generated/ui/star_map_panel_frame.png` を直接確認し、緑/マゼンタのクロマキー背景が残っていることを確認。
+- 元画像を `public/assets/generated/_backup/p4_6/` にバックアップした。
+- ローカルのクロマキー除去で、`star_icon_unlocked.png` の緑背景と `star_map_panel_frame.png` のマゼンタ背景を透明化した。
+- 両PNGが `Format32bppArgb` になり、四隅alphaが `0,0,0,0` であることを確認した。
+- 星地図背景上の合成プレビュー `C:\tmp\p4_6_star_map_preview.png` を作成し、解放済み星アイコンと星地図パネル枠が背景になじむことを確認した。
+- `docs/BUGS.md` の `P4-001` を未解決から解決済みに移動した。
+
+### P4.6 対象画像
+
+| ファイル | 処理内容 | 結果 |
+|---|---|---|
+| `public/assets/generated/ui/star_icon_unlocked.png` | 緑クロマキー背景を透明化、境界をsoft matte化、despill適用 | 解放済み星ノード用の透明PNGとして確認済み |
+| `public/assets/generated/ui/star_map_panel_frame.png` | マゼンタクロマキー背景を透明化、境界をsoft matte化、despill適用 | StarMapScreenのDOMパネル背景用の透明PNGとして確認済み |
+
+### P4.6 検証結果
+
+| コマンド / 確認 | 結果 | 備考 |
+|---|---|---|
+| `star_icon_unlocked.png` 透過処理 | 成功 | key color `#02f805`、透明ピクセル 1188070、半透明ピクセル 2870 |
+| `star_map_panel_frame.png` 透過処理 | 成功 | key color `#fd03fa`、透明ピクセル 554672、半透明ピクセル 6988 |
+| アルファ確認 | 成功 | 2件とも `Format32bppArgb`、四隅alpha `0,0,0,0` |
+| StarMapScreen相当の合成プレビュー | 成功 | `C:\tmp\p4_6_star_map_preview.png` で背景なじみを確認 |
+| `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
+| `npm.cmd run lint` | 成功 | `eslint .` |
+| `npm.cmd run build` | 成功 | Vite build成功、38 modules transformed |
+| `npm.cmd run dev -- --host 127.0.0.1 --port 5206 --strictPort` | 成功 | `/hime-star-journey/` がHTTP 200 |
+
+### P4.6 未解決・次フェーズ送り
+
+- P4.6対象2画像の透過残りは今回解消済み。
+- StarMapScreenの新規機能追加やP5 BattleScreen本実装は未着手。次フェーズで実装する。
 
 ## 2026-06-03 起動用bat追加
 
