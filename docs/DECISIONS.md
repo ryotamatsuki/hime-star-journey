@@ -314,6 +314,24 @@ Browserプラグインとnode_replは引き続き `windows sandbox failed: spawn
 
 今回の目的はP5前の表示品質仕上げであり、星地図ノード、進行判定、遷移、手動セーブなどのP4機能は変更しない。P5 BattleScreen本実装、カード効果、NPC会話追加、松山城探索、道後クエスト完了処理も対象外として維持する。
 
+## 2026-06-07
+
+### P5ではBattleSystemをScreenから分離する
+
+BattleScreenはCanvas描画とDOM UIに集中し、戦闘状態生成、カード効果、敵ターン、勝利/敗北判定は `src/systems/BattleSystem.ts` に分離する。これにより、P6以降のクエスト報酬、P7のカゲマサ戦、P8の手帳連携を追加するときに、画面描画を大きく崩さず戦闘処理だけを拡張できるようにする。
+
+### P5では既存セーブでも道後温泉バトル用スターター4枚を使えるようにする
+
+既存セーブはP1/P3時点の `unlockedCards` を持つ場合があり、カードが2枚だけだとP5の防御・おふだ練習が成立しにくい。P5では `normalizeBattleCardIds()` により、既存セーブでも `みかん星アタック`、`白鷺のおふだ`、`道後の湯しずく`、`湯けむりヴェール` の4枚をBattleScreen上で使えるようにする。`城山のまもり` と `星封じ` は効果本体を実装しつつ、後続フェーズの進行解放に残す。
+
+### P5では敵1体固定のハードコードを避ける
+
+BattleStateは仕様どおり `partyMembers` と `enemies` の配列で管理する。敵1体戦も2体戦も同じ処理で扱い、攻撃カードは敵が複数いる場合だけターゲット選択UIを出す。敵1体だけをしずめた場合も即勝利にせず、`enemies.every(enemy.hp <= 0)` で勝利を判定する。
+
+### P5のブラウザ自動操作確認は環境問題として扱う
+
+BrowserプラグインはP5でも `windows sandbox failed: spawn setup refresh` により接続できなかった。実装検証は `npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、一時devサーバーのHTTP 200で行い、実ブラウザ操作の不足は既存のENV-002に追記する。
+
 
 
 

@@ -2,10 +2,10 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P4.6 P4生成UIアセットの透過処理・表示品質仕上げ
-- 状態: P4.6実装完了。`star_icon_unlocked.png` と `star_map_panel_frame.png` のクロマキー背景を透明化し、型・lint・build・dev HTTP確認まで完了
-- 次に進むフェーズ: P5 複数敵対応BattleScreen本実装
-- 最終更新日: 2026-06-06
+- 現在フェーズ: P5 複数敵対応BattleScreen・カードバトル本実装
+- 状態: P5実装完了。BattleSystem、敵データ、カードデータ、複数敵ターゲット選択、カード効果、勝利/敗北、撃破保存、型・lint・build・dev HTTP確認まで完了
+- 次に進むフェーズ: P6 道後温泉クエスト本体
+- 最終更新日: 2026-06-07
 
 ## フェーズ別進捗
 
@@ -19,7 +19,7 @@
 | P4 | 星地図 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headless/CDPで通し確認済み |
 | P4.5 | DialogueBox・DialogueSystem・NPC基盤 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headlessで自動会話/NPC会話確認済み |
 | P4.6 | P4生成UIアセットの透過処理・表示品質仕上げ | 100% | 実装完了 | 透過PNG化・星地図背景上の合成プレビュー・型・lint・build・HTTP確認済み |
-| P5 | 複数敵対応バトル | 0% | 未着手 | 未実行 |
+| P5 | 複数敵対応バトル | 100% | 実装完了 | 型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
 | P6 | 道後温泉クエスト | 0% | 未着手 | 未実行 |
 | P7 | 松山城クエスト・カゲマサ戦 | 0% | 未着手 | 未実行 |
 | P8 | 旅の手帳・セーブ調整 | 0% | 未着手 | 未実行 |
@@ -629,6 +629,50 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 
 - P4.6対象2画像の透過残りは今回解消済み。
 - StarMapScreenの新規機能追加やP5 BattleScreen本実装は未着手。次フェーズで実装する。
+
+## 2026-06-07 P5: 複数敵対応BattleScreen・カードバトル本実装
+
+- 状態: 実装完了。
+- 添付テキストは文字化けしており、内容もこのリポジトリのP5ではなく別ゲームの指示に見えたため、P5はリポジトリ内の `MVP詳細GDD.md`、`MVP実装仕様書.md`、既存 `BattleStartParams` / `EncounterData` に従って実装した。
+- `src/data/enemies.ts` を追加し、道後温泉敵、松山城敵、カゲマサのBattleActor生成用ステータスとasset IDを定義した。
+- `src/data/cards.ts` を追加し、カード6種の対象、MPコスト、攻撃、回復、防御、星封じ効果を定義した。
+- `src/systems/BattleSystem.ts` を追加し、`partyMembers: BattleActor[]` と `enemies: BattleActor[]` を使うBattleState生成、カード解決、敵ターン、勝利/敗北判定を実装した。
+- `src/screens/BattleScreen.ts` を仮勝利画面から本実装へ差し替えた。
+- `src/data/encounters.ts` を更新し、道後温泉6件、松山城8件、ボス1件のEncounterDataを日本語名で整理した。複数敵エンカウントは `enc_dogo_mouse_pair_01`、`enc_castle_soldier_pair_01`、`enc_castle_crow_soldier_01` を定義済み。
+- `src/data/enemySymbols.ts` の道後温泉敵シンボルラベルを日本語へ整理した。
+- `src/core/SaveManager.ts` の初期カードをP5の道後温泉戦闘で使う4枚に更新した。
+- `src/styles.css` にBattleScreenのカード手札、ターゲット選択、メッセージ、終了ボタンのDOM UIを追加した。
+
+### P5でできるようになったこと
+
+- 敵シンボル接触時に `encounterId` からBattleStateを生成する。
+- ひめは `partyMembers` 配列、敵は `enemies` 配列で管理する。
+- 敵1体の戦闘と敵2体の戦闘を同じBattleSystemで扱う。
+- 攻撃カードで敵が2体いる場合、ターゲット選択UIを表示する。
+- 敵1体だけをしずめた場合、残りの敵との戦闘が続く。
+- 敵全員をしずめると勝利になる。
+- 勝利時に `defeatedEnemyIds`、敵シンボルの `defeatedFlag`、必要な `openedPathFlag` を保存し、ExploreScreenへ戻る。
+- ひめのHPが0になると敗北扱いになり、撃破保存せず探索地点へ戻る。
+- 回復カード、防御カード、星封じカードの効果を実装した。
+- カゲマサ用の封印ゲージをBattleStateに保持し、星封じ/白鷺のおふだで削れる。
+
+### P5 検証結果
+
+| コマンド / 確認 | 結果 | 備考 |
+|---|---|---|
+| `npm.cmd install` | 成功 | up to date、119 packages、0 vulnerabilities |
+| `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
+| `npm.cmd run lint` | 成功 | `eslint .` |
+| `npm.cmd run build` | 成功 | Vite build成功、42 modules transformed |
+| `npm.cmd run dev -- --host 127.0.0.1 --port 5211` | 成功 | `/hime-star-journey/` がHTTP 200。確認後、一時Viteプロセスを停止 |
+| Browserプラグイン確認 | 失敗 | `windows sandbox failed: spawn setup refresh` により接続不可。既知のENV-002として継続 |
+
+### P5 未解決・次フェーズ送り
+
+- BattleScreen本体は実装済みだが、Browserプラグインでの実操作確認は環境問題により未完了。
+- 松山城探索マップ、松山城敵シンボル配置、カゲマサ戦への本導線はP7以降で接続する。
+- 道後温泉クエスト完了処理、湯の星取得、カード/星/手帳の進行解放はP6で実装する。
+- カードアイコン、ひめバトルスプライト、松山城敵画像は既存generated/pending画像を使用し、完成品質化は後続で調整する。
 
 ## 2026-06-03 起動用bat追加
 

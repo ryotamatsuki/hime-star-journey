@@ -95,17 +95,17 @@
 
 ## P5 複数敵対応バトル
 
-- [ ] EncounterData
-- [ ] EnemySymbolDataの `encounterId`
-- [ ] BattleActor
-- [ ] BattleState
-- [ ] `partyMembers: BattleActor[]`
-- [ ] `enemies: BattleActor[]`
-- [ ] 1対1
-- [ ] 1対2
-- [ ] ターゲット選択UI
-- [ ] カード効果
-- [ ] カゲマサ封印ゲージ
+- [x] EncounterData
+- [x] EnemySymbolDataの `encounterId`
+- [x] BattleActor
+- [x] BattleState
+- [x] `partyMembers: BattleActor[]`
+- [x] `enemies: BattleActor[]`
+- [x] 1対1
+- [x] 1対2
+- [x] ターゲット選択UI
+- [x] カード効果
+- [x] カゲマサ封印ゲージ
 
 ## P6 道後温泉クエスト
 

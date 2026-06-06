@@ -15,8 +15,7 @@ export class SaveManager {
     }
 
     try {
-      const parsed = JSON.parse(raw) as SaveData;
-      return parsed;
+      return JSON.parse(raw) as SaveData;
     } catch {
       return null;
     }
@@ -52,7 +51,12 @@ export class SaveManager {
       mp: 10,
       maxHp: 30,
       maxMp: 10,
-      unlockedCards: ["card_mikan_attack", "card_dogo_drop"],
+      unlockedCards: [
+        "card_mikan_attack",
+        "card_shirasagi_ofuda",
+        "card_dogo_drop",
+        "card_yukemuri_veil"
+      ],
       collectedStars: [],
       unlockedLoreIds: [],
       defeatedEnemyIds: [],

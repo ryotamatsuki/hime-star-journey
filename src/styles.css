@@ -552,6 +552,202 @@ button {
   outline-offset: 2px;
 }
 
+.battle-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: "Yu Gothic", "Yu Gothic UI", "Hiragino Sans", "Meiryo", sans-serif;
+}
+
+.battle-message-panel {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  width: min(430px, calc(100vw - 48px));
+  min-height: 116px;
+  padding: 18px 22px;
+  border: 2px solid rgba(116, 74, 38, 0.72);
+  border-radius: 8px;
+  background: rgba(255, 247, 221, 0.92);
+  box-shadow: 0 10px 24px rgba(36, 24, 19, 0.24);
+  color: #3e2a18;
+}
+
+.battle-message-panel p {
+  margin: 0 0 8px;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.battle-message-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.battle-command-panel {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  width: min(780px, calc(100vw - 482px));
+  min-height: 150px;
+  padding: 14px 16px 16px;
+  border: 2px solid rgba(97, 63, 37, 0.68);
+  border-radius: 8px;
+  background: rgba(48, 35, 33, 0.72);
+  box-shadow: 0 12px 30px rgba(20, 14, 13, 0.28);
+  color: #fff8df;
+  pointer-events: auto;
+}
+
+.battle-status-summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #fff2c3;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.battle-card-hand {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(82px, 1fr));
+  gap: 10px;
+}
+
+.battle-card-button {
+  position: relative;
+  display: grid;
+  grid-template-rows: 24px 58px 24px 20px;
+  align-items: center;
+  justify-items: center;
+  min-width: 0;
+  height: 132px;
+  padding: 6px;
+  border: 2px solid rgba(255, 225, 134, 0.75);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 245, 210, 0.96), rgba(231, 190, 108, 0.94));
+  color: #3c2918;
+  cursor: pointer;
+  font: inherit;
+  overflow: hidden;
+}
+
+.battle-card-button:hover,
+.battle-card-button:focus-visible {
+  outline: 3px solid rgba(255, 224, 111, 0.46);
+  outline-offset: 2px;
+  transform: translateY(-2px);
+}
+
+.battle-card-button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+  opacity: 0.52;
+  transform: none;
+}
+
+.battle-card-number {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(64, 42, 24, 0.82);
+  color: #fff8df;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+}
+
+.battle-card-button img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  grid-row: 2;
+}
+
+.battle-card-name {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  color: #3b2b1d;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.battle-card-cost {
+  color: #684522;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.battle-target-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.battle-target-title {
+  flex-basis: 100%;
+  margin: 0 0 2px;
+  color: #fff2c3;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.battle-target-button,
+.battle-sub-button,
+.battle-end-button {
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 2px solid rgba(255, 225, 134, 0.74);
+  border-radius: 8px;
+  background: rgba(255, 247, 221, 0.95);
+  color: #3e2a18;
+  cursor: pointer;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.battle-target-button:hover,
+.battle-target-button:focus-visible,
+.battle-sub-button:hover,
+.battle-sub-button:focus-visible,
+.battle-end-button:hover,
+.battle-end-button:focus-visible {
+  background: #fff0b5;
+  outline: 3px solid rgba(255, 224, 111, 0.38);
+  outline-offset: 2px;
+}
+
+.battle-sub-button {
+  background: rgba(72, 51, 42, 0.86);
+  color: #fff8df;
+}
+
+.battle-end-button {
+  display: block;
+  width: min(240px, 100%);
+  margin: 26px auto 0;
+}
+
+.battle-waiting-text {
+  margin: 34px 0 0;
+  color: #fff2c3;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+}
+
 @media (max-width: 760px) {
   .title-menu {
     width: min(340px, calc(100vw - 44px));
@@ -635,5 +831,35 @@ button {
   .dialogue-next {
     min-height: 38px;
     font-size: 15px;
+  }
+
+  .battle-message-panel {
+    left: 10px;
+    bottom: 10px;
+    width: calc(100vw - 20px);
+    min-height: 86px;
+    padding: 12px 14px;
+  }
+
+  .battle-command-panel {
+    right: 10px;
+    bottom: 110px;
+    width: calc(100vw - 20px);
+    min-height: 132px;
+    padding: 10px;
+  }
+
+  .battle-card-hand {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .battle-card-button {
+    height: 112px;
+    grid-template-rows: 20px 42px 22px 18px;
+  }
+
+  .battle-card-button img {
+    width: 42px;
+    height: 42px;
   }
 }

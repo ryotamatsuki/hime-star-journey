@@ -27,12 +27,12 @@
 ### ENV-002: BrowserプラグインでUI操作検証ができない
 
 - 発生日: 2026-06-02
-- フェーズ: P1 / P2 / P3 / P3方針変更 / P4仕上げ / P4.5
-- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。P4仕上げとP4.5でもBrowserプラグインは同じ理由で利用できなかった。
+- フェーズ: P1 / P2 / P3 / P3方針変更 / P4仕上げ / P4.5 / P5
+- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。P4仕上げ、P4.5、P5でもBrowserプラグインは同じ理由で利用できなかった。
 - 再現手順: Browserプラグイン接続、またはEdge headlessで `http://127.0.0.1:5173` を検証する。
 - 期待される挙動: Browserプラグインでタイトル表示、はじめからクリック、localStorage保存、リロード後のつづきから有効化を自動確認できる。
 - 実際の挙動: Browserプラグインの自動操作環境が起動しない。P3方針変更対応とP4仕上げではEdge headless/CDPで補助確認を実施できた。
-- 暫定対応: BrowserプラグインではなくEdge headless/CDPまたは一時同一オリジンテストでdevサーバーHTTP 200、P4/P4.5必須アセットHTTP 200、P3.5/P4/P4.5の主要操作、typecheck、lint、build、distコピー確認を行う。
+- 暫定対応: BrowserプラグインではなくEdge headless/CDPまたは一時同一オリジンテストでdevサーバーHTTP 200、P4/P4.5必須アセットHTTP 200、P3.5/P4/P4.5の主要操作、typecheck、lint、build、distコピー確認を行う。P5では `npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、一時devサーバーHTTP 200で補助確認した。
 - 状態: 未解決。実装コード側の既知不具合ではない。
 
 ### ENV-005: サンドボックス内のVite dev起動で親ディレクトリ読み取りエラーが出る
