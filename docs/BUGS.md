@@ -27,19 +27,19 @@
 ### ENV-002: BrowserプラグインでUI操作検証ができない
 
 - 発生日: 2026-06-02
-- フェーズ: P1 / P2 / P3 / P3方針変更 / P4仕上げ / P4.5 / P5
-- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。P4仕上げ、P4.5、P5でもBrowserプラグインは同じ理由で利用できなかった。
+- フェーズ: P1 / P2 / P3 / P3方針変更 / P4仕上げ / P4.5 / P5 / P5.1
+- 内容: Browserプラグインはnode_repl kernel起動に失敗し、P3方針変更対応でもBrowserプラグイン接続時に `windows sandbox failed: spawn setup refresh` でkernelが終了した。P4仕上げ、P4.5、P5、P5.1でもBrowserプラグインは同じ理由で利用できなかった。
 - 再現手順: Browserプラグイン接続、またはEdge headlessで `http://127.0.0.1:5173` を検証する。
 - 期待される挙動: Browserプラグインでタイトル表示、はじめからクリック、localStorage保存、リロード後のつづきから有効化を自動確認できる。
 - 実際の挙動: Browserプラグインの自動操作環境が起動しない。P3方針変更対応とP4仕上げではEdge headless/CDPで補助確認を実施できた。
-- 暫定対応: BrowserプラグインではなくEdge headless/CDPまたは一時同一オリジンテストでdevサーバーHTTP 200、P4/P4.5必須アセットHTTP 200、P3.5/P4/P4.5の主要操作、typecheck、lint、build、distコピー確認を行う。P5では `npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、一時devサーバーHTTP 200で補助確認した。
+- 暫定対応: BrowserプラグインではなくEdge headless/CDPまたは一時同一オリジンテストでdevサーバーHTTP 200、P4/P4.5必須アセットHTTP 200、P3.5/P4/P4.5の主要操作、typecheck、lint、build、distコピー確認を行う。P5/P5.1では `npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、一時devサーバーHTTP 200で補助確認した。
 - 状態: 未解決。実装コード側の既知不具合ではない。
 
 ### ENV-005: サンドボックス内のVite dev起動で親ディレクトリ読み取りエラーが出る
 
 - 発生日: 2026-06-05
 - フェーズ: P4仕上げ
-- 内容: サンドボックス内で `npm.cmd run dev` を起動すると、Vite/esbuildが `vite.config.ts` 解決時にワークスペース親ディレクトリの読み取りで `Access is denied` を出す場合がある。
+- 内容: サンドボックス内で `npm.cmd run dev` を起動すると、Vite/esbuildが `vite.config.ts` 解決時にワークスペース親ディレクトリの読み取りで `Access is denied` を出す場合がある。P5.1でも同じ理由でサンドボックス内起動に失敗した。
 - 再現手順: 制限付きサンドボックス内で `npm.cmd run dev -- --host 127.0.0.1 --port <port>` を実行する。
 - 期待される挙動: Vite devサーバーが起動し、`/hime-star-journey/` でHTTP 200を返す。
 - 実際の挙動: サンドボックス内では設定ファイル解決で停止する。サンドボックス外許可では正常起動し、`http://127.0.0.1:5187/hime-star-journey/` およびP4仕上げ再確認時の `http://127.0.0.1:5199/hime-star-journey/` がHTTP 200を返した。

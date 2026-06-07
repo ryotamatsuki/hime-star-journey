@@ -148,7 +148,7 @@ export function applyBattleCard(
     finalizePlayerAction(nextState);
     return {
       state: nextState,
-      logs: [`${nextActor.name}は${card.name}を使った。`, "湯けむりの守りがひめを包んだ。"],
+      logs: [`${nextActor.name}は${card.name}を使った。`, "やわらかな守りがひめを包んだ。"],
       effect: { kind: "guard", sourceInstanceId: nextActor.instanceId, targetInstanceId: nextActor.instanceId }
     };
   }

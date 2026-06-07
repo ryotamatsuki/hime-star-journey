@@ -332,6 +332,30 @@ BattleStateは仕様どおり `partyMembers` と `enemies` の配列で管理す
 
 BrowserプラグインはP5でも `windows sandbox failed: spawn setup refresh` により接続できなかった。実装検証は `npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、一時devサーバーのHTTP 200で行い、実ブラウザ操作の不足は既存のENV-002に追記する。
 
+### P5.1では探索背景・参照キービジュアルの流用をやめ、戦闘専用背景を使う
+
+既存の `dogo_battle_bg.png` は参照キービジュアルに近く、UI、キャラクター、敵、カードが画像内に含まれていたため、実装用背景としてはBattleScreen上の表示と重複していた。P5.1では背景を再生成し、Runtime Assetは `public/assets/generated/backgrounds/dogo_battle_bg.png` に配置する。参照画像は構図と画風の参考に留め、Runtime Assetとして直接使わない。
+
+### P5.1の背景生成方針
+
+道後温泉通常戦闘の背景は、左下にひめ、右側に敵1〜2体、下部にカードUI、上部中央にメッセージを重ねる前提で生成した。画像内には文字、UI、カード、ひめ、シロ、敵、HPバーを含めない。旧背景は `public/assets/generated/_backup/p5_1/dogo_battle_bg_before_p5_1.png` に退避する。
+
+### P5.1の戦闘画面配置方針
+
+ひめは左下寄り、シロはひめ近く、敵1体は右中央、敵2体は右側で上下にずらして表示する。敵が複数いる場合は番号付きのターゲットマーカーとDOMの対象選択ボタンを併用し、どの敵を選んでいるかを分かりやすくする。カードUIは下部中央に広げ、背景やキャラクターと重なりにくい領域に固定する。
+
+### P5.1ではカード名・説明を画像文字ではなくDOM実テキストで表示する
+
+カード画像はアイコンとして扱い、カード名、説明、MPコストはDOM/CSSで表示する。画像内文字に依存すると読みやすさと修正性が下がるため、BattleScreenのカードUIは実テキストを優先する。
+
+### P5.1ではBattleSystemロジックを大きく変更しない
+
+今回の目的は背景、配置、カードUI、メッセージ、ターゲット選択の視認性改善であるため、P5で実装したカード効果、敵ターン、勝利/敗北、撃破保存の処理は維持した。文字化けしていた戦闘ログ、カード名、敵名などは表示品質に関わるため修正した。
+
+### P5.1では `hime_battle_sheet` ではなく `hime_idle` を継続利用する
+
+既存の `hime_battle_sheet.png` はラフな仮画像で、P5.1の表示品質改善には不向きだった。完成品質のバトルスプライト制作は後続に残し、P5.1では既に手描き品質が高くBattleScreen上でも視認しやすい `hime_idle.png` をひめ表示に使う。
+
 
 
 

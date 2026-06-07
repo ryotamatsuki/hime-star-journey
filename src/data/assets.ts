@@ -73,7 +73,7 @@ const imageAssets: ImageAssetDefinition[] = [
     id: "bg_dogo_battle",
     src: "/assets/generated/backgrounds/dogo_battle_bg.png",
     fallbackAssetId: "placeholder_background",
-    description: "Future Dogo battle background"
+    description: "Phase 5.1 generated Dogo normal battle background"
   },
   {
     id: "bg_castle_battle",

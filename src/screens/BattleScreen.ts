@@ -51,6 +51,9 @@ type BattleVisualEffect = {
   durationMs: number;
 };
 
+const BASE_WIDTH = 1280;
+const BASE_HEIGHT = 720;
+
 const CARD_ACTIONS: Array<`card${1 | 2 | 3 | 4 | 5 | 6}`> = [
   "card1",
   "card2",
@@ -71,6 +74,8 @@ export class BattleScreen implements GameScreen {
   private elapsedMs = 0;
   private enemyTurnDelayMs = 0;
   private visualEffect: BattleVisualEffect | null = null;
+  private canvasWidth = BASE_WIDTH;
+  private canvasHeight = BASE_HEIGHT;
   private readonly screenShake = new ScreenShake();
 
   constructor(private readonly options: BattleScreenOptions) {}
@@ -156,6 +161,8 @@ export class BattleScreen implements GameScreen {
   render(ctx: CanvasRenderingContext2D): void {
     const { canvas } = ctx;
     const shake = this.screenShake.getOffset();
+    this.canvasWidth = canvas.width;
+    this.canvasHeight = canvas.height;
 
     ctx.save();
     ctx.translate(shake.x, shake.y);
@@ -184,12 +191,18 @@ export class BattleScreen implements GameScreen {
 
     this.options.assetLoader.drawImageOrFallback(ctx, backgroundAssetId, 0, 0, width, height, "battle");
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, "rgba(22, 26, 45, 0.18)");
-    gradient.addColorStop(0.55, "rgba(48, 35, 38, 0.12)");
-    gradient.addColorStop(1, "rgba(32, 21, 22, 0.42)");
-    ctx.fillStyle = gradient;
+    const topVignette = ctx.createLinearGradient(0, 0, 0, height);
+    topVignette.addColorStop(0, "rgba(11, 18, 38, 0.28)");
+    topVignette.addColorStop(0.45, "rgba(38, 28, 28, 0.04)");
+    topVignette.addColorStop(1, "rgba(35, 20, 16, 0.34)");
+    ctx.fillStyle = topVignette;
     ctx.fillRect(0, 0, width, height);
+
+    const bottomPanelShade = ctx.createLinearGradient(0, height * 0.72, 0, height);
+    bottomPanelShade.addColorStop(0, "rgba(48, 29, 18, 0)");
+    bottomPanelShade.addColorStop(1, "rgba(42, 25, 19, 0.38)");
+    ctx.fillStyle = bottomPanelShade;
+    ctx.fillRect(0, height * 0.7, width, height * 0.3);
   }
 
   private renderActors(ctx: CanvasRenderingContext2D): void {
@@ -198,118 +211,226 @@ export class BattleScreen implements GameScreen {
     }
 
     const hime = getPartyLeader(this.battleState);
+    const renderables: Array<{ actor: BattleActor; layout: ActorLayout }> = [];
+
     if (hime) {
-      const layout = this.getActorLayout(hime);
-      this.renderActor(ctx, hime, layout);
-      this.options.assetLoader.drawImageOrFallback(ctx, "shiro_idle", 324, 262, 78, 78, "shiro");
+      renderables.push({ actor: hime, layout: this.getActorLayout(hime) });
     }
 
     for (const enemy of this.battleState.enemies) {
-      const layout = this.getActorLayout(enemy);
-      this.renderActor(ctx, enemy, layout);
+      renderables.push({ actor: enemy, layout: this.getActorLayout(enemy) });
+    }
+
+    renderables
+      .sort((a, b) => a.layout.y + a.layout.height - (b.layout.y + b.layout.height))
+      .forEach(({ actor, layout }) => this.renderActor(ctx, actor, layout));
+
+    if (hime) {
+      this.renderShiro(ctx);
     }
   }
 
-  private renderActor(ctx: CanvasRenderingContext2D, actor: BattleActor, layout: ActorLayout): void {
-    const centerX = layout.x + layout.width / 2;
-    const footY = layout.y + layout.height - 8;
-    const isDefeated = actor.hp <= 0;
-    const isTargeted =
-      this.battleState?.phase === "targetSelect" &&
-      actor.actorType !== "player" &&
-      actor.actorType !== "ally";
+  private renderShiro(ctx: CanvasRenderingContext2D): void {
+    const t = this.elapsedMs / 1000;
+    const x = this.toScreenX(348 + Math.cos(t * 1.1) * 5);
+    const y = this.toScreenY(392 + Math.sin(t * 2.1) * 9);
+    const width = this.toScreenWidth(70);
+    const height = this.toScreenHeight(70);
 
-    drawEllipseShadow(ctx, centerX, footY, layout.width * 0.62, 28, isDefeated ? 0.08 : 0.22);
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    this.options.assetLoader.drawImageOrFallback(ctx, "shiro_idle", x, y, width, height, "シロ");
+    ctx.restore();
+  }
+
+  private renderActor(ctx: CanvasRenderingContext2D, actor: BattleActor, layout: ActorLayout): void {
+    const x = this.toScreenX(layout.x);
+    const y = this.toScreenY(layout.y);
+    const width = this.toScreenWidth(layout.width);
+    const height = this.toScreenHeight(layout.height);
+    const centerX = x + width / 2;
+    const footY = y + height - this.toScreenHeight(10);
+    const isDefeated = actor.hp <= 0;
+    const isEnemy = actor.actorType === "enemy" || actor.actorType === "boss";
+    const aliveEnemyIndex =
+      this.battleState && isEnemy
+        ? getAliveEnemies(this.battleState).findIndex((enemy) => enemy.instanceId === actor.instanceId)
+        : -1;
+
+    drawEllipseShadow(ctx, centerX, footY, width * 0.62, this.toScreenHeight(isEnemy ? 30 : 34), isDefeated ? 0.08 : 0.24);
 
     ctx.save();
     if (isDefeated) {
-      ctx.globalAlpha = 0.35;
+      ctx.globalAlpha = 0.28;
     }
 
     const floatOffset =
-      actor.actorType === "enemy" || actor.actorType === "boss"
-        ? Math.sin(this.elapsedMs / 420 + layout.x * 0.01) * 4
-        : Math.sin(this.elapsedMs / 540) * 3;
+      isEnemy
+        ? Math.sin(this.elapsedMs / 420 + layout.x * 0.01) * this.toScreenHeight(4)
+        : Math.sin(this.elapsedMs / 760) * this.toScreenHeight(3);
 
     this.options.assetLoader.drawImageOrFallback(
       ctx,
       actor.assetId ?? actor.characterId,
-      layout.x,
-      layout.y + floatOffset,
-      layout.width,
-      layout.height,
+      x,
+      y + floatOffset,
+      width,
+      height,
       actor.name
     );
     ctx.restore();
 
-    if (isTargeted && !isDefeated) {
-      ctx.save();
-      ctx.strokeStyle = "rgba(255, 223, 103, 0.9)";
-      ctx.lineWidth = 4;
-      ctx.setLineDash([8, 8]);
-      ctx.beginPath();
-      ctx.ellipse(centerX, footY - layout.height * 0.42, layout.width * 0.58, layout.height * 0.42, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
+    if (isEnemy && this.battleState?.phase === "targetSelect" && !isDefeated) {
+      this.renderTargetMarker(ctx, centerX, y, width, height, aliveEnemyIndex);
     }
 
-    this.renderHpBar(ctx, actor, centerX - 62, layout.y - 34, 124);
+    this.renderActorStatus(ctx, actor, layout);
   }
 
-  private renderHpBar(
+  private renderTargetMarker(
     ctx: CanvasRenderingContext2D,
-    actor: BattleActor,
-    x: number,
+    centerX: number,
     y: number,
-    width: number
+    width: number,
+    height: number,
+    aliveEnemyIndex: number
   ): void {
-    const ratio = Math.max(0, Math.min(1, actor.hp / actor.maxHp));
+    const pulse = 1 + Math.sin(this.elapsedMs / 170) * 0.05;
+    const markerY = y + height * 0.44;
 
     ctx.save();
-    ctx.fillStyle = "rgba(30, 22, 20, 0.68)";
-    ctx.fillRect(x, y, width, 24);
-    ctx.fillStyle = actor.actorType === "player" ? "#f5a65a" : "#7cc4d8";
-    ctx.fillRect(x + 3, y + 3, (width - 6) * ratio, 18);
-    ctx.strokeStyle = "rgba(255, 248, 214, 0.86)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, width, 24);
-    ctx.fillStyle = "#fff8df";
-    ctx.font = "600 13px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(`${actor.name} ${actor.hp}/${actor.maxHp}`, x + width / 2, y + 12);
+    ctx.strokeStyle = "rgba(255, 223, 103, 0.95)";
+    ctx.fillStyle = "rgba(255, 244, 182, 0.1)";
+    ctx.lineWidth = this.toScreenWidth(4);
+    ctx.setLineDash([this.toScreenWidth(9), this.toScreenWidth(7)]);
+    ctx.beginPath();
+    ctx.ellipse(centerX, markerY, width * 0.58 * pulse, height * 0.42 * pulse, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (aliveEnemyIndex >= 0) {
+      const badgeSize = this.toScreenWidth(34);
+      const badgeX = centerX - badgeSize / 2;
+      const badgeY = y - this.toScreenHeight(42);
+      ctx.fillStyle = "rgba(74, 46, 21, 0.88)";
+      ctx.strokeStyle = "rgba(255, 229, 126, 0.95)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(centerX, badgeY + badgeSize / 2, badgeSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#fff7d3";
+      ctx.font = `700 ${Math.round(this.toScreenWidth(18))}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(aliveEnemyIndex + 1), badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+    }
     ctx.restore();
   }
 
+  private renderActorStatus(ctx: CanvasRenderingContext2D, actor: BattleActor, layout: ActorLayout): void {
+    const isPlayer = actor.actorType === "player" || actor.actorType === "ally";
+    const width = isPlayer ? 220 : 190;
+    const x = isPlayer ? layout.x + 8 : layout.x + layout.width / 2 - width / 2;
+    const y = isPlayer ? layout.y - 82 : layout.y - 68;
+    const screenX = this.toScreenX(x);
+    const screenY = this.toScreenY(y);
+    const screenWidth = this.toScreenWidth(width);
+    const hpRatio = Math.max(0, Math.min(1, actor.hp / actor.maxHp));
+
+    ctx.save();
+    ctx.fillStyle = "rgba(42, 27, 23, 0.78)";
+    ctx.strokeStyle = "rgba(255, 226, 154, 0.82)";
+    ctx.lineWidth = 2;
+    this.roundRect(ctx, screenX, screenY, screenWidth, this.toScreenHeight(isPlayer ? 58 : 48), this.toScreenWidth(8));
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#fff5d7";
+    ctx.font = `700 ${Math.round(this.toScreenWidth(isPlayer ? 16 : 15))}px sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(actor.name, screenX + this.toScreenWidth(12), screenY + this.toScreenHeight(15));
+
+    const barX = screenX + this.toScreenWidth(12);
+    const barY = screenY + this.toScreenHeight(isPlayer ? 28 : 25);
+    const barWidth = screenWidth - this.toScreenWidth(24);
+    this.renderMeter(ctx, barX, barY, barWidth, this.toScreenHeight(10), hpRatio, "#e65e52", "rgba(42, 20, 18, 0.75)");
+
+    ctx.fillStyle = "#fff5d7";
+    ctx.font = `700 ${Math.round(this.toScreenWidth(12))}px sans-serif`;
+    ctx.textAlign = "right";
+    ctx.fillText(`HP ${actor.hp}/${actor.maxHp}`, screenX + screenWidth - this.toScreenWidth(12), barY + this.toScreenHeight(5));
+
+    if (isPlayer) {
+      const mpRatio = actor.maxMp === 0 ? 0 : Math.max(0, Math.min(1, actor.mp / actor.maxMp));
+      const mpY = screenY + this.toScreenHeight(42);
+      this.renderMeter(ctx, barX, mpY, barWidth, this.toScreenHeight(8), mpRatio, "#6fa7e8", "rgba(18, 28, 45, 0.72)");
+      ctx.fillStyle = "#fff5d7";
+      ctx.fillText(`MP ${actor.mp}/${actor.maxMp}`, screenX + screenWidth - this.toScreenWidth(12), mpY + this.toScreenHeight(4));
+    }
+
+    if (actor.hp <= 0) {
+      ctx.fillStyle = "rgba(255, 246, 211, 0.86)";
+      ctx.font = `800 ${Math.round(this.toScreenWidth(14))}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("しずまった", screenX + screenWidth / 2, screenY + this.toScreenHeight(isPlayer ? 72 : 62));
+    }
+
+    ctx.restore();
+  }
+
+  private renderMeter(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    ratio: number,
+    fill: string,
+    background: string
+  ): void {
+    ctx.fillStyle = background;
+    this.roundRect(ctx, x, y, width, height, height / 2);
+    ctx.fill();
+    ctx.fillStyle = fill;
+    this.roundRect(ctx, x, y, width * ratio, height, height / 2);
+    ctx.fill();
+  }
+
   private renderBattleHeader(ctx: CanvasRenderingContext2D): void {
-    if (!this.battleState || !this.battleParams) {
+    if (!this.battleState) {
       return;
     }
 
+    const x = this.toScreenX(440);
+    const y = this.toScreenY(20);
+    const width = this.toScreenWidth(400);
+    const height = this.toScreenHeight(this.battleState.sealGauge ? 84 : 58);
+
     ctx.save();
-    ctx.fillStyle = "rgba(42, 29, 33, 0.55)";
-    ctx.fillRect(24, 22, 560, 78);
+    ctx.fillStyle = "rgba(42, 29, 33, 0.64)";
     ctx.strokeStyle = "rgba(255, 232, 166, 0.72)";
     ctx.lineWidth = 2;
-    ctx.strokeRect(25, 23, 558, 76);
+    this.roundRect(ctx, x, y, width, height, this.toScreenWidth(8));
+    ctx.fill();
+    ctx.stroke();
     ctx.fillStyle = "#fff8df";
-    ctx.font = "700 24px sans-serif";
-    ctx.fillText(`ターン ${this.battleState.turnCount}`, 48, 52);
-    ctx.font = "16px sans-serif";
-    ctx.fillText(this.getPhaseLabel(), 48, 78);
+    ctx.font = `700 ${Math.round(this.toScreenWidth(20))}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`ターン ${this.battleState.turnCount} ${this.getPhaseLabel()}`, x + width / 2, y + this.toScreenHeight(29));
 
     if (this.battleState.sealGauge) {
       const gauge = this.battleState.sealGauge;
       const ratio = gauge.max === 0 ? 0 : gauge.value / gauge.max;
-      ctx.fillStyle = "rgba(28, 20, 32, 0.7)";
-      ctx.fillRect(796, 28, 330, 30);
-      ctx.fillStyle = "#ffe37b";
-      ctx.fillRect(800, 32, 322 * ratio, 22);
-      ctx.strokeStyle = "rgba(255, 248, 224, 0.86)";
-      ctx.strokeRect(796, 28, 330, 30);
+      const gaugeX = x + this.toScreenWidth(46);
+      const gaugeY = y + this.toScreenHeight(53);
+      this.renderMeter(ctx, gaugeX, gaugeY, width - this.toScreenWidth(92), this.toScreenHeight(12), ratio, "#ffe37b", "rgba(30, 20, 34, 0.78)");
       ctx.fillStyle = "#fff8df";
-      ctx.font = "600 15px sans-serif";
-      ctx.fillText(`星封じ ${gauge.value}/${gauge.max}`, 814, 80);
+      ctx.font = `700 ${Math.round(this.toScreenWidth(13))}px sans-serif`;
+      ctx.fillText(`星封じ ${gauge.value}/${gauge.max}`, x + width / 2, gaugeY + this.toScreenHeight(6));
     }
 
     ctx.restore();
@@ -326,16 +447,16 @@ export class BattleScreen implements GameScreen {
     }
 
     const layout = this.getActorLayout(target);
-    const x = layout.x + layout.width / 2;
-    const y = layout.y + layout.height * 0.42;
+    const x = this.toScreenX(layout.x + layout.width / 2);
+    const y = this.toScreenY(layout.y + layout.height * 0.42);
     const progress = this.visualEffect.ageMs / this.visualEffect.durationMs;
 
     if (this.visualEffect.kind === "heal" || this.visualEffect.kind === "guard") {
-      drawHealMistEffect(ctx, x, y, progress, 76);
+      drawHealMistEffect(ctx, x, y, progress, this.toScreenWidth(70));
     } else if (this.visualEffect.kind === "seal") {
-      drawSealLightEffect(ctx, x, y, progress, 92);
+      drawSealLightEffect(ctx, x, y, progress, this.toScreenWidth(86));
     } else {
-      drawStarHitEffect(ctx, x, y, progress, 68);
+      drawStarHitEffect(ctx, x, y, progress, this.toScreenWidth(58));
     }
   }
 
@@ -358,12 +479,18 @@ export class BattleScreen implements GameScreen {
     const wrapper = document.createElement("div");
     wrapper.className = "battle-ui";
 
+    const cardFrameImage = this.options.assetLoader.getImage("ui_card_frame")?.src;
+    if (cardFrameImage) {
+      wrapper.style.setProperty("--battle-card-frame-image", `url("${cardFrameImage}")`);
+    }
+
     const messagePanel = document.createElement("section");
     messagePanel.className = "battle-message-panel";
-    messagePanel.innerHTML = this.messages
-      .slice(-3)
-      .map((message) => `<p>${message}</p>`)
-      .join("");
+    for (const message of this.messages.slice(-3)) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = message;
+      messagePanel.append(paragraph);
+    }
 
     const commandPanel = document.createElement("section");
     commandPanel.className = "battle-command-panel";
@@ -394,11 +521,14 @@ export class BattleScreen implements GameScreen {
     const hime = this.battleState ? getPartyLeader(this.battleState) : undefined;
     const aliveEnemyCount = this.battleState ? getAliveEnemies(this.battleState).length : 0;
 
-    summary.innerHTML = `
-      <span>ひめ HP ${hime?.hp ?? 0}/${hime?.maxHp ?? 0}</span>
-      <span>MP ${hime?.mp ?? 0}/${hime?.maxMp ?? 0}</span>
-      <span>敵 ${aliveEnemyCount}</span>
-    `;
+    const hp = document.createElement("span");
+    hp.textContent = `ひめ HP ${hime?.hp ?? 0}/${hime?.maxHp ?? 0}`;
+    const mp = document.createElement("span");
+    mp.textContent = `MP ${hime?.mp ?? 0}/${hime?.maxMp ?? 0}`;
+    const enemy = document.createElement("span");
+    enemy.textContent = `敵 ${aliveEnemyCount}`;
+
+    summary.append(hp, mp, enemy);
     return summary;
   }
 
@@ -417,19 +547,35 @@ export class BattleScreen implements GameScreen {
     const cards = getAvailableBattleCards(this.battleState);
     cards.slice(0, 6).forEach((card, index) => {
       const button = document.createElement("button");
+      const canUse = canUseCard(this.battleState as BattleState, card);
       button.className = "battle-card-button";
       button.type = "button";
-      button.disabled = !canUseCard(this.battleState as BattleState, card);
+      button.disabled = !canUse;
+      button.title = canUse ? card.description : `MPが足りないか、今は使えません。${card.description}`;
       button.addEventListener("click", () => this.selectCard(card));
 
-      const imageSrc = this.options.assetLoader.getImageAsset(card.assetId)?.src;
-      button.innerHTML = `
-        <span class="battle-card-number">${index + 1}</span>
-        ${imageSrc ? `<img src="${imageSrc}" alt="">` : ""}
-        <span class="battle-card-name">${card.shortName}</span>
-        <span class="battle-card-cost">MP ${card.mpCost}</span>
-      `;
+      const number = document.createElement("span");
+      number.className = "battle-card-number";
+      number.textContent = String(index + 1);
 
+      const image = document.createElement("img");
+      image.alt = "";
+      image.src = this.options.assetLoader.getImage(card.assetId)?.src ?? "";
+      image.className = "battle-card-icon";
+
+      const name = document.createElement("span");
+      name.className = "battle-card-name";
+      name.textContent = card.shortName;
+
+      const description = document.createElement("span");
+      description.className = "battle-card-description";
+      description.textContent = card.description;
+
+      const cost = document.createElement("span");
+      cost.className = "battle-card-cost";
+      cost.textContent = card.mpCost === 0 ? "MP 0" : `MP ${card.mpCost}`;
+
+      button.append(number, image, name, description, cost);
       hand.append(button);
     });
 
@@ -444,16 +590,16 @@ export class BattleScreen implements GameScreen {
     title.className = "battle-target-title";
     const selectedCard = this.selectedCardId ? getBattleCard(this.selectedCardId) : undefined;
     title.textContent = selectedCard
-      ? `${selectedCard.name} の対象を選んでください`
-      : "対象を選んでください";
+      ? `${selectedCard.name} の対象を選んでね`
+      : "対象を選んでね";
     panel.append(title);
 
     if (this.battleState) {
-      getAliveEnemies(this.battleState).forEach((enemy) => {
+      getAliveEnemies(this.battleState).forEach((enemy, index) => {
         const button = document.createElement("button");
         button.className = "battle-target-button";
         button.type = "button";
-        button.textContent = `${enemy.name} HP ${enemy.hp}/${enemy.maxHp}`;
+        button.textContent = `${index + 1}. ${enemy.name} HP ${enemy.hp}/${enemy.maxHp}`;
         button.addEventListener("click", () => this.confirmTarget(enemy.instanceId));
         panel.append(button);
       });
@@ -489,7 +635,7 @@ export class BattleScreen implements GameScreen {
         ...this.battleState,
         phase: "targetSelect"
       };
-      this.messages = [`${card.name} の対象を選んでください。`];
+      this.messages = [`${card.name} の対象を選んでね。`, "数字キー1〜2、または敵のボタンで選べます。"];
       this.renderUi();
       return;
     }
@@ -515,7 +661,7 @@ export class BattleScreen implements GameScreen {
       phase: "playerCommand"
     };
     this.selectedCardId = null;
-    this.messages = ["カードを選び直してください。"];
+    this.messages = ["カードを選び直してね。"];
     this.renderUi();
   }
 
@@ -629,7 +775,7 @@ export class BattleScreen implements GameScreen {
       currentAreaId: returnAreaId,
       hp: saveData.maxHp,
       mp: Math.max(saveData.mp, Math.min(saveData.maxMp, 4)),
-      lastSynopsis: "ひめはいったん探索地点へ戻りました。"
+      lastSynopsis: "ひめは探索地点へ戻りました。"
     });
 
     this.options.screenManager.change("explore", {
@@ -647,11 +793,11 @@ export class BattleScreen implements GameScreen {
     this.visualEffect = {
       ...effect,
       ageMs: 0,
-      durationMs: effect.kind === "guard" || effect.kind === "heal" ? 760 : 620
+      durationMs: effect.kind === "guard" || effect.kind === "heal" ? 700 : 560
     };
 
     if (effect.kind === "enemyAttack" || effect.kind === "attack" || effect.kind === "seal") {
-      this.screenShake.start(effect.kind === "enemyAttack" ? 180 : 120, effect.kind === "seal" ? 7 : 4);
+      this.screenShake.start(effect.kind === "enemyAttack" ? 140 : 100, effect.kind === "seal" ? 5 : 3);
     }
   }
 
@@ -674,23 +820,23 @@ export class BattleScreen implements GameScreen {
 
   private getActorLayout(actor: BattleActor): ActorLayout {
     if (actor.actorType === "player" || actor.actorType === "ally") {
-      return { x: 158, y: 322, width: 188, height: 188 };
+      return { x: 218, y: 278, width: 190, height: 292 };
     }
 
     const enemyCount = this.battleState?.enemies.length ?? 1;
     const enemyIndex = this.battleState?.enemies.findIndex((enemy) => enemy.instanceId === actor.instanceId) ?? 0;
 
     if (actor.actorType === "boss") {
-      return { x: 808, y: 196, width: 270, height: 320 };
+      return { x: 805, y: 182, width: 270, height: 320 };
     }
 
     if (enemyCount <= 1) {
-      return { x: 842, y: 286, width: 194, height: 194 };
+      return { x: 870, y: 258, width: 210, height: 210 };
     }
 
     return enemyIndex === 0
-      ? { x: 748, y: 282, width: 178, height: 178 }
-      : { x: 976, y: 328, width: 168, height: 168 };
+      ? { x: 768, y: 232, width: 190, height: 190 }
+      : { x: 988, y: 316, width: 178, height: 178 };
   }
 
   private getPhaseLabel(): string {
@@ -708,10 +854,55 @@ export class BattleScreen implements GameScreen {
       case "victory":
         return "勝利";
       case "defeat":
-        return "撤退";
+        return "退却";
       case "actorAction":
       default:
         return "行動中";
     }
+  }
+
+  private toScreenX(value: number): number {
+    return (value / BASE_WIDTH) * this.getCanvasWidth();
+  }
+
+  private toScreenY(value: number): number {
+    return (value / BASE_HEIGHT) * this.getCanvasHeight();
+  }
+
+  private toScreenWidth(value: number): number {
+    return (value / BASE_WIDTH) * this.getCanvasWidth();
+  }
+
+  private toScreenHeight(value: number): number {
+    return (value / BASE_HEIGHT) * this.getCanvasHeight();
+  }
+
+  private getCanvasWidth(): number {
+    return this.canvasWidth;
+  }
+
+  private getCanvasHeight(): number {
+    return this.canvasHeight;
+  }
+
+  private roundRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ): void {
+    const cappedRadius = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + cappedRadius, y);
+    ctx.lineTo(x + width - cappedRadius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + cappedRadius);
+    ctx.lineTo(x + width, y + height - cappedRadius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - cappedRadius, y + height);
+    ctx.lineTo(x + cappedRadius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - cappedRadius);
+    ctx.lineTo(x, y + cappedRadius);
+    ctx.quadraticCurveTo(x, y, x + cappedRadius, y);
   }
 }

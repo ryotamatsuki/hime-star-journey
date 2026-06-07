@@ -2,8 +2,8 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P5 複数敵対応BattleScreen・カードバトル本実装
-- 状態: P5実装完了。BattleSystem、敵データ、カードデータ、複数敵ターゲット選択、カード効果、勝利/敗北、撃破保存、型・lint・build・dev HTTP確認まで完了
+- 現在フェーズ: P5.1 戦闘専用背景＋戦闘画面レイアウト改善
+- 状態: P5.1実装完了。道後温泉通常戦闘専用背景を生成・配置し、BattleScreenの敵配置、ひめ配置、カードUI、ターゲット選択、戦闘メッセージ、文字化け文言を改善済み
 - 次に進むフェーズ: P6 道後温泉クエスト本体
 - 最終更新日: 2026-06-07
 
@@ -20,6 +20,7 @@
 | P4.5 | DialogueBox・DialogueSystem・NPC基盤 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Edge headlessで自動会話/NPC会話確認済み |
 | P4.6 | P4生成UIアセットの透過処理・表示品質仕上げ | 100% | 実装完了 | 透過PNG化・星地図背景上の合成プレビュー・型・lint・build・HTTP確認済み |
 | P5 | 複数敵対応バトル | 100% | 実装完了 | 型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
+| P5.1 | 戦闘専用背景＋戦闘画面レイアウト改善 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
 | P6 | 道後温泉クエスト | 0% | 未着手 | 未実行 |
 | P7 | 松山城クエスト・カゲマサ戦 | 0% | 未着手 | 未実行 |
 | P8 | 旅の手帳・セーブ調整 | 0% | 未着手 | 未実行 |
@@ -673,6 +674,37 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 - 松山城探索マップ、松山城敵シンボル配置、カゲマサ戦への本導線はP7以降で接続する。
 - 道後温泉クエスト完了処理、湯の星取得、カード/星/手帳の進行解放はP6で実装する。
 - カードアイコン、ひめバトルスプライト、松山城敵画像は既存generated/pending画像を使用し、完成品質化は後続で調整する。
+
+## 2026-06-07 P5.1: 戦闘専用背景＋戦闘画面レイアウト改善
+
+- 状態: 実装完了。
+- 参照画像そのものに近かった `public/assets/generated/backgrounds/dogo_battle_bg.png` を、UI・文字・キャラクター・敵を含まない道後温泉通常戦闘専用背景として画像生成し直した。
+- 旧背景は `public/assets/generated/_backup/p5_1/dogo_battle_bg_before_p5_1.png` に退避した。
+- 生成プロンプトを `docs/asset-prompts/runtime-assets/dogo_battle_bg.prompt.md` に保存した。
+- `src/screens/BattleScreen.ts` を更新し、ひめを左下、敵1体を右中央、敵2体を右側の上下ずらし配置に調整した。
+- 敵名とHPバー、ひめのHP/MP、ターン/フェーズ表示、ターゲット選択中の番号付きハイライトを読みやすくした。
+- DOM/CSSのカードUIを下部中央に広く配置し、カード名、説明、MPコストを実テキストとして表示するよう改善した。
+- P5実装時に残っていたカード名、敵名、エンカウント名、戦闘ログ、敵シンボルラベル、初期あらすじの文字化けを修正した。
+- `src/data/assets.ts` の `bg_dogo_battle` 説明をP5.1生成背景として更新した。
+- BattleSystemの計算ロジックは維持し、表示と文言の改善に限定した。
+
+### P5.1 検証結果
+
+| コマンド / 確認 | 結果 | 備考 |
+|---|---|---|
+| `dogo_battle_bg.png` 生成 | 成功 | 1672x941、16:9相当。UI・文字・キャラ・敵を含まない戦闘専用背景 |
+| `npm.cmd install` | 成功 | up to date、119 packages、0 vulnerabilities |
+| `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
+| `npm.cmd run lint` | 成功 | `eslint .` |
+| `npm.cmd run build` | 成功 | Vite build成功、42 modules transformed |
+| `npm.cmd run dev -- --host 127.0.0.1 --port 5221` | 成功 | `/hime-star-journey/` がHTTP 200。サンドボックス内起動はENV-005に該当したため、サンドボックス外で補助確認 |
+| Browserプラグイン確認 | 失敗 | `windows sandbox failed: spawn setup refresh` により接続不可。既知のENV-002として継続 |
+
+### P5.1 未解決・次フェーズ送り
+
+- BrowserプラグインでのBattleScreen実操作確認は環境問題により未完了。
+- カードアイコンは既存の簡易生成/仮画像を使用し、完成品質カードアイコン制作は後続で調整する。
+- `hime_battle_sheet` は品質が低いためP5.1では使用せず、BattleScreenでは手描き品質の高い `hime_idle` を継続利用する。完成品質バトルスプライトは後続で制作する。
 
 ## 2026-06-03 起動用bat追加
 

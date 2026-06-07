@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-現在は **P4.5: DialogueBox・DialogueSystem・NPC基盤** まで実装済みです。次は **P5: 複数敵対応BattleScreen本実装** です。
+現在は **P5.1: 戦闘専用背景＋戦闘画面レイアウト改善** まで実装済みです。次は **P6: 道後温泉クエスト本体** です。
 
 - プロジェクトルール、技術制約、仕様書、ロードマップ、進捗管理、アセット台帳、生成プロンプトを整備済み。
 - `picture/` の主要ビジュアルを `docs/visual-reference/key-visuals/` に整理済み。
@@ -15,6 +15,8 @@
 - P3.5でGキー開発者用オーバーレイ、Hキー/ボタン道しるべ、walkableRectsを追加済み。
 - P4でStarMapScreen、TravelSystem、星地図ノード、手動セーブ、ExploreScreenとのMキー遷移を実装済み。
 - P4.5でDOM/CSSのDialogueBox、DialogueSystem、自動会話、道後温泉NPC2人、NPC会話、会話既読flag保存を実装済み。
+- P5で複数敵対応BattleScreen、BattleSystem、カード効果、ターゲット選択、勝利/敗北処理を実装済み。
+- P5.1で道後温泉通常戦闘専用背景を生成し、戦闘画面の配置、カードUI、メッセージ、ターゲット表示、戦闘関連文言を改善済み。
 - 会話本文は画像ではなくDOM上の実テキストとして表示し、会話枠画像は使わない方針に変更済み。
 - GitHub Pages向けにVite `base: "/hime-star-journey/"`、public assetのbase付き解決、Pages workflowを追加済み。
 - Browserプラグインは環境都合で利用できませんが、Edge headlessでP4.5の初回自動会話、既読flag保存、案内人NPC会話開始を確認しています。

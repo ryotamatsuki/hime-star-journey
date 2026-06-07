@@ -327,6 +327,32 @@
 - [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。
 - [ ] BrowserプラグインでのBattleScreen実操作確認。補足: P5でも環境エラーで未完了。ENV-002に記録。
 
+## P5.1 戦闘専用背景＋戦闘画面レイアウト改善
+
+- [x] `public/assets/generated/backgrounds/dogo_battle_bg.png` が戦闘専用背景として生成し直されている。
+- [x] 旧 `dogo_battle_bg.png` が `public/assets/generated/_backup/p5_1/` に退避されている。
+- [x] `docs/asset-prompts/runtime-assets/dogo_battle_bg.prompt.md` にP5.1生成プロンプトが保存されている。
+- [x] `dogo_battle_bg.png` が探索背景・参照キービジュアルの単純流用ではなく、UI・文字・キャラクター・敵・カードを含まない背景になっている。
+- [x] `src/data/assets.ts` の `bg_dogo_battle` がP5.1生成背景として登録されている。
+- [x] BattleScreenで `bg_dogo_battle` を通常戦闘背景として使用している。
+- [x] ひめが左下寄りに見やすく表示されるレイアウトになっている。
+- [x] 敵1体が右側に見やすく表示されるレイアウトになっている。
+- [x] 敵2体が重ならず右側に上下差をつけて表示されるレイアウトになっている。
+- [x] 敵名とHPバーが読めるCanvas表示になっている。
+- [x] ひめのHP/MPが読めるCanvas表示になっている。
+- [x] ターゲット選択中に対象敵が番号付きで分かるCanvasハイライトを表示する。
+- [x] カード名、説明、MPコストが画像内文字ではなくDOM実テキストとして読める。
+- [x] カードUIが下部中央に配置され、背景やキャラクターに埋もれにくい。
+- [x] 戦闘メッセージが上部中央の半透明パネルで読める。
+- [x] カード名、敵名、戦闘ログ、初期あらすじの文字化けが修正されている。
+- [x] P5のBattleSystemロジックを大きく変更していない。
+- [x] `npm.cmd install` が通る。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run build` が通る。
+- [x] `npm.cmd run dev` がbase付きURLでHTTP 200を返す。
+- [ ] BrowserプラグインでのP5.1 BattleScreen実操作確認。補足: P5.1でも環境エラーで未完了。ENV-002に記録。
+
 ## MVP通し
 
 - [ ] プロローグ。
