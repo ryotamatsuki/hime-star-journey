@@ -2,6 +2,18 @@
 
 ## 現在の未解決バグ
 
+### ENV-006: P6透過PNG生成の外側実行が使用制限で拒否される
+
+- 発生日: 2026-06-13
+- フェーズ: P6
+- 内容: P6必須画像のうち、クロマキー背景で生成したプロローグ用透過レイヤーと湯の星エフェクトを `remove_chroma_key.py` で透過PNG化する必要がある。サンドボックス内では `python.exe` が「指定されたログオン セッションは存在しません」で失敗し、サンドボックス外実行の再試行は使用制限により拒否された。
+- 再現手順: `python C:\Users\Owner\.codex\skills\.system\imagegen\scripts\remove_chroma_key.py --input <chroma.png> --out <transparent.png> --auto-key border --soft-matte --transparent-threshold 12 --opaque-threshold 220 --despill` を複数素材へ実行する。
+- 期待される挙動: クロマキー元画像から透明背景PNGが生成され、PrologueScreenと湯の星イベントのAssetManifestへ登録できる。
+- 実際の挙動: 祖母素材1件のみ透過PNG化に成功。残りの透過PNG化はサンドボックス内実行失敗と外側実行拒否により未完了。
+- 影響範囲: P6完了条件である必須画像の完成、PrologueScreenでの透過レイヤー利用、湯の星取得演出、ブラウザ確認を完了できない。
+- 暫定対応: `public/assets/generated/prologue/*_chroma.png` と `public/assets/generated/effects/*_chroma.png` にクロマキー元画像を残している。再開時に透過PNG化を行い、AssetManifest登録と実装を継続する。
+- 状態: 未解決。P6停止条件に該当。
+
 ### P3.5-001: walkableRectsは石畳の斜め形状に完全一致していない
 
 - 発生日: 2026-06-05

@@ -2,8 +2,8 @@
 
 ## 現在の状態
 
-- 現在フェーズ: P5.9 ストーリー正本復元・企画書整合
-- 状態: P5.9完了。旧企画書 v0.7 のストーリー正本を復元し、企画書・GDD・要件定義・実装仕様・ROADMAPをP6実装前に整合済み
+- 現在フェーズ: P6 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成
+- 状態: P6停止中。画像生成は一部完了したが、透過PNG化の外側実行が使用制限で拒否され、必須画像の完成条件を満たせないため未完了
 - 次に進むフェーズ: P6 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成
 - 最終更新日: 2026-06-13
 
@@ -22,7 +22,7 @@
 | P5 | 複数敵対応バトル | 100% | 実装完了 | 型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
 | P5.1 | 戦闘専用背景＋戦闘画面レイアウト改善 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
 | P5.9 | ストーリー正本復元・企画書整合 | 100% | 完了 | 型・lint・build確認済み |
-| P6 | 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成 | 0% | 未着手 | 未実行 |
+| P6 | 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成 | 10% | 停止中 | 必須画像透過処理で停止 |
 | P7 | 松山城探索・松山城クエスト | 0% | 未着手 | 未実行 |
 | P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 0% | 未着手 | 未実行 |
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 0% | 未着手 | 未実行 |
@@ -385,6 +385,33 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 | `npm.cmd run build` | 成功 | Vite build成功、42 modules transformed |
 | ストーリー要素検索 | 成功 | 家族旅行、おばあちゃん、星守り、白鷺のお守り、みかん星の核、弱い星地図機能、シロ、カゲマサ、くろぼし、動機4つを確認 |
 | Phaser記述確認 | 成功 | 禁止・不採用の文脈のみ。旧企画書の採用技術としては復元していない |
+
+## 2026-06-13 P6停止記録: 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成
+
+- 状態: 未完了。停止条件に該当。
+- P6必須画像の生成を開始し、プロローグ背景6枚、祖母レイヤー、ひめ、シロ、影、ペンダント、湯の星、星地図解放エフェクトのクロマキー元画像を生成・コピーした。
+- `public/assets/generated/prologue/grandma_prologue.png` の透過PNG化は成功した。
+- 残りの透過PNG化で、サンドボックス内の `python.exe` 実行がログオンセッション問題で失敗した。
+- 同じクロマキー除去処理をサンドボックス外でまとめて再実行しようとしたが、使用制限により承認が拒否された。
+- P6完了条件には、必須画像の生成・保存、透過レイヤーの利用、PrologueScreen実装、湯の星取得、星地図解放、セーブ復元確認が含まれるため、今回はP6完了扱いにしない。
+- ソースコード実装、湯の星表記統一、AssetManifest登録、PrologueScreen本実装、道後温泉クエスト実装、検証コマンド実行は未完了。
+
+### P6 停止時点の生成済みファイル
+
+- `public/assets/generated/prologue/prologue_01_grandma_room.png`
+- `public/assets/generated/prologue/prologue_02_family_trip_dogo.png`
+- `public/assets/generated/prologue/prologue_03_dogo_night.png`
+- `public/assets/generated/prologue/prologue_04_core_stolen.png`
+- `public/assets/generated/prologue/prologue_05_dogo_anomaly.png`
+- `public/assets/generated/prologue/prologue_06_hime_decision.png`
+- `public/assets/generated/prologue/grandma_prologue.png`
+- `public/assets/generated/prologue/*_chroma.png`
+- `public/assets/generated/effects/*_chroma.png`
+
+### P6 再開条件
+
+- 残りのクロマキー元画像を透過PNG化できる状態にする。
+- 透過処理後、P6実装を継続し、`npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、`npm.cmd run dev`、`git diff --check`、湯の星旧表現検索、ブラウザ操作確認を実施する。
 
 ## 2026-06-05 P3.5実装作業
 
