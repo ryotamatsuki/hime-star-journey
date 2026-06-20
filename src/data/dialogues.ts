@@ -6,26 +6,27 @@ export const dialogueEvents: DialogueEventData[] = [
     triggerType: "auto",
     once: true,
     setFlagsOnComplete: {
-      dialogue_dogo_intro_seen: true
+      dialogue_dogo_intro_seen: true,
+      dogo_quest_started: true
     },
     lines: [
       {
         speakerId: "shiro",
         speakerName: "シロ",
         portraitAssetId: "portrait_shiro",
-        text: "ここが道後温泉だよ。湯けむりの中に、星の気配がするね。"
+        text: "黒い影は、町の奥へ逃げたみたい。"
       },
       {
         speakerId: "hime",
         speakerName: "ひめ",
         portraitAssetId: "portrait_hime",
-        text: "あったかい町だね。でも、少しだけ青い光がゆれてる……。"
+        text: "まずは、道後の星を弱らせている影たちをしずめよう。"
       },
       {
-        speakerId: "shiro",
-        speakerName: "シロ",
-        portraitAssetId: "portrait_shiro",
-        text: "まずは湯けむり通りを進んでみよう。"
+        speakerId: "hime",
+        speakerName: "ひめ",
+        portraitAssetId: "portrait_hime",
+        text: "うん。湯の星を取り戻して、星地図を開けるようにしよう。"
       }
     ]
   },

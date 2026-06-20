@@ -88,7 +88,7 @@ export function getTravelDestination(
   if (node.locationId === "castle") {
     return {
       type: "message",
-      message: "松山城エリアは後続フェーズで実装します。"
+      message: "シロ「黒い影は松山城へ続いているよ。次は、お城を調べよう。」"
     };
   }
 

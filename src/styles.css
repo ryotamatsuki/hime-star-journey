@@ -244,6 +244,52 @@ button {
   box-shadow: none;
 }
 
+.prologue-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.prologue-dialogue {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: 4%;
+  min-height: 170px;
+  padding: 18px 28px;
+  color: #3d2a1e;
+  background: linear-gradient(145deg, rgba(255, 250, 226, .96), rgba(246, 224, 177, .94));
+  border: 3px solid rgba(91, 58, 31, .82);
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(15, 11, 18, .45);
+  pointer-events: auto;
+}
+
+.prologue-progress {
+  margin: 0 0 5px;
+  color: #895221;
+  font-weight: 700;
+}
+
+.prologue-dialogue h2 {
+  margin: 0 0 7px;
+  font-size: 1.35rem;
+}
+
+.prologue-text {
+  min-height: 2.8em;
+  margin: 0;
+  font-size: 1.18rem;
+  line-height: 1.65;
+}
+
+.prologue-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 .explore-minimap {
   position: absolute;
   right: 20px;

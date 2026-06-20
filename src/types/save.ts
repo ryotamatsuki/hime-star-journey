@@ -23,6 +23,14 @@ export type SaveData = {
   acquiredItems: Record<string, number>;
   acquiredCharms: string[];
   flags: Record<string, boolean>;
+  dogoQuestStatus:
+    | "notStarted"
+    | "started"
+    | "hintSeen"
+    | "enemiesCalmed"
+    | "yunoStarReady"
+    | "yunoStarObtained"
+    | "cleared";
   lastSynopsis: string;
   savedAt: string;
 };

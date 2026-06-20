@@ -15,6 +15,7 @@ import { getEncounterById } from "../data/encounters";
 import { getInteractablesForArea } from "../data/interactables";
 import { dogoArea, getMapArea, type MapAreaData, type WalkablePolygon } from "../data/maps";
 import { getNpcsForArea } from "../data/npcs";
+import { dogoQuest } from "../data/quests";
 import { expandRect, intersects, type Rect } from "../systems/CollisionSystem";
 import { DialogueSystem } from "../systems/DialogueSystem";
 import type { BattleStartParams } from "../types/battle";
@@ -44,6 +45,7 @@ type EnemyContactInfo = {
 
 const PATH_GUIDE_DURATION_MS = 2800;
 const FIRST_ENEMY_HINT_RADIUS = 132;
+const YUNO_EVENT_DURATION_MS = 6400;
 
 export class ExploreScreen implements GameScreen {
   readonly id: ScreenId = "explore";
@@ -72,6 +74,9 @@ export class ExploreScreen implements GameScreen {
   private talkButton: HTMLButtonElement | null = null;
   private pathGuideButton: HTMLButtonElement | null = null;
   private dialogueBox: DialogueBox | null = null;
+  private objectiveElement: HTMLElement | null = null;
+  private mapButton: HTMLButtonElement | null = null;
+  private yunoEventMs = 0;
 
   constructor(private readonly options: ExploreScreenOptions) {}
 
@@ -109,6 +114,7 @@ export class ExploreScreen implements GameScreen {
     this.debugOverlayVisible = false;
     this.pathGuideRemainingMs = 0;
     this.message = "道後温泉に着いた。湯けむり通りをすすもう。";
+    this.syncQuestProgress();
     this.renderUi();
     this.dialogueBox = new DialogueBox({
       uiRoot: this.options.uiRoot,
@@ -125,6 +131,13 @@ export class ExploreScreen implements GameScreen {
     }
 
     this.elapsedTimeMs += deltaTime * 1000;
+
+    if (this.yunoEventMs > 0) {
+      this.yunoEventMs += deltaTime * 1000;
+      if (this.yunoEventMs >= YUNO_EVENT_DURATION_MS) this.completeYunoStarEvent();
+      this.updateUi();
+      return;
+    }
 
     if (this.dialogueSystem.isActive()) {
       if (this.options.inputManager.isActionStarted("confirm")) {
@@ -185,6 +198,7 @@ export class ExploreScreen implements GameScreen {
     this.nearbyNpc = this.findNearbyNpc();
 
     if (this.nearbyNpc && this.options.inputManager.isActionStarted("confirm")) {
+      this.markQuestHintSeen();
       this.tryStartDialogue(this.nearbyNpc.dialogueId);
       this.updateUi();
       return;
@@ -192,12 +206,17 @@ export class ExploreScreen implements GameScreen {
 
     if (this.nearbyInteractable && this.options.inputManager.isActionStarted("confirm")) {
       if (this.nearbyInteractable.id === "dogo_steam_spot") {
+        this.markQuestHintSeen();
         this.tryStartDialogue("interactable_steam_hint");
         this.updateUi();
         return;
       }
 
-      this.nearbyInteractable.interact();
+      if (this.nearbyInteractable.id === "dogo_star_placeholder") {
+        this.tryStartYunoStarEvent();
+      } else {
+        this.nearbyInteractable.interact();
+      }
     }
 
     if (this.shouldStartFirstEnemyHint()) {
@@ -225,6 +244,7 @@ export class ExploreScreen implements GameScreen {
     this.renderDepthSortedWorldObjects(ctx);
     this.renderMapLayer(ctx, this.area.foregroundAssetId, 0.86);
     this.renderSteamOverlay(ctx);
+    this.renderYunoStarEvent(ctx);
     this.renderDebugOverlay(ctx);
   }
 
@@ -238,6 +258,8 @@ export class ExploreScreen implements GameScreen {
     this.pathGuideButton = null;
     this.dialogueBox?.destroy();
     this.dialogueBox = null;
+    this.objectiveElement = null;
+    this.mapButton = null;
   }
 
   private renderMapLayer(
@@ -367,7 +389,7 @@ export class ExploreScreen implements GameScreen {
     location.className = "ui-kicker";
     location.textContent = "現在地：道後温泉";
     const objective = document.createElement("h2");
-    objective.textContent = "湯けむり通りをすすもう";
+    this.objectiveElement = objective;
     const hints = document.createElement("p");
     hints.className = "explore-hints";
     hints.textContent =
@@ -391,6 +413,7 @@ export class ExploreScreen implements GameScreen {
     this.pathGuideButton.textContent = "道しるべ";
     this.pathGuideButton.addEventListener("click", () => this.showPathGuide());
     const mapButton = document.createElement("button");
+    this.mapButton = mapButton;
     mapButton.className = "menu-button explore-map-button";
     mapButton.type = "button";
     mapButton.textContent = "星地図";
@@ -455,6 +478,13 @@ export class ExploreScreen implements GameScreen {
       this.pathGuideButton.disabled = this.pathGuideRemainingMs > 0;
       this.pathGuideButton.textContent =
         this.pathGuideRemainingMs > 0 ? "道しるべ表示中" : "道しるべ";
+    }
+
+    if (this.objectiveElement) this.objectiveElement.textContent = this.getQuestObjective();
+    if (this.mapButton) {
+      const unlocked = this.saveData.flags.star_map_unlocked === true;
+      this.mapButton.hidden = !unlocked;
+      this.mapButton.disabled = !unlocked || this.yunoEventMs > 0;
     }
 
     if (this.talkButton) {
@@ -800,8 +830,132 @@ export class ExploreScreen implements GameScreen {
     this.options.screenManager.change("battle", params);
   }
 
+  private syncQuestProgress(): void {
+    if (!this.saveData || this.saveData.flags.yuno_star_obtained) return;
+    const allCalmed = dogoQuest.requiredEnemySymbolIds.every((id) => this.saveData?.defeatedEnemyIds.includes(id));
+    let status = this.saveData.dogoQuestStatus;
+    if (status === "notStarted" && this.saveData.flags.prologue_completed) status = "started";
+    if (this.saveData.flags.dogo_quest_hint_seen && status === "started") status = "hintSeen";
+    if (allCalmed) {
+      status = "yunoStarReady";
+      this.saveData.flags.dogo_required_enemies_calmed = true;
+    }
+    if (status !== this.saveData.dogoQuestStatus) {
+      this.saveData = this.options.saveManager.save({ ...this.saveData, dogoQuestStatus: status });
+    }
+  }
+
+  private markQuestHintSeen(): void {
+    if (!this.saveData || this.saveData.flags.dogo_quest_hint_seen) return;
+    this.saveData = this.options.saveManager.save({
+      ...this.saveData,
+      dogoQuestStatus: this.saveData.dogoQuestStatus === "started" ? "hintSeen" : this.saveData.dogoQuestStatus,
+      flags: { ...this.saveData.flags, dogo_quest_hint_seen: true }
+    });
+  }
+
+  private getQuestObjective(): string {
+    if (!this.saveData) return "もくてき：道後温泉を見てまわろう";
+    if (this.saveData.flags.yuno_star_obtained) return "もくてき：星地図で松山城を確かめよう";
+    if (!this.saveData.flags.dogo_quest_hint_seen) return "もくてき：町の人に話を聞こう";
+    const remaining = dogoQuest.requiredEnemySymbolIds.filter((id) => !this.saveData?.defeatedEnemyIds.includes(id)).length;
+    if (remaining > 0) return `もくてき：迷っている影をしずめよう（あと${remaining}）`;
+    return "もくてき：湯けむりの奥で、湯の星を取り戻そう";
+  }
+
+  private tryStartYunoStarEvent(): void {
+    if (!this.saveData || this.saveData.flags.yuno_star_event_seen) return;
+    this.syncQuestProgress();
+    const ready = this.saveData.flags.prologue_completed === true &&
+      this.saveData.flags.mikan_core_stolen === true &&
+      this.saveData.flags.dogo_quest_started === true &&
+      this.saveData.flags.dogo_quest_hint_seen === true &&
+      dogoQuest.requiredEnemySymbolIds.every((id) => this.saveData?.defeatedEnemyIds.includes(id));
+    if (!ready) {
+      this.message = this.saveData.flags.dogo_quest_hint_seen
+        ? "湯の星の光はまだ弱い。町で迷っている影を、先にしずめよう。"
+        : "湯けむりの奥に光を感じる。まずは町の人に話を聞いてみよう。";
+      this.updateUi();
+      return;
+    }
+    this.yunoEventMs = 1;
+    this.message = "シロ「ひめ、見て。湯けむりの中に星があるよ。」";
+    this.nearbyInteractable = null;
+    this.nearbyNpc = null;
+  }
+
+  private renderYunoStarEvent(ctx: CanvasRenderingContext2D): void {
+    if (this.yunoEventMs <= 0) return;
+    const { canvas } = ctx;
+    const t = this.yunoEventMs / YUNO_EVENT_DURATION_MS;
+    ctx.save();
+    ctx.fillStyle = `rgba(255,244,210,${Math.min(.34, t * .5)})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const draw = (id: string, size: number, alpha: number, spin = 0) => {
+      const image = this.options.assetLoader.getImage(id);
+      if (!image) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.globalCompositeOperation = "screen";
+      ctx.translate(canvas.width / 2, canvas.height / 2 - 20);
+      ctx.rotate(spin);
+      ctx.drawImage(image, -size / 2, -size / 2, size, size);
+      ctx.restore();
+    };
+    if (t > .08) draw("fx_yuno_star_burst", 430, Math.min(1, (t - .08) * 5), t * .5);
+    if (t > .18) draw("fx_yuno_star_glow", 360, .8, -t * .25);
+    if (t > .28) draw("fx_yuno_star_particles", 510, .9, t * .3);
+    if (t > .42) draw("fx_yuno_star", 220 + Math.sin(this.elapsedTimeMs / 180) * 7, Math.min(1, (t - .42) * 5));
+    if (t > .72) {
+      ctx.fillStyle = `rgba(255,255,255,${Math.sin((t - .72) / .28 * Math.PI) * .75})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.restore();
+    if (t > .2 && t < .4) this.message = "ひめ「これが、道後温泉の湯の星？」";
+    else if (t >= .4 && t < .62) this.message = "シロ「町のあたたかい思いが、ひとつの星になったものだよ。」";
+    else if (t >= .62) this.message = "ひめ「黒い影が向かった、松山城へ行こう。」";
+  }
+
+  private completeYunoStarEvent(): void {
+    if (!this.saveData || this.saveData.flags.yuno_star_event_seen) {
+      this.yunoEventMs = 0;
+      return;
+    }
+    const collectedStars = Array.from(new Set([...this.saveData.collectedStars, "dogo"]));
+    const unlockedLocations = Array.from(new Set([...this.saveData.unlockedLocations, "dogo", "castle"]));
+    const clearedQuestIds = Array.from(new Set([...this.saveData.clearedQuestIds, dogoQuest.id]));
+    const nextSave = this.options.saveManager.save({
+      ...this.saveData,
+      currentScreenId: "starMap",
+      currentChapterId: "star_map",
+      starLevel: Math.max(2, this.saveData.starLevel),
+      collectedStars,
+      unlockedLocations,
+      clearedQuestIds,
+      dogoQuestStatus: "cleared",
+      flags: {
+        ...this.saveData.flags,
+        yuno_star_obtained: true,
+        yuno_star_event_seen: true,
+        star_dogo_collected: true,
+        dogo_quest_cleared: true,
+        star_map_unlocked: true,
+        location_castle_unlocked: true
+      },
+      lastSynopsis: "道後温泉で湯の星を取り戻し、星地図と松山城への道が開きました。"
+    });
+    this.yunoEventMs = 0;
+    this.options.screenManager.change("starMap", { saveData: nextSave });
+  }
+
   private goToStarMap(): void {
     if (!this.saveData) {
+      return;
+    }
+
+    if (!this.saveData.flags.star_map_unlocked) {
+      this.message = "シロ「ペンダントの光が弱くて、まだ星地図を開けないみたい。」";
+      this.updateUi();
       return;
     }
 

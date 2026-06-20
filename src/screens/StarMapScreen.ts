@@ -43,7 +43,6 @@ export class StarMapScreen implements GameScreen {
   private selectedDescriptionElement: HTMLElement | null = null;
   private messageElement: HTMLElement | null = null;
   private saveButton: HTMLButtonElement | null = null;
-  private castleDebugButton: HTMLButtonElement | null = null;
 
   constructor(private readonly options: StarMapScreenOptions) {}
 
@@ -57,6 +56,7 @@ export class StarMapScreen implements GameScreen {
       currentScreenId: "starMap",
       currentChapterId: "star_map"
     });
+    this.elapsedTimeMs = 0;
     this.selectedNodeId = this.pickInitialNodeId();
     this.hoveredNodeId = null;
     this.message = "行き先の星を選んでください。";
@@ -114,6 +114,7 @@ export class StarMapScreen implements GameScreen {
     this.drawMapAtmosphere(ctx);
     this.drawNodeConnections(ctx);
     this.drawNodes(ctx);
+    this.drawCastleUnlockEffect(ctx);
   }
 
   exit(): void {
@@ -124,7 +125,6 @@ export class StarMapScreen implements GameScreen {
     this.selectedDescriptionElement = null;
     this.messageElement = null;
     this.saveButton = null;
-    this.castleDebugButton = null;
   }
 
   private renderUi(): void {
@@ -171,15 +171,6 @@ export class StarMapScreen implements GameScreen {
     backButton.addEventListener("click", () => this.options.screenManager.change("title"));
 
     actions.append(this.saveButton, backButton);
-
-    if (import.meta.env.DEV) {
-      this.castleDebugButton = document.createElement("button");
-      this.castleDebugButton.className = "menu-button star-map-debug-button";
-      this.castleDebugButton.type = "button";
-      this.castleDebugButton.textContent = "デバッグ：道後クリア扱い";
-      this.castleDebugButton.addEventListener("click", () => this.markDogoClearedForDebug());
-      actions.append(this.castleDebugButton);
-    }
 
     const hints = document.createElement("p");
     hints.className = "star-map-hints";
@@ -290,24 +281,29 @@ export class StarMapScreen implements GameScreen {
     this.updateUi();
   }
 
-  private markDogoClearedForDebug(): void {
-    if (!this.saveData) {
-      return;
+  private drawCastleUnlockEffect(ctx: CanvasRenderingContext2D): void {
+    if (!this.saveData?.flags.location_castle_unlocked || this.elapsedTimeMs > 4200) return;
+    const castle = starMapNodes.find((node) => node.locationId === "castle");
+    const dogo = starMapNodes.find((node) => node.locationId === "dogo");
+    if (!castle || !dogo) return;
+    const progress = Math.min(1, this.elapsedTimeMs / 1800);
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,220,110,${.25 + progress * .7})`;
+    ctx.lineWidth = 4 + Math.sin(this.elapsedTimeMs / 140) * 1.5;
+    ctx.setLineDash([12, 10]);
+    ctx.lineDashOffset = -this.elapsedTimeMs / 40;
+    ctx.beginPath();
+    ctx.moveTo(dogo.x, dogo.y);
+    ctx.lineTo(castle.x, castle.y);
+    ctx.stroke();
+    const image = this.options.assetLoader.getImage("fx_castle_unlock_glow");
+    if (image) {
+      const size = 150 + Math.sin(this.elapsedTimeMs / 190) * 14;
+      ctx.globalCompositeOperation = "screen";
+      ctx.globalAlpha = Math.min(1, progress * 1.5);
+      ctx.drawImage(image, castle.x - size / 2, castle.y - size / 2, size, size);
     }
-
-    this.saveData = this.options.saveManager.save({
-      ...this.saveData,
-      collectedStars: Array.from(new Set([...this.saveData.collectedStars, "dogo"])),
-      unlockedLocations: Array.from(new Set([...this.saveData.unlockedLocations, "dogo", "castle"])),
-      flags: {
-        ...this.saveData.flags,
-        star_dogo_collected: true,
-        location_castle_unlocked: true
-      },
-      lastSynopsis: "道後温泉で湯の星の光を見つけ、松山城へ向かう道が星地図に浮かびました。"
-    });
-    this.message = "デバッグ：道後クリア扱いにしました。";
-    this.updateUi();
+    ctx.restore();
   }
 
   private normalizeSaveData(saveData: SaveData): SaveData {

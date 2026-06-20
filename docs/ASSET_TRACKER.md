@@ -3,6 +3,8 @@
 ## 状態ラベル
 
 - `generated`: Runtime Assetとして画像生成または既存生成画像を配置済み。
+- `processed-transparent`: クロマキー原本を保持し、RGBA透過PNGの品質確認済み。
+- `connected`: AssetManifest登録とゲーム画面への接続済み。
 - `pending`: 後続フェーズで完成品質の生成・差し替えが必要。
 - `not-needed-yet`: 現フェーズでは接続不要。
 - `not-needed-css-implemented`: 画像アセットとしては不要。DOM/CSS実装へ置き換え済み。
@@ -17,6 +19,20 @@ P4ではStarMapScreen必須7件も画像生成必須とし、Canvas/CSS/単色�
 P4.5では会話枠・話者名・本文・次へボタンは画像生成せず、DOM/CSSで実装する。ポートレートとNPC画像4件のみ画像生成必須とし、`portrait_hime`、`portrait_shiro`、`npc_dogo_guide`、`npc_yumori_grandma` はすべて画像生成済み。`dialogue_frame` は画像アセットとしては不要になったため、最新状態は `not-needed-css-implemented` とする。
 
 P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画像生成し直した。旧画像は参照キービジュアルに近く、UI・キャラクター・敵・カードを含んでいたため、`public/assets/generated/_backup/p5_1/dogo_battle_bg_before_p5_1.png` に退避した。新しい背景はBattleScreenで使用済み。
+
+## P6 プロローグ・湯の星
+
+| ファイル群 | 用途 | 状態 | 接続先 |
+|---|---|---|---|
+| `prologue_01_*.png` ～ `prologue_06_*.png` | プロローグ背景6枚 | generated / connected | PrologueScreen |
+| `grandma_prologue.png`, `hime_prologue_*.png` | 祖母・ひめ透過レイヤー | processed-transparent / connected | PrologueScreen |
+| `shiro_prologue_fly_*.png` | シロ2コマ羽ばたき | processed-transparent / connected | PrologueScreen |
+| `kagemasa_minion_shadow.png` | 黒い手下の影 | processed-transparent / connected | PrologueScreen |
+| `mikan_pendant_*.png` | 発光中／核奪取後ペンダント | processed-transparent / connected | PrologueScreen |
+| `yuno_star*.png` | 完成した湯の星、発光、粒子、バースト | processed-transparent / connected | ExploreScreen |
+| `castle_unlock_glow.png` | 松山城解放光 | processed-transparent / connected | StarMapScreen |
+
+クロマキー原本 `*_chroma.png` は再処理用に保持。13件すべてRGBA、四隅alpha 0、透明画素・不透明被写体ありを `npm run assets:p6:verify` で確認済み。
 
 ## 背景
 

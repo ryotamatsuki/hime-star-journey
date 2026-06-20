@@ -110,8 +110,8 @@ export const dogoArea: MapAreaData = {
     },
     {
       id: "dogo_star_placeholder",
-      x: 1492,
-      y: 724,
+      x: 1015,
+      y: 520,
       width: 112,
       height: 92,
       type: "event",
