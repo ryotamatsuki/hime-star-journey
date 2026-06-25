@@ -79,6 +79,8 @@ export class SaveManager {
       flags.yuno_star_event_seen = true;
       flags.dogo_quest_cleared = true;
       flags.star_map_unlocked = true;
+      flags.location_castle_unlocked = true;
+      if (!unlockedLocations.includes("castle")) unlockedLocations.push("castle");
     }
     if (castleUnlocked) {
       flags.location_castle_unlocked = true;
@@ -101,6 +103,10 @@ export class SaveManager {
       ? source.dogoQuestStatus as SaveData["dogoQuestStatus"]
       : progressed ? "started" : "notStarted";
     if (dogoCollected) dogoQuestStatus = "cleared";
+    const clearedQuestIds = stringArray(source.clearedQuestIds);
+    if (dogoCollected && !clearedQuestIds.includes("quest_dogo_yukemuri_star")) {
+      clearedQuestIds.push("quest_dogo_yukemuri_star");
+    }
     const currentScreenId = progressed && source.currentScreenId === "prologue" ? "explore" : source.currentScreenId ?? initial.currentScreenId;
     return {
       ...initial,
@@ -119,7 +125,7 @@ export class SaveManager {
       collectedStars: Array.from(new Set(collectedStars)),
       unlockedLoreIds: stringArray(source.unlockedLoreIds),
       defeatedEnemyIds: stringArray(source.defeatedEnemyIds),
-      clearedQuestIds: stringArray(source.clearedQuestIds),
+      clearedQuestIds,
       unlockedLocations,
       openedPaths: stringArray(source.openedPaths),
       acquiredItems: source.acquiredItems && typeof source.acquiredItems === "object" ? source.acquiredItems : {},

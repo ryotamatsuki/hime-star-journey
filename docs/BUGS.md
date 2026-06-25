@@ -9,6 +9,15 @@
 - 対応: 道後中央通り奥の到達可能地点 (1015, 520) へInteractableとマップマーカーをそろえて移動した。
 - 状態: 解決。
 
+### P6-002: 湯の星取得済み旧セーブから松山城解放が補完されない
+
+- 発見日: 2026-06-25
+- 内容: P6最終確認のEdge CDP互換テストで、旧セーブの `collectedStars` に `dogo` がある場合、湯の星取得済み・星地図解放扱いにはなるが、`unlockedLocations` への `castle` 追加、`flags.location_castle_unlocked`、道後クエストクリアIDの補完が不足していた。
+- 期待される挙動: 既存セーブで `dogo` の星を持っていれば、道後温泉クエストクリア、星地図解放、松山城解放まで復元される。
+- 対応: `src/core/SaveManager.ts` の `normalizeSaveData()` を修正し、`dogoCollected` 時に `location_castle_unlocked`、`unlockedLocations: "castle"`、`clearedQuestIds: "quest_dogo_yukemuri_star"` を補完するようにした。
+- 検証: `npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build` で再確認。Edge CDPの途中結果で再現条件を特定し、修正は静的検証済み。長いCDP連続遷移は環境不安定のため、全手動通し確認は `docs/PROGRESS.md` に未確認として残す。
+- 状態: 解決。
+
 ### ENV-006: P6透過PNG生成の外側実行が使用制限で拒否される
 
 - 発生日: 2026-06-13

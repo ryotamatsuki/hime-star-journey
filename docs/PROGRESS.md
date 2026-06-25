@@ -3,9 +3,9 @@
 ## 現在の状態
 
 - 現在フェーズ: P6 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成
-- 状態: P6実装完了。Edge CDPの主要導線確認済み、全戦闘を含む手動通し操作確認待ち
+- 状態: P6実装完了。Edge CDPの主要導線確認と互換修正済み、全戦闘を含む手動通し操作確認待ち
 - 次に進むフェーズ: P7 松山城探索・松山城クエスト
-- 最終更新日: 2026-06-20
+- 最終更新日: 2026-06-25
 
 ## フェーズ別進捗
 
@@ -22,7 +22,7 @@
 | P5 | 複数敵対応バトル | 100% | 実装完了 | 型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
 | P5.1 | 戦闘専用背景＋戦闘画面レイアウト改善 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
 | P5.9 | ストーリー正本復元・企画書整合 | 100% | 完了 | 型・lint・build確認済み |
-| P6 | 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成 | 95% | 実装完了・手動確認待ち | 透過・型・lint・build・HTTP・Edge CDP主要導線・旧セーブ移行確認済み |
+| P6 | 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成 | 96% | 実装完了・手動確認待ち | 透過・型・lint・build・HTTP・Edge CDP主要導線・旧セーブ互換修正確認済み |
 | P7 | 松山城探索・松山城クエスト | 0% | 未着手 | 未実行 |
 | P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 0% | 未着手 | 未実行 |
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 0% | 未着手 | 未実行 |
@@ -44,6 +44,16 @@
 - 検証: `npm install`、透過検証、typecheck、lint、build、dev HTTP 200、git diff checkを実施。Edge CDPでタイトル、全6シーン、道後直接遷移、取得前星地図ロック、星地図／松山城解放、旧セーブ移行を確認した。
 - 未確認: 実際の4戦闘を人手で操作し、湯の星地点まで歩く全手動通し。実装完了だがP6は95%として記録する。
 - 最終経路監査で湯の星仮地点が衝突矩形内にあるP6-001を発見し、到達可能な中央通り奥へ移動して解決した。
+
+## 2026-06-25 P6最終確認・互換補修
+
+- 開始時の状態: `p6-resume-dogo-prologue`、最新コミット `f131387 feat(p6): complete prologue and dogo star flow`、作業ツリー差分なし。
+- `npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、`npm.cmd run assets:p6:verify` はすべて成功。Vite buildは44 modules transformed。
+- `npm.cmd run dev -- --host 127.0.0.1` を起動し、`http://127.0.0.1:5173/hime-star-journey/` のHTTP 200を確認した。
+- Edge CDPでタイトルCanvas/DOM、P6必須画像代表5件のHTTP 200、プロローグ6シーン、プロローグ完了後の道後Explore遷移、取得前の星地図ロック、リロード後つづきから、プロローグスキップ保存を確認した。コンソールエラーとHTTP 4xxは検出されなかった。
+- Edge CDPの通し検証中に、旧セーブで `collectedStars: ["dogo"]` を持つ場合に松山城解放フラグと `unlockedLocations: ["castle"]`、道後クエストクリアIDが補完されないP6-002を発見した。
+- P6-002対応として `SaveManager.normalizeSaveData()` を修正し、湯の星取得済み旧セーブから `location_castle_unlocked`、`star_map_unlocked`、`unlockedLocations: "castle"`、`clearedQuestIds: "quest_dogo_yukemuri_star"` を補完するようにした。
+- Browserプラグインは今回も `node_repl` 初期化で環境メタ情報不足により利用不可。Edge CDPで補助したが、長い連続遷移ではCDPターゲットが不安定になるため、実際の4戦闘＋湯の星地点まで歩く全手動通しは引き続き未確認として残す。
 
 ## 2026-06-02 P0完了作業
 

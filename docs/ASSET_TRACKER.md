@@ -24,15 +24,15 @@ P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画�
 
 | ファイル群 | 用途 | 状態 | 接続先 |
 |---|---|---|---|
-| `prologue_01_*.png` ～ `prologue_06_*.png` | プロローグ背景6枚 | generated / connected | PrologueScreen |
-| `grandma_prologue.png`, `hime_prologue_*.png` | 祖母・ひめ透過レイヤー | processed-transparent / connected | PrologueScreen |
+| `prologue_01_*.png` ～ `prologue_06_*.png` | プロローグ背景6枚 | generated / connected / runtime-verified | PrologueScreen |
+| `grandma_prologue.png`, `hime_prologue_*.png` | 祖母・ひめ透過レイヤー | processed-transparent / connected / runtime-verified | PrologueScreen |
 | `shiro_prologue_fly_*.png` | シロ2コマ羽ばたき | processed-transparent / connected | PrologueScreen |
 | `kagemasa_minion_shadow.png` | 黒い手下の影 | processed-transparent / connected | PrologueScreen |
 | `mikan_pendant_*.png` | 発光中／核奪取後ペンダント | processed-transparent / connected | PrologueScreen |
-| `yuno_star*.png` | 完成した湯の星、発光、粒子、バースト | processed-transparent / connected | ExploreScreen |
-| `castle_unlock_glow.png` | 松山城解放光 | processed-transparent / connected | StarMapScreen |
+| `yuno_star*.png` | 完成した湯の星、発光、粒子、バースト | processed-transparent / connected / runtime-verified | ExploreScreen |
+| `castle_unlock_glow.png` | 松山城解放光 | processed-transparent / connected / runtime-verified | StarMapScreen |
 
-クロマキー原本 `*_chroma.png` は再処理用に保持。13件すべてRGBA、四隅alpha 0、透明画素・不透明被写体ありを `npm run assets:p6:verify` で確認済み。
+クロマキー原本 `*_chroma.png` は再処理用に保持。13件すべてRGBA、四隅alpha 0、透明画素・不透明被写体ありを `npm run assets:p6:verify` で確認済み。2026-06-25のEdge CDP補助確認で、プロローグ背景、祖母レイヤー、ひめレイヤー、湯の星、松山城解放光の代表URLがHTTP 200で読み込めることを確認した。
 
 ## 背景
 
