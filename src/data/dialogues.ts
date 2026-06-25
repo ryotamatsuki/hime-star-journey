@@ -117,7 +117,7 @@ export const dialogueEvents: DialogueEventData[] = [
         speakerId: "hime",
         speakerName: "ひめ",
         portraitAssetId: "portrait_hime",
-        text: "星のかけらみたいに、きらっと光ったよ。"
+        text: "湯の星の光みたいに、きらっと光ったよ。"
       }
     ]
   }
