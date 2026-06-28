@@ -9,3 +9,4 @@ coverage/
 .idea/
 .tmp/
 picture/
+.map-editor-backups/

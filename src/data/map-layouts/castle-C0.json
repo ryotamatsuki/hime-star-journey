@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "locationId": "castle",
+  "areaId": "C0",
+  "name": "Matsuyama Castle Template",
+  "worldWidth": 1920,
+  "worldHeight": 1080,
+  "backgroundAssetId": "bg_castle_explore",
+  "playerStart": { "x": 960, "y": 820 },
+  "cameraBounds": { "id": "camera_castle_C0", "x": 0, "y": 0, "width": 1920, "height": 1080 },
+  "walkableRects": [],
+  "walkablePolygons": [],
+  "collisionRects": [
+    { "id": "castle_collision_north_wall", "x": 0, "y": 0, "width": 1920, "height": 84 },
+    { "id": "castle_collision_south_wall", "x": 0, "y": 996, "width": 1920, "height": 84 },
+    { "id": "castle_collision_west_wall", "x": 0, "y": 0, "width": 72, "height": 1080 },
+    { "id": "castle_collision_east_wall", "x": 1848, "y": 0, "width": 72, "height": 1080 }
+  ],
+  "guidePaths": [],
+  "enemySpawns": [],
+  "npcPositions": [],
+  "interactablePositions": [],
+  "eventPositions": [],
+  "markers": []
+}

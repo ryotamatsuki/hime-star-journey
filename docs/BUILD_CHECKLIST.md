@@ -1,5 +1,22 @@
 ﻿# BUILD_CHECKLIST
 
+## P6.5 ローカル開発用マップエディタ
+
+- [x] `map-editor.html` がVite devでHTTP 200を返す。
+- [x] `map-editor.html` がproduction buildの入力に含まれる。
+- [x] 道後温泉D0と松山城C0のレイアウトJSONを読み込める。
+- [x] Vite dev専用API `/__map-editor/maps` が `dogo-D0` と `castle-C0` を返す。
+- [x] Vite dev専用API `/__map-editor/load?map=dogo-D0` で `areaId: D0` を返す。
+- [x] 保存APIは `.map-editor-backups/` にバックアップを作る設計になっている。
+- [x] production buildにはファイル書き込みAPIを含めない。
+- [x] ゲームプレビューは通常セーブではなく `__hime_star_map_editor_preview_save__` を使う。
+- [x] `npm.cmd run typecheck`
+- [x] `npm.cmd run lint`
+- [x] `npm.cmd run maps:validate`
+- [x] `npm.cmd run build`
+- [x] `git diff --check`
+- [ ] 実ブラウザでのドラッグ操作・保存・プレビュー目視確認。補足: 今回はブラウザ接続環境のメタ情報不足により未完了。
+
 ## P0 ドキュメント基盤
 
 - [x] READMEが現在フェーズとMVP範囲を説明している。

@@ -1,5 +1,22 @@
 ﻿# TASKS
 
+## P6.5 ローカル開発用マップエディタ
+
+- [x] 道後温泉D0の配置・歩行・衝突・道しるべをJSONへ分離
+- [x] 松山城C0の将来用マップJSONテンプレート追加
+- [x] ゲーム側がJSONレイアウトからMapArea/敵/NPC/調べる対象を生成
+- [x] Canvasベースのマップエディタ画面追加
+- [x] 添付参考画像の意図に合わせたツールバー、右インスペクター、レイヤー、検証、JSON入出力、統合ゲームプレビューを実装
+- [x] 矩形移動/リサイズ、ポリゴン頂点移動、頂点追加/削除、辺分割、面反転、スナップ、Undo/Redo
+- [x] Vite dev専用のload/save/validate API追加
+- [x] 保存前バックアップ `.map-editor-backups/` 追加
+- [x] 通常セーブを汚さないゲームプレビュー用一時セーブ
+- [x] `npm.cmd run typecheck`
+- [x] `npm.cmd run lint`
+- [x] `npm.cmd run maps:validate`
+- [x] `npm.cmd run build`
+- [ ] 実ブラウザでのドラッグ・保存・プレビュー目視確認
+
 ## P0 リポジトリ初期化
 
 - [x] P0-01: ローカルGitリポジトリ初期化

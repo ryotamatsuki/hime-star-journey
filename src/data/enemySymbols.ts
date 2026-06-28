@@ -1,3 +1,4 @@
+import { getMapLayout, getPositionedObject, normalizeLocationId } from "./mapLayoutRegistry";
 import type { Rect } from "../systems/CollisionSystem";
 import type { SaveData } from "../types/save";
 
@@ -19,15 +20,15 @@ export type EnemySymbolData = {
   label: string;
 };
 
-export const enemySymbols: EnemySymbolData[] = [
+type EnemySymbolDefinition = Omit<EnemySymbolData, "x" | "y">;
+
+const enemySymbolDefinitions: EnemySymbolDefinition[] = [
   {
     symbolId: "D-E01",
     encounterId: "enc_dogo_oni_01",
     locationId: "dogo",
     areaId: "D0",
     required: true,
-    x: 760,
-    y: 682,
     defeatedFlag: "enemy_defeated_D-E01",
     openedPathFlag: "dogo_main_path_open",
     collider: { x: -26, y: -30, width: 52, height: 38 },
@@ -41,8 +42,6 @@ export const enemySymbols: EnemySymbolData[] = [
     locationId: "dogo",
     areaId: "D0",
     required: true,
-    x: 1114,
-    y: 522,
     defeatedFlag: "enemy_defeated_D-E02",
     collider: { x: -26, y: -30, width: 52, height: 38 },
     animationType: "wander",
@@ -55,8 +54,6 @@ export const enemySymbols: EnemySymbolData[] = [
     locationId: "dogo",
     areaId: "D0",
     required: true,
-    x: 1360,
-    y: 712,
     defeatedFlag: "enemy_defeated_D-E03",
     collider: { x: -22, y: -26, width: 44, height: 34 },
     animationType: "blink",
@@ -69,8 +66,6 @@ export const enemySymbols: EnemySymbolData[] = [
     locationId: "dogo",
     areaId: "D0",
     required: true,
-    x: 938,
-    y: 456,
     defeatedFlag: "enemy_defeated_D-E04",
     openedPathFlag: "dogo_steam_lane_open",
     collider: { x: -24, y: -28, width: 48, height: 36 },
@@ -84,8 +79,6 @@ export const enemySymbols: EnemySymbolData[] = [
     locationId: "dogo",
     areaId: "D0",
     required: false,
-    x: 530,
-    y: 818,
     defeatedFlag: "enemy_defeated_D-E05",
     collider: { x: -24, y: -22, width: 48, height: 30 },
     animationType: "scurry",
@@ -98,8 +91,6 @@ export const enemySymbols: EnemySymbolData[] = [
     locationId: "dogo",
     areaId: "D0",
     required: false,
-    x: 1600,
-    y: 790,
     defeatedFlag: "enemy_defeated_D-E06",
     collider: { x: -22, y: -20, width: 44, height: 28 },
     animationType: "scurry",
@@ -108,14 +99,26 @@ export const enemySymbols: EnemySymbolData[] = [
   }
 ];
 
+export const enemySymbols: EnemySymbolData[] = enemySymbolDefinitions.flatMap((definition) => {
+  const position = getLayoutPosition(definition.locationId, definition.areaId, definition.symbolId);
+  return position ? [{ ...definition, x: position.x, y: position.y }] : [];
+});
+
 export function getEnemySymbolsForArea(locationId: string, areaId: string): EnemySymbolData[] {
-  return enemySymbols.filter(
-    (symbol) => symbol.locationId === locationId && symbol.areaId === areaId
-  );
+  const normalized = normalizeLocationId(locationId);
+  return enemySymbolDefinitions
+    .filter((symbol) => symbol.locationId === normalized && symbol.areaId === areaId)
+    .flatMap((definition) => {
+      const position = getLayoutPosition(normalized, areaId, definition.symbolId);
+      return position ? [{ ...definition, x: position.x, y: position.y }] : [];
+    });
 }
 
 export function getEnemySymbolById(symbolId: string): EnemySymbolData | undefined {
-  return enemySymbols.find((symbol) => symbol.symbolId === symbolId);
+  const definition = enemySymbolDefinitions.find((symbol) => symbol.symbolId === symbolId);
+  if (!definition) return undefined;
+  const position = getLayoutPosition(definition.locationId, definition.areaId, definition.symbolId);
+  return position ? { ...definition, x: position.x, y: position.y } : undefined;
 }
 
 export function isEnemySymbolDefeated(symbol: EnemySymbolData, saveData: SaveData): boolean {
@@ -123,4 +126,9 @@ export function isEnemySymbolDefeated(symbol: EnemySymbolData, saveData: SaveDat
     saveData.defeatedEnemyIds.includes(symbol.symbolId) ||
     saveData.flags[symbol.defeatedFlag] === true
   );
+}
+
+function getLayoutPosition(locationId: string, areaId: string, symbolId: string): { x: number; y: number } | undefined {
+  const layout = getMapLayout(locationId, areaId);
+  return layout ? getPositionedObject(layout.enemySpawns, symbolId) : undefined;
 }

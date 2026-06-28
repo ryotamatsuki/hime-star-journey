@@ -645,6 +645,34 @@ export class ExploreScreen implements GameScreen {
       this.drawWalkablePolygon(ctx, polygon, `rgba(255, 224, 126, ${baseAlpha})`, true);
     }
 
+    for (const path of this.area.guidePaths ?? []) {
+      this.drawGuidePath(ctx, path.points, ease);
+    }
+
+    ctx.restore();
+  }
+
+  private drawGuidePath(ctx: CanvasRenderingContext2D, points: { x: number; y: number }[], ease: number): void {
+    if (points.length < 2) return;
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = `rgba(105, 170, 255, ${0.35 + ease * 0.4})`;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    points.forEach((point, index) => {
+      const screen = this.camera.worldToScreen(point);
+      if (index === 0) ctx.moveTo(screen.x, screen.y);
+      else ctx.lineTo(screen.x, screen.y);
+    });
+    ctx.stroke();
+    for (const point of points) {
+      const screen = this.camera.worldToScreen(point);
+      ctx.fillStyle = `rgba(255, 236, 138, ${0.42 + ease * 0.42})`;
+      ctx.beginPath();
+      ctx.arc(screen.x, screen.y, 4 + ease * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 

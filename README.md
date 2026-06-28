@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-現在は **P6: 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成** を実装済みです。Edge CDPで主要導線と既存セーブ互換を補助確認済みで、全手動プレイ確認を残しつつ、次の実装フェーズは **P7: 松山城探索・松山城クエスト** です。
+現在は **P6.5: ローカル開発用マップエディタ** を実装中です。P6の画像付きプロローグ／道後温泉体験版は実装済みで、P7の松山城探索へ進む前に、道後温泉D0と松山城C0の歩行可能領域・衝突領域・配置物・道しるべをブラウザ上で視覚調整できるようにしています。
 
 - プロジェクトルール、技術制約、仕様書、ロードマップ、進捗管理、アセット台帳、生成プロンプトを整備済み。
 - `picture/` の主要ビジュアルを `docs/visual-reference/key-visuals/` に整理済み。
@@ -19,6 +19,7 @@
 - P5.1で道後温泉通常戦闘専用背景を生成し、戦闘画面の配置、カードUI、メッセージ、ターゲット表示、戦闘関連文言を改善済み。
 - P5.9で旧企画書v0.7のストーリー正本を復元し、おばあちゃん、星守りの家系、みかん星のペンダント、みかん星の核、白鷺のお守り、シロ、カゲマサ、くろぼしの位置づけを企画書/GDD/要件定義/ROADMAPへ反映済み。
 - P6で生成済み画像13件を透過処理し、画像付き6シーンプロローグ、道後温泉クエスト、湯の星取得、星地図解放、松山城解放、SaveData v0.2.0移行を実装済み。旧セーブで `collectedStars` に `dogo` がある場合も松山城解放まで補完します。
+- P6.5で `map-editor.html` を追加し、道後温泉D0/松山城C0のJSONレイアウトをCanvas上で編集、検証、保存、JSON入出力、通常セーブを汚さないゲームプレビューで確認できるようにしています。
 - 会話本文は画像ではなくDOM上の実テキストとして表示し、会話枠画像は使わない方針に変更済み。
 - GitHub Pages向けにVite `base: "/hime-star-journey/"`、public assetのbase付き解決、Pages workflowを追加済み。
 - Browserプラグインは環境都合で利用できませんが、Edge headless/CDPでP6のタイトル、プロローグ6シーン、道後遷移、取得前星地図ロック、スキップ、代表画像HTTP 200、旧セーブ互換を補助確認しています。
@@ -91,6 +92,8 @@ npm run typecheck
 npm run lint
 npm run build
 npm run dev
+npm run dev:editor
+npm run maps:validate
 ```
 
 Windows PowerShellでは次の形が安定します。
@@ -101,6 +104,8 @@ npm.cmd run typecheck
 npm.cmd run lint
 npm.cmd run build
 npm.cmd run dev
+npm.cmd run dev:editor
+npm.cmd run maps:validate
 ```
 
 ViteのbaseをGitHub Pages用に設定しているため、ローカルdevサーバーの確認URLは以下です。
@@ -108,6 +113,14 @@ ViteのbaseをGitHub Pages用に設定しているため、ローカルdevサー
 ```text
 http://127.0.0.1:5173/hime-star-journey/
 ```
+
+ローカル開発用マップエディタ:
+
+```text
+http://127.0.0.1:5173/hime-star-journey/map-editor.html
+```
+
+エディタの保存APIはVite開発サーバー専用です。保存時は `.map-editor-backups/` にバックアップを作成し、production buildではファイル書き込みAPIを持ちません。
 
 ## GitHub Pages
 

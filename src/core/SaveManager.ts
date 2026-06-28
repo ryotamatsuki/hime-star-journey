@@ -9,12 +9,14 @@ const finiteNumber = (value: unknown, fallback: number): number =>
   typeof value === "number" && Number.isFinite(value) ? value : fallback;
 
 export class SaveManager {
+  constructor(private readonly saveKey: string = SAVE_KEY) {}
+
   exists(): boolean {
-    return localStorage.getItem(SAVE_KEY) !== null;
+    return localStorage.getItem(this.saveKey) !== null;
   }
 
   load(): SaveData | null {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = localStorage.getItem(this.saveKey);
     if (!raw) return null;
     try {
       return this.normalizeSaveData(JSON.parse(raw) as Partial<SaveData>);
@@ -25,12 +27,12 @@ export class SaveManager {
 
   save(data: SaveData): SaveData {
     const nextData = this.normalizeSaveData({ ...data, savedAt: new Date().toISOString() });
-    localStorage.setItem(SAVE_KEY, JSON.stringify(nextData));
+    localStorage.setItem(this.saveKey, JSON.stringify(nextData));
     return nextData;
   }
 
   clear(): void {
-    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(this.saveKey);
   }
 
   createInitialSaveData(): SaveData {

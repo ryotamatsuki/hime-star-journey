@@ -13,12 +13,15 @@ import { ScreenManager } from "./ScreenManager";
 export type GameAppOptions = {
   canvas: HTMLCanvasElement;
   uiRoot: HTMLElement;
+  saveKey?: string;
+  initialScreenId?: "title" | "explore" | "starMap";
+  initialParams?: unknown;
 };
 
 export class GameApp {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly inputManager: InputManager;
-  private readonly saveManager = new SaveManager();
+  private readonly saveManager: SaveManager;
   private readonly assetLoader = new AssetLoader();
   private readonly screenManager = new ScreenManager();
   private readonly gameLoop: GameLoop;
@@ -32,13 +35,14 @@ export class GameApp {
 
     this.ctx = ctx;
     this.inputManager = new InputManager(options.canvas);
+    this.saveManager = new SaveManager(options.saveKey);
     this.gameLoop = new GameLoop(this.ctx, this.screenManager, this.inputManager);
   }
 
   async start(): Promise<void> {
     await this.assetLoader.loadManifest(assetManifest);
     this.registerScreens();
-    this.screenManager.change("title");
+    this.screenManager.change(this.options.initialScreenId ?? "title", this.options.initialParams);
     this.gameLoop.start();
   }
 

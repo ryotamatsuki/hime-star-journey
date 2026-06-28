@@ -1,0 +1,37 @@
+import dogoD0 from "./map-layouts/dogo-D0.json";
+import castleC0 from "./map-layouts/castle-C0.json";
+import type { MapLayoutData, MapLayoutSummary, PositionedMapObject } from "../types/mapLayout";
+
+const layouts = [dogoD0, castleC0] as MapLayoutData[];
+
+export const mapLayoutRegistry: Record<string, MapLayoutData> = Object.fromEntries(
+  layouts.map((layout) => [getMapLayoutId(layout.locationId, layout.areaId), layout])
+);
+
+export function getMapLayoutId(locationId: string, areaId: string): string {
+  return `${locationId}-${areaId}`;
+}
+
+export function getMapLayout(locationId: string, areaId: string): MapLayoutData | undefined {
+  return mapLayoutRegistry[getMapLayoutId(normalizeLocationId(locationId), areaId)];
+}
+
+export function listMapLayouts(): MapLayoutSummary[] {
+  return Object.entries(mapLayoutRegistry).map(([id, layout]) => ({
+    id,
+    label: `${layout.name} (${layout.locationId}/${layout.areaId})`,
+    locationId: layout.locationId,
+    areaId: layout.areaId
+  }));
+}
+
+export function getPositionedObject(
+  objects: PositionedMapObject[],
+  id: string
+): PositionedMapObject | undefined {
+  return objects.find((object) => object.id === id);
+}
+
+export function normalizeLocationId(locationId: string): string {
+  return locationId === "dogo_onsen" ? "dogo" : locationId;
+}

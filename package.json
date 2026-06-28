@@ -8,6 +8,8 @@
     "build": "tsc -p tsconfig.json && vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
+    "dev:editor": "vite --host 127.0.0.1 --open /hime-star-journey/map-editor.html",
+    "maps:validate": "node scripts/validate-map-layouts.mjs",
     "assets:p6:process": "node scripts/process-chroma-assets.mjs",
     "assets:p6:verify": "node scripts/verify-transparent-assets.mjs"
   },
