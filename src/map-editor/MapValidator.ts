@@ -24,7 +24,7 @@ export function validateMapLayout(layout: MapLayoutData, gridSize = 24): Validat
     ids.add(id);
   };
 
-  for (const rect of [...layout.walkableRects, ...layout.collisionRects]) {
+  for (const rect of [layout.cameraBounds, ...layout.walkableRects, ...layout.collisionRects]) {
     registerId(rect.id, "矩形");
     if (rect.width <= 0 || rect.height <= 0) {
       issues.push({ severity: "error", message: `${rect.id} の幅または高さが不正です。`, targetId: rect.id });
@@ -97,6 +97,8 @@ export function validateMapLayout(layout: MapLayoutData, gridSize = 24): Validat
   for (const target of targets) {
     if (!isWalkable(target, layout)) {
       issues.push({ severity: "error", message: `${target.id} が歩行可能領域に接していません。`, targetId: target.id });
+    } else if (isColliding(target, layout)) {
+      issues.push({ severity: "error", message: `${target.id} が衝突領域内にあります。`, targetId: target.id });
     } else if (!isReachable(layout.playerStart, target, layout, gridSize)) {
       issues.push({ severity: "error", message: `${target.id} にプレイヤー開始位置から到達できません。`, targetId: target.id });
     }

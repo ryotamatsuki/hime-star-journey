@@ -21,6 +21,9 @@ const tools: { id: EditorTool; label: string; icon: string; layer?: EditorLayer 
   { id: "path", label: "経路編集", icon: "⌁", layer: "guidePaths" }
 ];
 
+const objectLayerNames = ["enemySpawns", "npcPositions", "interactablePositions", "eventPositions", "markers"] as const;
+type ObjectLayerName = typeof objectLayerNames[number];
+
 type ClipboardEntry = {
   layer: EditorLayer;
   data: unknown;
@@ -142,6 +145,7 @@ export class MapEditorApp {
                 <button data-action="undo">Undo</button>
                 <button data-action="redo">Redo</button>
                 <button data-action="export">{} JSON出力</button>
+                <button data-action="copy-json">JSONコピー</button>
                 <button data-action="import">JSON取込</button>
               </div>
             </section>
@@ -239,6 +243,11 @@ export class MapEditorApp {
 
   private async save(): Promise<void> {
     this.validationIssues = validateMapLayout(this.state.layout, this.state.gridSize);
+    if (this.validationIssues.some((issue) => issue.severity === "error")) {
+      this.setBanner("● 検証エラーあり: 保存していません", true);
+      this.renderValidation();
+      return;
+    }
     try {
       const response = await fetch("/__map-editor/save", {
         method: "POST",
@@ -268,6 +277,7 @@ export class MapEditorApp {
     if (action === "preview") return this.preview();
     if (action === "close-preview") return this.closePreview();
     if (action === "export") return this.exportJson();
+    if (action === "copy-json") return this.copyJson();
     if (action === "import") return this.importJson();
     if (action === "add-vertex") return this.addVertexNearSelection();
     if (action === "delete-vertex") return this.deleteSelectedVertex();
@@ -359,6 +369,17 @@ export class MapEditorApp {
     URL.revokeObjectURL(url);
   }
 
+  private async copyJson(): Promise<void> {
+    const json = `${JSON.stringify(this.state.layout, null, 2)}\n`;
+    try {
+      await navigator.clipboard.writeText(json);
+      this.setBanner("● JSONをクリップボードへコピーしました", false);
+    } catch {
+      this.exportJson();
+      this.setBanner("● クリップボード不可: JSONを出力しました", true);
+    }
+  }
+
   private importJson(): void {
     const input = document.createElement("input");
     input.type = "file";
@@ -386,12 +407,15 @@ export class MapEditorApp {
   }
 
   private cloneSelected(selection: Selection): ClipboardEntry | null {
+    if (selection.layer === "cameraBounds") {
+      return { layer: selection.layer, data: { ...this.state.layout.cameraBounds } };
+    }
     if (selection.layer === "walkableRects" || selection.layer === "collisionRects") {
       const item = this.state.layout[selection.layer].find((rect) => rect.id === selection.id);
       return item ? { layer: selection.layer, data: { ...item } } : null;
     }
-    if (["enemySpawns", "npcPositions", "interactablePositions", "eventPositions"].includes(selection.layer)) {
-      const layer = selection.layer as "enemySpawns" | "npcPositions" | "interactablePositions" | "eventPositions";
+    if (isObjectLayerName(selection.layer)) {
+      const layer = selection.layer;
       const item = this.state.layout[layer].find((object) => object.id === selection.id);
       return item ? { layer, data: { ...item } } : null;
     }
@@ -401,12 +425,16 @@ export class MapEditorApp {
   private pasteClipboard(): void {
     if (!this.clipboard) return;
     const id = `${this.clipboard.layer}_${Date.now().toString(36)}`;
-    if (this.clipboard.layer === "walkableRects" || this.clipboard.layer === "collisionRects") {
+    if (this.clipboard.layer === "cameraBounds") {
+      const rect = this.clipboard.data as MapRect;
+      this.state.layout.cameraBounds = { ...rect, id: "camera_bounds", x: rect.x + 32, y: rect.y + 32 };
+      this.state.selection = { layer: "cameraBounds", id: this.state.layout.cameraBounds.id };
+    } else if (this.clipboard.layer === "walkableRects" || this.clipboard.layer === "collisionRects") {
       const rect = this.clipboard.data as MapRect;
       this.state.layout[this.clipboard.layer].push({ ...rect, id, x: rect.x + 32, y: rect.y + 32 });
       this.state.selection = { layer: this.clipboard.layer, id };
-    } else if (["enemySpawns", "npcPositions", "interactablePositions", "eventPositions"].includes(this.clipboard.layer)) {
-      const layer = this.clipboard.layer as "enemySpawns" | "npcPositions" | "interactablePositions" | "eventPositions";
+    } else if (isObjectLayerName(this.clipboard.layer)) {
+      const layer = this.clipboard.layer;
       const object = this.clipboard.data as PositionedMapObject;
       this.state.layout[layer].push({ ...object, id, x: object.x + 32, y: object.y + 32 });
       this.state.selection = { layer, id };
@@ -417,14 +445,18 @@ export class MapEditorApp {
   private deleteSelection(): void {
     const selection = this.state.selection;
     if (!selection) return;
+    if (selection.layer === "cameraBounds" || selection.layer === "playerStart") {
+      this.state.selection = null;
+      return;
+    }
     if (selection.layer === "walkableRects" || selection.layer === "collisionRects") {
       this.state.layout[selection.layer] = this.state.layout[selection.layer].filter((item) => item.id !== selection.id);
     } else if (selection.layer === "walkablePolygons") {
       this.state.layout.walkablePolygons = this.state.layout.walkablePolygons.filter((item) => item.id !== selection.id);
     } else if (selection.layer === "guidePaths") {
       this.state.layout.guidePaths = this.state.layout.guidePaths.filter((item) => item.id !== selection.id);
-    } else if (["enemySpawns", "npcPositions", "interactablePositions", "eventPositions"].includes(selection.layer)) {
-      const layer = selection.layer as "enemySpawns" | "npcPositions" | "interactablePositions" | "eventPositions";
+    } else if (isObjectLayerName(selection.layer)) {
+      const layer = selection.layer;
       this.state.layout[layer] = this.state.layout[layer].filter((item) => item.id !== selection.id);
     }
     this.state.selection = null;
@@ -509,6 +541,7 @@ export class MapEditorApp {
     const selection = this.state.selection;
     if (!selection) return null;
     if (selection.layer === "playerStart") return this.state.layout.playerStart as unknown as Record<string, unknown>;
+    if (selection.layer === "cameraBounds") return this.state.layout.cameraBounds as unknown as Record<string, unknown>;
     if (selection.layer === "walkableRects" || selection.layer === "collisionRects") {
       return this.state.layout[selection.layer].find((item) => item.id === selection.id) as unknown as Record<string, unknown> ?? null;
     }
@@ -526,8 +559,10 @@ export class MapEditorApp {
       }
       return path as unknown as Record<string, unknown> ?? null;
     }
-    const layer = selection.layer as "enemySpawns" | "npcPositions" | "interactablePositions" | "eventPositions";
-    return this.state.layout[layer].find((item) => item.id === selection.id) as unknown as Record<string, unknown> ?? null;
+    if (isObjectLayerName(selection.layer)) {
+      return this.state.layout[selection.layer].find((item) => item.id === selection.id) as unknown as Record<string, unknown> ?? null;
+    }
+    return null;
   }
 
   private onKeyDown(event: KeyboardEvent): void {
@@ -663,6 +698,10 @@ export class MapEditorApp {
 function setText(root: HTMLElement, selector: string, text: string): void {
   const element = root.querySelector<HTMLElement>(selector);
   if (element) element.textContent = text;
+}
+
+function isObjectLayerName(layer: EditorLayer): layer is ObjectLayerName {
+  return objectLayerNames.includes(layer as ObjectLayerName);
 }
 
 function escapeHtml(value: string): string {

@@ -7,6 +7,8 @@
 - [x] 道後温泉D0と松山城C0のレイアウトJSONを読み込める。
 - [x] Vite dev専用API `/__map-editor/maps` が `dogo-D0` と `castle-C0` を返す。
 - [x] Vite dev専用API `/__map-editor/load?map=dogo-D0` で `areaId: D0` を返す。
+- [x] Vite dev専用API `/__map-editor/validate` が有効JSONを通す。
+- [x] Vite dev専用API `/__map-editor/save` がworld範囲外などの不正JSONを拒否する。
 - [x] 保存APIは `.map-editor-backups/` にバックアップを作る設計になっている。
 - [x] production buildにはファイル書き込みAPIを含めない。
 - [x] ゲームプレビューは通常セーブではなく `__hime_star_map_editor_preview_save__` を使う。
@@ -15,6 +17,8 @@
 - [x] `npm.cmd run maps:validate`
 - [x] `npm.cmd run build`
 - [x] `git diff --check`
+- [x] カメラ範囲とマーカーが編集レイヤーに含まれている。
+- [x] JSONをクリップボードへコピーできる操作を用意している。
 - [ ] 実ブラウザでのドラッグ操作・保存・プレビュー目視確認。補足: 今回はブラウザ接続環境のメタ情報不足により未完了。
 
 ## P0 ドキュメント基盤

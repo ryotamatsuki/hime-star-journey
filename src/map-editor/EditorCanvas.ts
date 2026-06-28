@@ -12,6 +12,7 @@ type CanvasCallbacks = {
 };
 
 const colors: Record<EditorLayer, string> = {
+  cameraBounds: "#b36bff",
   walkableRects: "#58c878",
   walkablePolygons: "#48c878",
   collisionRects: "#ff543f",
@@ -20,10 +21,11 @@ const colors: Record<EditorLayer, string> = {
   npcPositions: "#ffe269",
   interactablePositions: "#ff6fb4",
   eventPositions: "#d942db",
-  guidePaths: "#3c78ff"
+  guidePaths: "#3c78ff",
+  markers: "#ffffff"
 };
 
-const objectLayers = ["enemySpawns", "npcPositions", "interactablePositions", "eventPositions"] as const;
+const objectLayers = ["enemySpawns", "npcPositions", "interactablePositions", "eventPositions", "markers"] as const;
 type ObjectLayer = typeof objectLayers[number];
 
 export class EditorCanvas {
@@ -174,6 +176,9 @@ export class EditorCanvas {
   }
 
   private drawLayers(state: EditorState): void {
+    if (state.layers.cameraBounds.visible) {
+      this.drawRect(state.layout.cameraBounds, "cameraBounds", state);
+    }
     if (state.layers.walkableRects.visible) {
       for (const rect of state.layout.walkableRects) this.drawRect(rect, "walkableRects", state);
     }
@@ -195,6 +200,7 @@ export class EditorCanvas {
     this.drawObjects(state, "npcPositions", "●");
     this.drawObjects(state, "interactablePositions", "◆");
     this.drawObjects(state, "eventPositions", "★");
+    this.drawObjects(state, "markers", "□");
     if (this.foregroundImage) {
       this.ctx.save();
       this.ctx.globalAlpha = 0.22;
@@ -416,8 +422,8 @@ export class EditorCanvas {
 
   private addRect(world: MapPoint): void {
     const state = this.getState();
-    if (state.activeLayer !== "walkableRects" && state.activeLayer !== "collisionRects") return;
-    const list = state.layout[state.activeLayer];
+    if (!["walkableRects", "collisionRects"].includes(state.activeLayer)) return;
+    const list = state.layout[state.activeLayer as "walkableRects" | "collisionRects"];
     const id = `${state.activeLayer}_${list.length + 1}`;
     list.push({ id, x: world.x, y: world.y, width: 96, height: 72 });
     this.callbacks.onSelect({ layer: state.activeLayer, id });
@@ -456,6 +462,17 @@ export class EditorCanvas {
     if (!selection) return;
     if (selection.layer === "playerStart") {
       state.layout.playerStart = { x: world.x, y: world.y };
+      return;
+    }
+    if (selection.layer === "cameraBounds") {
+      if (!this.originalRect) return;
+      if (this.dragMode === "resize") {
+        state.layout.cameraBounds.width = Math.max(8, this.originalRect.width + dx);
+        state.layout.cameraBounds.height = Math.max(8, this.originalRect.height + dy);
+      } else {
+        state.layout.cameraBounds.x = this.originalRect.x + dx;
+        state.layout.cameraBounds.y = this.originalRect.y + dy;
+      }
       return;
     }
     if (selection.layer === "walkableRects" || selection.layer === "collisionRects") {
@@ -501,6 +518,15 @@ export class EditorCanvas {
     if (state.layers.playerStart.visible && distance(world, state.layout.playerStart) < 28) {
       return { selection: { layer: "playerStart", id: "playerStart" }, mode: "move", point: state.layout.playerStart };
     }
+    if (state.layers.cameraBounds.visible) {
+      const rect = state.layout.cameraBounds;
+      if (Math.abs(world.x - (rect.x + rect.width)) < 18 && Math.abs(world.y - (rect.y + rect.height)) < 18) {
+        return { selection: { layer: "cameraBounds", id: rect.id }, mode: "resize", rect };
+      }
+      if (world.x >= rect.x && world.x <= rect.x + rect.width && world.y >= rect.y && world.y <= rect.y + rect.height) {
+        return { selection: { layer: "cameraBounds", id: rect.id }, mode: "move", rect };
+      }
+    }
     for (const layer of objectLayers) {
       if (!state.layers[layer].visible) continue;
       for (const object of state.layout[layer]) {
@@ -541,6 +567,10 @@ export class EditorCanvas {
     const selection = state.selection;
     if (!selection) return null;
     if (selection.layer === "playerStart") return state.layout.playerStart;
+    if (selection.layer === "cameraBounds") {
+      const rect = state.layout.cameraBounds;
+      return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    }
     if (selection.layer === "walkableRects" || selection.layer === "collisionRects") {
       const rect = state.layout[selection.layer].find((item) => item.id === selection.id);
       return rect ? { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 } : null;

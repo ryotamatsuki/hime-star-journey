@@ -285,6 +285,7 @@ button:hover {
   border-radius: 2px;
 }
 
+.layer-swatch.cameraBounds { background: #b36bff; }
 .layer-swatch.walkableRects,
 .layer-swatch.walkablePolygons { background: #58c878; }
 .layer-swatch.collisionRects { background: #ff543f; }
@@ -294,6 +295,7 @@ button:hover {
 .layer-swatch.interactablePositions { background: #ff6fb4; }
 .layer-swatch.eventPositions { background: #d942db; }
 .layer-swatch.guidePaths { background: #3c78ff; }
+.layer-swatch.markers { background: #ffffff; }
 
 .selection-panel {
   display: grid;
@@ -417,7 +419,7 @@ button:hover {
 .secondary-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 8px;
 }
 

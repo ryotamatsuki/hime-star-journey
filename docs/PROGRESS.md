@@ -23,7 +23,7 @@
 | P5.1 | 戦闘専用背景＋戦闘画面レイアウト改善 | 100% | 実装完了 | 画像生成・型・lint・build・HTTP確認済み、Browserプラグイン検証は環境エラー |
 | P5.9 | ストーリー正本復元・企画書整合 | 100% | 完了 | 型・lint・build確認済み |
 | P6 | 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成 | 97% | 実装完了・手動確認待ち | 透過・型・lint・build・HTTP・Edge CDP主要導線・湯の星取得・旧セーブ互換修正確認済み |
-| P6.5 | ローカル開発用マップエディタ | 90% | 実装済み・目視微調整待ち | typecheck・lint・maps:validate・build・HTTP 200・dev API確認済み |
+| P6.5 | ローカル開発用マップエディタ | 95% | 実装済み・目視微調整待ち | typecheck・lint・maps:validate・build・HTTP 200・dev API有効/不正ケース確認済み |
 | P7 | 松山城探索・松山城クエスト | 0% | 未着手 | 未実行 |
 | P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 0% | 未着手 | 未実行 |
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 0% | 未着手 | 未実行 |
@@ -33,7 +33,9 @@
 
 - 道後温泉D0と松山城C0の配置データを `src/data/map-layouts/*.json` に分離し、敵/NPC/調べる対象/イベント/道しるべ/歩行・衝突領域をJSON側で編集できるようにした。
 - `map-editor.html` と `src/map-editor/` を追加し、背景画像上に歩行可能領域、衝突領域、ポリゴン頂点、道しるべ、プレイヤー開始位置、敵、NPC、調べる対象、イベントを重ねて編集できるCanvas UIを実装した。
-- 参考画像の目的に合わせ、右インスペクター、レイヤー表示/ロック、スナップ、ズーム、Undo/Redo、矩形移動/リサイズ、ポリゴン頂点編集、辺分割、頂点追加/削除、JSON入出力、検証結果、保存、統合ゲームプレビュー導線を追加した。
+- 参考画像の目的に合わせ、右インスペクター、レイヤー表示/ロック、スナップ、ズーム、Undo/Redo、矩形移動/リサイズ、ポリゴン頂点編集、辺分割、頂点追加/削除、JSON入出力/クリップボードコピー、検証結果、保存、統合ゲームプレビュー導線を追加した。
+- カメラ範囲とマーカーも編集レイヤーに追加し、JSONへ移した座標要素をエディタ側で確認・調整できるようにした。
+- 検証エラーがある場合はクライアント側の保存処理を止め、dev保存API側でもworld範囲外、重複ID、不正矩形、playerStart不正などを拒否するよう補強した。
 - Vite dev専用API `/__map-editor/maps`、`/__map-editor/load`、`/__map-editor/save`、`/__map-editor/validate` を追加し、保存前に `.map-editor-backups/` へバックアップを作るようにした。production buildには書き込みAPIを含めない。
 - 通常セーブを汚さないよう、ゲームプレビューは `__hime_star_map_editor_preview_save__` の一時セーブキーを使用する。
 - Hキー/道しるべ表示がJSONの `guidePaths` も描画するようにした。
@@ -49,6 +51,8 @@
 | `http://127.0.0.1:5173/hime-star-journey/map-editor.html` | 成功 | HTTP 200 |
 | `http://127.0.0.1:5173/__map-editor/maps` | 成功 | `["dogo-D0","castle-C0"]` |
 | `http://127.0.0.1:5173/__map-editor/load?map=dogo-D0` | 成功 | `areaId: D0` |
+| `POST /__map-editor/validate` | 成功 | 有効な `dogo-D0` がHTTP 200 / `{ ok: true }` |
+| `POST /__map-editor/save` 不正ケース | 成功 | `playerStart.x = -10` をHTTP 400で拒否 |
 | `git diff --check` | 成功 | CRLF警告のみ |
 | Browserプラグイン確認 | 未完了 | 環境側の `sandboxPolicy` メタ情報不足で接続不可。HTTP/API/ビルド確認で代替 |
 

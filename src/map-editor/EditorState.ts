@@ -1,6 +1,7 @@
 import type { MapLayoutData, MapPoint, MapRect } from "../types/mapLayout";
 
 export type EditorLayer =
+  | "cameraBounds"
   | "walkableRects"
   | "walkablePolygons"
   | "collisionRects"
@@ -9,7 +10,8 @@ export type EditorLayer =
   | "npcPositions"
   | "interactablePositions"
   | "eventPositions"
-  | "guidePaths";
+  | "guidePaths"
+  | "markers";
 
 export type EditorTool = "select" | "move" | "rect" | "polygon" | "path";
 
@@ -38,6 +40,7 @@ export type EditorState = {
 };
 
 export const layerLabels: Record<EditorLayer, string> = {
+  cameraBounds: "カメラ範囲",
   walkableRects: "歩行可能領域",
   walkablePolygons: "歩行ポリゴン",
   collisionRects: "衝突領域",
@@ -46,11 +49,13 @@ export const layerLabels: Record<EditorLayer, string> = {
   npcPositions: "NPC",
   interactablePositions: "調べる対象",
   eventPositions: "イベント",
-  guidePaths: "道しるべ"
+  guidePaths: "道しるべ",
+  markers: "マーカー"
 };
 
 export function createDefaultLayers(): LayerSettings {
   return {
+    cameraBounds: { visible: true, locked: false },
     walkableRects: { visible: true, locked: false },
     walkablePolygons: { visible: true, locked: false },
     collisionRects: { visible: true, locked: false },
@@ -59,7 +64,8 @@ export function createDefaultLayers(): LayerSettings {
     npcPositions: { visible: true, locked: false },
     interactablePositions: { visible: true, locked: false },
     eventPositions: { visible: true, locked: false },
-    guidePaths: { visible: true, locked: false }
+    guidePaths: { visible: true, locked: false },
+    markers: { visible: true, locked: false }
   };
 }
 
