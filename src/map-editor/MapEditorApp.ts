@@ -241,12 +241,12 @@ export class MapEditorApp {
     this.refresh();
   }
 
-  private async save(): Promise<void> {
+  private async save(): Promise<boolean> {
     this.validationIssues = validateMapLayout(this.state.layout, this.state.gridSize);
     if (this.validationIssues.some((issue) => issue.severity === "error")) {
       this.setBanner("● 検証エラーあり: 保存していません", true);
       this.renderValidation();
-      return;
+      return false;
     }
     try {
       const response = await fetch("/__map-editor/save", {
@@ -257,11 +257,14 @@ export class MapEditorApp {
       if (!response.ok) throw new Error(await response.text());
       this.state.dirty = false;
       this.setBanner("● 保存済み", false);
+      this.refresh();
+      return true;
     } catch {
       this.exportJson();
       this.setBanner("● 保存APIなし: JSONを出力しました", true);
     }
     this.refresh();
+    return false;
   }
 
   private async runAction(action: string): Promise<void> {
@@ -273,7 +276,10 @@ export class MapEditorApp {
     if (action === "duplicate") return this.duplicateSelection();
     if (action === "delete") return this.deleteSelection();
     if (action === "validate") return this.validate();
-    if (action === "save") return this.save();
+    if (action === "save") {
+      await this.save();
+      return;
+    }
     if (action === "preview") return this.preview();
     if (action === "close-preview") return this.closePreview();
     if (action === "export") return this.exportJson();
@@ -342,7 +348,8 @@ export class MapEditorApp {
   }
 
   private async preview(): Promise<void> {
-    await this.save();
+    const saved = await this.save();
+    if (!saved) return;
     const base = import.meta.env.BASE_URL || "/";
     const frame = this.root.querySelector<HTMLIFrameElement>("#game-preview-frame");
     this.root.querySelector(".editor-app")?.classList.add("preview-open");

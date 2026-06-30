@@ -18,7 +18,7 @@
 - [x] `npm.cmd run maps:validate`
 - [x] `npm.cmd run editor:smoke`
 - [x] `npm.cmd run build`
-- [ ] 実ブラウザでのドラッグ・保存・プレビュー目視確認
+- [x] Edge CDPで実ブラウザ上のパン操作・検証・保存・プレビュー起動確認
 
 ## P0 リポジトリ初期化
 

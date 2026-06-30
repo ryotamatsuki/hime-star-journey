@@ -1,4 +1,4 @@
-/* global Buffer, URL, process */
+/* global Buffer, URL, process, setTimeout */
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -29,9 +29,14 @@ export function mapEditorPlugin() {
             const mapId = assertMapId(body.mapId);
             assertLayout(mapId, body.layout);
             const file = mapPath(root, mapId);
-            await backup(root, mapId, file);
-            await writeAtomic(file, `${JSON.stringify(body.layout, null, 2)}\n`);
-            server.ws.send({ type: "full-reload" });
+            const nextContent = `${JSON.stringify(body.layout, null, 2)}\n`;
+            const currentContent = await readFile(file, "utf8").catch(() => "");
+            if (currentContent !== nextContent) {
+              server.watcher.unwatch(file);
+              await backup(root, mapId, file);
+              await writeAtomic(file, nextContent);
+              setTimeout(() => server.watcher.add(file), 250);
+            }
             return sendJson(res, { ok: true, mapId });
           }
           if (url.pathname === "/__map-editor/validate" && req.method === "POST") {

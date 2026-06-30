@@ -518,15 +518,6 @@ export class EditorCanvas {
     if (state.layers.playerStart.visible && distance(world, state.layout.playerStart) < 28) {
       return { selection: { layer: "playerStart", id: "playerStart" }, mode: "move", point: state.layout.playerStart };
     }
-    if (state.layers.cameraBounds.visible) {
-      const rect = state.layout.cameraBounds;
-      if (Math.abs(world.x - (rect.x + rect.width)) < 18 && Math.abs(world.y - (rect.y + rect.height)) < 18) {
-        return { selection: { layer: "cameraBounds", id: rect.id }, mode: "resize", rect };
-      }
-      if (world.x >= rect.x && world.x <= rect.x + rect.width && world.y >= rect.y && world.y <= rect.y + rect.height) {
-        return { selection: { layer: "cameraBounds", id: rect.id }, mode: "move", rect };
-      }
-    }
     for (const layer of objectLayers) {
       if (!state.layers[layer].visible) continue;
       for (const object of state.layout[layer]) {
@@ -558,6 +549,26 @@ export class EditorCanvas {
         if (world.x >= rect.x && world.x <= rect.x + rect.width && world.y >= rect.y && world.y <= rect.y + rect.height) {
           return { selection: { layer, id: rect.id }, mode: "move", rect };
         }
+      }
+    }
+    if (state.layers.cameraBounds.visible) {
+      const rect = state.layout.cameraBounds;
+      const edgeThreshold = 18;
+      if (Math.abs(world.x - (rect.x + rect.width)) < edgeThreshold && Math.abs(world.y - (rect.y + rect.height)) < edgeThreshold) {
+        return { selection: { layer: "cameraBounds", id: rect.id }, mode: "resize", rect };
+      }
+      const nearEdge = Math.abs(world.x - rect.x) < edgeThreshold
+        || Math.abs(world.x - (rect.x + rect.width)) < edgeThreshold
+        || Math.abs(world.y - rect.y) < edgeThreshold
+        || Math.abs(world.y - (rect.y + rect.height)) < edgeThreshold;
+      if (
+        nearEdge
+        && world.x >= rect.x
+        && world.x <= rect.x + rect.width
+        && world.y >= rect.y
+        && world.y <= rect.y + rect.height
+      ) {
+        return { selection: { layer: "cameraBounds", id: rect.id }, mode: "move", rect };
       }
     }
     return null;

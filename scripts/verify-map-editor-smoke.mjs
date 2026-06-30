@@ -90,6 +90,7 @@ check("dev API whitelists maps", plugin.includes("allowedMaps") && plugin.includ
 check("dev API backs up before save", plugin.includes(".map-editor-backups") && plugin.includes("await backup"));
 check("dev API validates schema before save", plugin.includes("assertLayout(mapId, body.layout)") && plugin.includes("assertPoint(layout.playerStart"));
 check("dev API rejects duplicate IDs", plugin.includes("IDが重複しています"));
+check("dev API avoids editor full reload on save", plugin.includes("server.watcher.unwatch(file)") && !plugin.includes("full-reload"));
 
 const failed = checks.filter((item) => !item.ok);
 for (const item of checks) {

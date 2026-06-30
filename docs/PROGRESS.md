@@ -36,6 +36,7 @@
 - 参考画像の目的に合わせ、右インスペクター、レイヤー表示/ロック、スナップ、ズーム、Undo/Redo、矩形移動/リサイズ、ポリゴン頂点編集、辺分割、頂点追加/削除、JSON入出力/クリップボードコピー、検証結果、保存、統合ゲームプレビュー導線を追加した。
 - カメラ範囲とマーカーも編集レイヤーに追加し、JSONへ移した座標要素をエディタ側で確認・調整できるようにした。
 - 検証エラーがある場合はクライアント側の保存処理を止め、dev保存API側でもworld範囲外、重複ID、不正矩形、playerStart不正などを拒否するよう補強した。
+- D0初期データがエディタ検証を通るよう、開始看板前の小道、中央連絡道、必須敵配置を微調整した。
 - Vite dev専用API `/__map-editor/maps`、`/__map-editor/load`、`/__map-editor/save`、`/__map-editor/validate` を追加し、保存前に `.map-editor-backups/` へバックアップを作るようにした。production buildには書き込みAPIを含めない。
 - 通常セーブを汚さないよう、ゲームプレビューは `__hime_star_map_editor_preview_save__` の一時セーブキーを使用する。
 - Hキー/道しるべ表示がJSONの `guidePaths` も描画するようにした。
@@ -55,7 +56,7 @@
 | `POST /__map-editor/validate` | 成功 | 有効な `dogo-D0` がHTTP 200 / `{ ok: true }` |
 | `POST /__map-editor/save` 不正ケース | 成功 | `playerStart.x = -10` をHTTP 400で拒否 |
 | `git diff --check` | 成功 | CRLF警告のみ |
-| Browserプラグイン確認 | 未完了 | 環境側の `sandboxPolicy` メタ情報不足で接続不可。HTTP/API/ビルド確認で代替 |
+| Edge CDP実ブラウザ確認 | 成功 | エディタ表示、Canvas、全レイヤー、Altドラッグによるパン、検証0エラー/0警告、保存済み表示、`himeDevMap=dogo-D0` のプレビューiframe起動を確認 |
 
 ## 2026-06-20 P6再開・実装完了
 
@@ -84,7 +85,7 @@
 - P6-002対応として `SaveManager.normalizeSaveData()` を修正し、湯の星取得済み旧セーブから `location_castle_unlocked`、`star_map_unlocked`、`unlockedLocations: "castle"`、`clearedQuestIds: "quest_dogo_yukemuri_star"` を補完するようにした。
 - Edge CDPで必須敵撃破済みセーブから実際に道後Exploreを歩き、湯けむりヒントに重ならない位置から湯の星を取得できることを確認した。取得後の保存状態は `currentScreenId: "starMap"`、`collectedStars: ["dogo"]`、`unlockedLocations: ["dogo", "castle"]`、`clearedQuestIds: ["quest_dogo_yukemuri_star"]`、`starLevel: 2`、`flags.location_castle_unlocked === true`。
 - 湯けむりヒント会話に「星のかけらみたいに」というP6方針に合わない表現が残っているP6-003を発見し、「湯の星の光みたいに」へ修正した。
-- Browserプラグインは今回も `node_repl` 初期化で環境メタ情報不足により利用不可。Edge CDPで補助したが、長い連続遷移ではCDPターゲットが不安定になり、追加の戦闘確認中に外部実行の使用制限へ到達したため、実際の4戦闘を含む全手動通しは引き続き未確認として残す。
+- Browserプラグインは今回も `node_repl` 初期化で環境メタ情報不足により利用不可。P6.5のマップエディタはEdge CDPで補助確認済み。P6本編の実際の4戦闘を含む全手動通しは引き続き未確認として残す。
 
 ## 2026-06-02 P0完了作業
 
