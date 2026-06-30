@@ -73,6 +73,7 @@ Canvas描画、DOM UI、ゲームロジック、データ、セーブ処理、�
 - [TASKS](docs/TASKS.md)
 - [ASSET_TRACKER](docs/ASSET_TRACKER.md)
 - [BUILD_CHECKLIST](docs/BUILD_CHECKLIST.md)
+- [P6.5 マップエディタ取扱説明書](docs/MAP_EDITOR_MANUAL.md)
 
 ## アセット管理
 
