@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "dev:editor": "vite --host 127.0.0.1 --open /hime-star-journey/map-editor.html",
     "maps:validate": "node scripts/validate-map-layouts.mjs",
+    "editor:smoke": "node scripts/verify-map-editor-smoke.mjs",
     "assets:p6:process": "node scripts/process-chroma-assets.mjs",
     "assets:p6:verify": "node scripts/verify-transparent-assets.mjs"
   },

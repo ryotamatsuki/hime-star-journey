@@ -47,6 +47,7 @@
 | `npm.cmd run typecheck` | 成功 | `tsc -p tsconfig.json --noEmit` |
 | `npm.cmd run lint` | 成功 | `eslint .` |
 | `npm.cmd run maps:validate` | 成功 | `dogo-D0`、`castle-C0` とも0 errors / 0 warnings |
+| `npm.cmd run editor:smoke` | 成功 | エディタHTML、必須レイヤー、主要アクション、dev APIガード、JSON/プレビュー導線を静的検証 |
 | `npm.cmd run build` | 成功 | `index.html` と `map-editor.html` の両方をビルド |
 | `http://127.0.0.1:5173/hime-star-journey/map-editor.html` | 成功 | HTTP 200 |
 | `http://127.0.0.1:5173/__map-editor/maps` | 成功 | `["dogo-D0","castle-C0"]` |

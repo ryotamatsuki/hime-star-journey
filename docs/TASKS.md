@@ -16,6 +16,7 @@
 - [x] `npm.cmd run typecheck`
 - [x] `npm.cmd run lint`
 - [x] `npm.cmd run maps:validate`
+- [x] `npm.cmd run editor:smoke`
 - [x] `npm.cmd run build`
 - [ ] 実ブラウザでのドラッグ・保存・プレビュー目視確認
 

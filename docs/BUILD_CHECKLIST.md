@@ -15,6 +15,7 @@
 - [x] `npm.cmd run typecheck`
 - [x] `npm.cmd run lint`
 - [x] `npm.cmd run maps:validate`
+- [x] `npm.cmd run editor:smoke`
 - [x] `npm.cmd run build`
 - [x] `git diff --check`
 - [x] カメラ範囲とマーカーが編集レイヤーに含まれている。

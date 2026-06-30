@@ -94,6 +94,7 @@ npm run build
 npm run dev
 npm run dev:editor
 npm run maps:validate
+npm run editor:smoke
 ```
 
 Windows PowerShellでは次の形が安定します。
@@ -106,6 +107,7 @@ npm.cmd run build
 npm.cmd run dev
 npm.cmd run dev:editor
 npm.cmd run maps:validate
+npm.cmd run editor:smoke
 ```
 
 ViteのbaseをGitHub Pages用に設定しているため、ローカルdevサーバーの確認URLは以下です。
