@@ -2,24 +2,91 @@
   "version": 1,
   "locationId": "castle",
   "areaId": "C0",
-  "name": "Matsuyama Castle Template",
+  "name": "松山城 C0",
   "worldWidth": 1920,
   "worldHeight": 1080,
   "backgroundAssetId": "bg_castle_explore",
-  "playerStart": { "x": 960, "y": 820 },
+  "playerStart": { "x": 420, "y": 850 },
   "cameraBounds": { "id": "camera_castle_C0", "x": 0, "y": 0, "width": 1920, "height": 1080 },
-  "walkableRects": [],
-  "walkablePolygons": [],
+  "walkableRects": [
+    { "id": "castle_walk_entry", "x": 280, "y": 760, "width": 520, "height": 180, "label": "登城口の石段" },
+    { "id": "castle_walk_main_path", "x": 560, "y": 620, "width": 820, "height": 180, "label": "本丸へ続く道" },
+    { "id": "castle_walk_west_yard", "x": 320, "y": 500, "width": 560, "height": 180, "label": "西の曲輪" },
+    { "id": "castle_walk_east_yard", "x": 1120, "y": 500, "width": 500, "height": 220, "label": "東の石垣道" },
+    { "id": "castle_walk_keep_front", "x": 690, "y": 220, "width": 660, "height": 210, "label": "天守前広場" },
+    { "id": "castle_walk_north_stairs", "x": 840, "y": 360, "width": 300, "height": 300, "label": "天守への石段" },
+    { "id": "castle_walk_well_path", "x": 980, "y": 760, "width": 500, "height": 180, "label": "くらやみ井戸への道" }
+  ],
+  "walkablePolygons": [
+    {
+      "id": "castle_walk_curve_connection",
+      "label": "曲がり石畳",
+      "points": [
+        { "x": 720, "y": 755 },
+        { "x": 900, "y": 650 },
+        { "x": 1080, "y": 640 },
+        { "x": 1200, "y": 730 },
+        { "x": 1110, "y": 830 },
+        { "x": 840, "y": 835 }
+      ]
+    }
+  ],
   "collisionRects": [
     { "id": "castle_collision_north_wall", "x": 0, "y": 0, "width": 1920, "height": 84 },
     { "id": "castle_collision_south_wall", "x": 0, "y": 996, "width": 1920, "height": 84 },
     { "id": "castle_collision_west_wall", "x": 0, "y": 0, "width": 72, "height": 1080 },
-    { "id": "castle_collision_east_wall", "x": 1848, "y": 0, "width": 72, "height": 1080 }
+    { "id": "castle_collision_east_wall", "x": 1848, "y": 0, "width": 72, "height": 1080 },
+    { "id": "castle_collision_keep_roof", "x": 620, "y": 84, "width": 790, "height": 120, "label": "天守屋根" },
+    { "id": "castle_collision_west_cliff", "x": 110, "y": 180, "width": 180, "height": 720, "label": "西の崖" },
+    { "id": "castle_collision_east_tower", "x": 1510, "y": 280, "width": 220, "height": 210, "label": "東櫓" },
+    { "id": "castle_collision_inner_wall", "x": 420, "y": 300, "width": 210, "height": 140, "label": "内壁" },
+    { "id": "castle_collision_old_pine", "x": 1460, "y": 760, "width": 230, "height": 170, "label": "老松" }
   ],
-  "guidePaths": [],
-  "enemySpawns": [],
-  "npcPositions": [],
-  "interactablePositions": [],
-  "eventPositions": [],
-  "markers": []
+  "guidePaths": [
+    {
+      "id": "castle_guide_intro",
+      "label": "松山城の道しるべ",
+      "points": [
+        { "x": 420, "y": 850 },
+        { "x": 620, "y": 780 },
+        { "x": 790, "y": 700 },
+        { "x": 980, "y": 625 },
+        { "x": 1010, "y": 460 },
+        { "x": 980, "y": 310 }
+      ]
+    },
+    {
+      "id": "castle_guide_well",
+      "label": "くらやみ井戸への道",
+      "points": [
+        { "x": 420, "y": 850 },
+        { "x": 690, "y": 820 },
+        { "x": 960, "y": 780 },
+        { "x": 1220, "y": 850 }
+      ]
+    }
+  ],
+  "enemySpawns": [
+    { "id": "C-E01", "x": 660, "y": 690, "label": "影足軽" },
+    { "id": "C-E02", "x": 1160, "y": 620, "label": "石垣鬼" },
+    { "id": "C-E03", "x": 900, "y": 405, "label": "黒羽ガラス" },
+    { "id": "C-E04", "x": 1220, "y": 850, "label": "くらやみ井戸" },
+    { "id": "C-E05", "x": 1320, "y": 565, "label": "影足軽" }
+  ],
+  "npcPositions": [
+    { "id": "npc_castle_scout", "x": 500, "y": 610, "label": "城山の見回り" }
+  ],
+  "interactablePositions": [
+    { "id": "castle_gate_hint", "x": 520, "y": 720, "width": 120, "height": 92, "label": "登城口の石碑" },
+    { "id": "castle_dark_well", "x": 1180, "y": 810, "width": 128, "height": 112, "label": "くらやみ井戸" },
+    { "id": "castle_guard_shrine", "x": 930, "y": 270, "width": 128, "height": 112, "label": "城山のまもり" }
+  ],
+  "eventPositions": [
+    { "id": "castle_guard_event", "x": 980, "y": 310, "width": 96, "height": 96, "label": "城山のまもり取得地点" }
+  ],
+  "markers": [
+    { "id": "castle_keep_label", "x": 980, "y": 180, "label": "松山城天守" },
+    { "id": "castle_shadow_label", "x": 1160, "y": 520, "label": "くろぼしの影" },
+    { "id": "castle_boss_route_label", "x": 1260, "y": 300, "label": "P8へ続く道" }
+  ]
 }

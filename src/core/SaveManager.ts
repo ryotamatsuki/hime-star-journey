@@ -1,7 +1,7 @@
 import type { SaveData } from "../types/save";
 
 export const SAVE_KEY = "hime_star_journey_mvp_save_v1";
-const SAVE_VERSION = "0.2.0";
+const SAVE_VERSION = "0.3.0";
 
 const stringArray = (value: unknown, fallback: string[] = []): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : fallback;
@@ -63,6 +63,7 @@ export class SaveManager {
         prologue_started: true
       },
       dogoQuestStatus: "notStarted",
+      castleQuestStatus: "notStarted",
       lastSynopsis: "家族旅行の前、おばあちゃんから不思議なペンダントを託されました。",
       savedAt: new Date().toISOString()
     };
@@ -109,6 +110,37 @@ export class SaveManager {
     if (dogoCollected && !clearedQuestIds.includes("quest_dogo_yukemuri_star")) {
       clearedQuestIds.push("quest_dogo_yukemuri_star");
     }
+    const sourceAcquiredCharms = stringArray(source.acquiredCharms);
+    const shiroyamaGuardObtained =
+      flags.shiroyama_guard_obtained === true ||
+      sourceAcquiredCharms.includes("shiroyama_guard") ||
+      clearedQuestIds.includes("quest_castle_shiroyama_guard");
+    if (shiroyamaGuardObtained) {
+      flags.shiroyama_guard_obtained = true;
+      flags.castle_boss_route_unlocked = true;
+      flags.p8_kagemasa_route_unlocked = true;
+      if (!clearedQuestIds.includes("quest_castle_shiroyama_guard")) {
+        clearedQuestIds.push("quest_castle_shiroyama_guard");
+      }
+    }
+    const castleProgressed = castleUnlocked || source.currentLocationId === "castle" ||
+      stringArray(source.defeatedEnemyIds).some((id) => id.startsWith("C-E")) ||
+      flags.castle_quest_started === true ||
+      flags.castle_hint_seen === true ||
+      flags.castle_required_enemies_cleared === true ||
+      flags.castle_dark_well_cleared === true ||
+      shiroyamaGuardObtained;
+    const validCastleQuestStates: SaveData["castleQuestStatus"][] = [
+      "notStarted", "started", "hintSeen", "enemiesCleared", "darkWellCleared", "guardReady", "guardObtained", "cleared"
+    ];
+    let castleQuestStatus = validCastleQuestStates.includes(source.castleQuestStatus as SaveData["castleQuestStatus"])
+      ? source.castleQuestStatus as SaveData["castleQuestStatus"]
+      : castleProgressed ? "started" : "notStarted";
+    if (flags.castle_hint_seen && castleQuestStatus === "started") castleQuestStatus = "hintSeen";
+    if (flags.castle_required_enemies_cleared) castleQuestStatus = "enemiesCleared";
+    if (flags.castle_dark_well_cleared) castleQuestStatus = "darkWellCleared";
+    if (flags.castle_guard_ready) castleQuestStatus = "guardReady";
+    if (shiroyamaGuardObtained) castleQuestStatus = "cleared";
     const currentScreenId = progressed && source.currentScreenId === "prologue" ? "explore" : source.currentScreenId ?? initial.currentScreenId;
     return {
       ...initial,
@@ -131,9 +163,12 @@ export class SaveManager {
       unlockedLocations,
       openedPaths: stringArray(source.openedPaths),
       acquiredItems: source.acquiredItems && typeof source.acquiredItems === "object" ? source.acquiredItems : {},
-      acquiredCharms: stringArray(source.acquiredCharms),
+      acquiredCharms: Array.from(new Set(shiroyamaGuardObtained
+        ? [...sourceAcquiredCharms, "shiroyama_guard"]
+        : sourceAcquiredCharms)),
       flags: { ...initial.flags, ...flags },
       dogoQuestStatus,
+      castleQuestStatus,
       lastSynopsis: typeof source.lastSynopsis === "string" ? source.lastSynopsis : initial.lastSynopsis,
       savedAt: typeof source.savedAt === "string" ? source.savedAt : initial.savedAt
     };

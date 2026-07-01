@@ -403,6 +403,27 @@
 - [x] runtime sourceの道後温泉P6会話から「星のかけら」表現を除去。
 - [ ] 実際の4戦闘と湯の星地点操作を含む全手動通し確認。
 
+## P7 松山城探索・松山城クエスト
+
+- [x] 星地図の松山城ノードから `castle / C0` のExploreScreenへ遷移する実装がある。
+- [x] `src/data/map-layouts/castle-C0.json` に歩行可能領域、衝突領域、開始位置、カメラ範囲、敵、NPC、調べる対象、イベント、道しるべが定義されている。
+- [x] 影足軽、石垣鬼、黒羽ガラス、くらやみ井戸がEnemyDataとEncounterDataに登録されている。
+- [x] C-E01〜C-E03を必須敵として扱い、撃破後にくらやみ井戸C-E04へ進める。
+- [x] NPCまたは調べる対象から松山城クエストのヒントを得られる。
+- [x] 城山のまもり取得時に `shiroyama_guard_obtained` を保存する。
+- [x] 城山のまもり取得時に `castle_boss_route_unlocked` と `p8_kagemasa_route_unlocked` を保存する。
+- [x] P7完了時に `collectedStars` へ `castle` を追加しない。
+- [x] P7完了時に `gameCompleted` を設定しない。
+- [x] SaveData v0.3.0で旧セーブを補完する。
+- [x] マップエディタの検証対象に松山城C0必須配置を含める。
+- [x] `npm.cmd run typecheck` が通る。
+- [x] `npm.cmd run lint` が通る。
+- [x] `npm.cmd run maps:validate` が通る。
+- [x] `npm.cmd run editor:smoke` が通る。
+- [x] `npm.cmd run build` が通る。
+- [x] `npm.cmd run p7:browser` が通る。
+- [x] ブラウザ実行環境で星地図の松山城ロック/解放、松山城C0遷移、Hキー道しるべ、Gキー後のCanvas継続、クエスト段階表示、1対1/1対2戦闘ロジック、城山のまもり保存、P8開始条件、マップエディタHTML取得を確認。
+
 
 
 

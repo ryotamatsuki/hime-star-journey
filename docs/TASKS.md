@@ -171,10 +171,20 @@
 
 ## P7 松山城探索・松山城クエスト
 
-- [ ] 松山城探索
-- [ ] 複数敵必須戦闘
-- [ ] 城山のまもり
-- [ ] 松山城クエスト進行
+- [x] 星地図から松山城C0探索へ移動
+- [x] 松山城C0の歩行可能領域・衝突領域・開始位置・カメラ範囲をJSON化
+- [x] 影足軽、石垣鬼、黒羽ガラス、くらやみ井戸の敵データとEncounterData接続
+- [x] C-E01〜C-E03の必須戦闘判定
+- [x] 必須戦闘後にくらやみ井戸へ挑める導線
+- [x] NPC/調べる対象によるヒント表示
+- [x] Hキー道しるべ、Gキーdebug overlayを松山城C0でも利用
+- [x] 城山のまもり取得イベント
+- [x] `shiroyama_guard_obtained`、`castle_boss_route_unlocked`、`p8_kagemasa_route_unlocked` 保存
+- [x] SaveData v0.3.0互換と既存セーブ補完
+- [x] P7では `collectedStars` に `castle` を追加しない
+- [x] P7では `gameCompleted` を設定しない
+- [x] マップエディタ検証対象に松山城C0必須配置を追加
+- [x] `npm.cmd run p7:browser` によるブラウザ実行環境でのP7遷移・クエスト・戦闘・保存確認
 
 ## P8 カゲマサ戦・みかん星の核奪還・MVPエンディング
 

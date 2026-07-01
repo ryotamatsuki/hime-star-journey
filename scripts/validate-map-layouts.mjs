@@ -24,13 +24,9 @@ function validate(layout) {
   const ids = new Set();
   const markerIds = new Set();
   const arrays = ["walkableRects", "walkablePolygons", "collisionRects", "guidePaths", "enemySpawns", "npcPositions", "interactablePositions", "eventPositions", "markers"];
-  if (`${layout.locationId}-${layout.areaId}` === "dogo-D0") {
-    for (const id of ["D-E01", "D-E02", "D-E03", "D-E04", "npc_dogo_guide", "npc_yumori_grandma"]) {
-      if (![...layout.enemySpawns, ...layout.npcPositions, ...layout.interactablePositions, ...layout.eventPositions].some((item) => item.id === id)) {
-        issues.push({ severity: "error", message: `${id} が見つかりません。` });
-      }
-    }
-  }
+
+  assertRequiredIds(layout, issues);
+
   for (const key of arrays) {
     if (!Array.isArray(layout[key])) issues.push({ severity: "error", message: `${key} は配列である必要があります。` });
   }
@@ -38,7 +34,14 @@ function validate(layout) {
     register(rect.id, issues, ids);
     if (rect.width <= 0 || rect.height <= 0) issues.push({ severity: "error", message: `${rect.id} のサイズが不正です。` });
     if (!inside(rect.x, rect.y, layout) || !inside(rect.x + rect.width, rect.y + rect.height, layout)) issues.push({ severity: "error", message: `${rect.id} が範囲外です。` });
-    if (Math.min(rect.width, rect.height) < 48) issues.push({ severity: "warning", message: `${rect.id} は道幅が狭い可能性があります。` });
+    if (Math.min(rect.width, rect.height) < 48) issues.push({ severity: "warning", message: `${rect.id} は通路幅が狭い可能性があります。` });
+  }
+  for (const polygon of layout.walkablePolygons ?? []) {
+    register(polygon.id, issues, ids);
+    if ((polygon.points ?? []).length < 3) issues.push({ severity: "error", message: `${polygon.id} は3点以上必要です。` });
+    for (const point of polygon.points ?? []) {
+      if (!inside(point.x, point.y, layout)) issues.push({ severity: "error", message: `${polygon.id} の頂点が範囲外です。` });
+    }
   }
   for (const object of [...(layout.enemySpawns ?? []), ...(layout.npcPositions ?? []), ...(layout.interactablePositions ?? []), ...(layout.eventPositions ?? [])]) {
     register(object.id, issues, ids);
@@ -48,11 +51,32 @@ function validate(layout) {
     register(marker.id, issues, markerIds);
     if (!inside(marker.x, marker.y, layout)) issues.push({ severity: "error", message: `${marker.id} が範囲外です。` });
   }
-  for (const path of layout.guidePaths ?? []) {
-    register(path.id, issues, ids);
-    if ((path.points ?? []).length < 2) issues.push({ severity: "warning", message: `${path.id} は経路点が少なすぎます。` });
+  for (const pathData of layout.guidePaths ?? []) {
+    register(pathData.id, issues, ids);
+    if ((pathData.points ?? []).length < 2) issues.push({ severity: "warning", message: `${pathData.id} は経路点が少なすぎます。` });
   }
   return issues.length > 0 ? issues : [{ severity: "ok", message: "マップレイアウト検証OK" }];
+}
+
+function assertRequiredIds(layout, issues) {
+  const mapId = `${layout.locationId}-${layout.areaId}`;
+  const requiredByMap = {
+    "dogo-D0": ["D-E01", "D-E02", "D-E03", "D-E04", "npc_dogo_guide", "npc_yumori_grandma"],
+    "castle-C0": ["C-E01", "C-E02", "C-E03", "C-E04", "npc_castle_scout", "castle_gate_hint", "castle_dark_well", "castle_guard_shrine", "castle_guard_event"]
+  };
+  const requiredIds = requiredByMap[mapId] ?? [];
+  const positionedObjects = [
+    ...(layout.enemySpawns ?? []),
+    ...(layout.npcPositions ?? []),
+    ...(layout.interactablePositions ?? []),
+    ...(layout.eventPositions ?? [])
+  ];
+
+  for (const id of requiredIds) {
+    if (!positionedObjects.some((item) => item.id === id)) {
+      issues.push({ severity: "error", message: `${id} が見つかりません。` });
+    }
+  }
 }
 
 function register(id, issues, ids) {

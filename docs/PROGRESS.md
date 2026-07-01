@@ -835,6 +835,37 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 | `npm.cmd run build` | 成功 | Vite build成功、32 modules transformed |
 | `cmd.exe /d /c start_game.bat` | 成功 | サンドボックス外で短時間起動し、`http://127.0.0.1:5173` のHTTP 200を確認。検証後に停止 |
 
+## 2026-07-01 P7: 松山城探索・松山城クエスト
+
+- 状態: 実装完了・自動/ブラウザ検証済み。
+- P6.5で追加した `src/data/map-layouts/castle-C0.json` をP7用の実データへ更新し、歩行可能領域、衝突領域、開始位置、カメラ範囲、敵、NPC、調べる対象、イベント、道しるべを定義した。
+- 星地図の松山城ノードから `castle / C0` のExploreScreenへ移動できるようTravelSystemを接続した。
+- 松山城敵として、影足軽、石垣鬼、黒羽ガラス、くらやみ井戸をEnemyData/EncounterData/EnemySymbolDataへ接続した。
+- C-E01〜C-E03を必須戦闘、C-E04をくらやみ井戸のイベント戦として扱い、必須戦闘後に井戸へ挑める導線を実装した。
+- NPCと調べる対象によるヒント、松山城初回導入会話、クエスト目的表示を追加した。
+- 城山のまもり取得イベントを追加し、取得後に `shiroyama_guard_obtained`、`castle_boss_route_unlocked`、`p8_kagemasa_route_unlocked`、`quest_castle_shiroyama_guard` を保存する。
+- P7では `collectedStars` に `castle` を追加せず、`gameCompleted` も設定しない。城の星取得、みかん星の核奪還、カゲマサ最終戦、エンディングはP8へ残す。
+- SaveDataをv0.3.0へ更新し、既存セーブでも城山のまもり取得済みフラグやP8開始条件を安全に補完するようにした。
+- マップエディタ検証で松山城C0の必須IDと到達可能性を確認するようにした。
+
+### P7 検証結果
+
+| コマンド / 確認 | 結果 | 備考 |
+|---|---|---|
+| `npm.cmd install` | 成功 | P7実装前ゲートとして実行済み |
+| `npm.cmd run typecheck` | 成功 | P7実装後に再実行 |
+| `npm.cmd run lint` | 成功 | P7実装後に再実行 |
+| `npm.cmd run maps:validate` | 成功 | `dogo-D0` / `castle-C0` ともにエラー0 |
+| `npm.cmd run editor:smoke` | 成功 | マップエディタのロード/検証/保存APIスモーク |
+| `npm.cmd run build` | 成功 | Vite production build成功 |
+| 静的P7監査 | 成功 | 松山城必須敵、調べる対象、TravelSystem、城山のまもり保存、`castle` 星未取得、`gameCompleted` 未設定を確認 |
+| `npm.cmd run p7:browser` | 成功 | Chromiumブラウザ実行環境で星地図ロック/解放、松山城C0遷移、H/G、クエスト段階、1対1/1対2戦闘ロジック、城山のまもり保存、P8開始条件、マップエディタHTML取得を確認 |
+| `git diff --check` | 成功 | whitespace errorなし |
+
+### P7 未解決・次フェーズ送り
+
+- P7の範囲外として、カゲマサ最終戦、星封じカードの進行解放、みかん星の核奪還、城の星取得、MVPエンディングはP8に残す。
+
 
 
 

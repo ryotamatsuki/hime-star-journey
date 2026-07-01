@@ -44,7 +44,7 @@ P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画�
 | bg_dogo_map_base | `public/assets/generated/backgrounds/dogo_map_base.png` | 道後温泉2.5D探索ベースマップ | generated | P3方針変更で生成し、ExploreScreenに接続 |
 | bg_dogo_map_foreground | `public/assets/generated/backgrounds/dogo_map_foreground.png` | 道後温泉2.5D前景レイヤー | generated | P3方針変更で生成し、ExploreScreenに接続 |
 | bg_dogo_map_overlay_steam | `public/assets/generated/backgrounds/dogo_map_overlay_steam.png` | 道後温泉湯けむりオーバーレイ | generated | P3方針変更で生成し、Canvas上で透明度・ドリフトを付与 |
-| bg_castle_explore | `public/assets/generated/backgrounds/castle_explore_bg.png` | 松山城探索 | generated | 後続フェーズ接続用 |
+| bg_castle_explore | `public/assets/generated/backgrounds/castle_explore_bg.png` | 松山城探索 | generated / connected | P7松山城C0探索背景として接続 |
 | bg_dogo_battle | `public/assets/generated/backgrounds/dogo_battle_bg.png` | 道後温泉通常戦闘 | generated | P5.1で戦闘専用背景として再生成し、BattleScreenに接続。旧画像は `_backup/p5_1/` に退避 |
 | bg_castle_battle | `public/assets/generated/backgrounds/castle_battle_bg.png` | 松山城・ボスバトル | generated | 後続フェーズ接続用 |
 
@@ -70,10 +70,10 @@ P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画�
 | enemy_dogo_lantern | `public/assets/generated/enemies/dogo_lantern.png` | あお提灯 | generated | P3方針変更で画像生成し、blink / floatingアニメーション付きで接続 |
 | enemy_dogo_armor | `public/assets/generated/enemies/dogo_armor.png` | さびよろい | generated | P3方針変更で画像生成し、shakeアニメーション付きで接続 |
 | enemy_dogo_mouse | `public/assets/generated/enemies/dogo_mouse.png` | ゆげネズミ | generated | P3方針変更で画像生成し、scurryアニメーション付きで接続 |
-| enemy_castle_soldier | `public/assets/generated/enemies/castle_soldier.png` | 影足軽 | pending | P5 EncounterData/BattleSystemには登録済み。完成品質化は後続 |
-| enemy_castle_oni | `public/assets/generated/enemies/castle_oni.png` | 石垣鬼 | pending | P5 EncounterData/BattleSystemには登録済み。完成品質化は後続 |
-| enemy_castle_well | `public/assets/generated/enemies/castle_well.png` | くらやみ井戸 | pending | P5 EncounterData/BattleSystemには登録済み。完成品質化は後続 |
-| enemy_castle_crow | `public/assets/generated/enemies/castle_crow.png` | 黒羽ガラス | pending | P5 EncounterData/BattleSystemには登録済み。完成品質化は後続 |
+| enemy_castle_soldier | `public/assets/generated/enemies/castle_soldier.png` | 影足軽 | generated / connected | P7松山城C0の敵シンボルC-E01/C-E05とEncounterDataに接続 |
+| enemy_castle_oni | `public/assets/generated/enemies/castle_oni.png` | 石垣鬼 | generated / connected | P7松山城C0の敵シンボルC-E02とEncounterDataに接続 |
+| enemy_castle_well | `public/assets/generated/enemies/castle_well.png` | くらやみ井戸 | generated / connected | P7松山城C0の敵シンボルC-E04とEncounterDataに接続 |
+| enemy_castle_crow | `public/assets/generated/enemies/castle_crow.png` | 黒羽ガラス | generated / connected | P7松山城C0の敵シンボルC-E03とEncounterDataに接続 |
 
 ## ボス
 
@@ -90,7 +90,7 @@ P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画�
 | card_shirasagi_ofuda | `public/assets/generated/cards/card_shirasagi_ofuda.png` | 白鷺のおふだ | pending | P5.1 BattleScreenのカードUIと効果に接続済み。カード名・説明・MPはDOM実テキスト表示。完成品質カードアイコンは後続 |
 | card_dogo_drop | `public/assets/generated/cards/card_dogo_drop.png` | 道後の湯しずく | pending | P5.1 BattleScreenのカードUIと効果に接続済み。カード名・説明・MPはDOM実テキスト表示。完成品質カードアイコンは後続 |
 | card_yukemuri_veil | `public/assets/generated/cards/card_yukemuri_veil.png` | 湯けむりヴェール | pending | P5.1 BattleScreenのカードUIと効果に接続済み。カード名・説明・MPはDOM実テキスト表示。完成品質カードアイコンは後続 |
-| card_castle_guard | `public/assets/generated/cards/card_castle_guard.png` | 城山のまもり | pending | P5.1 BattleScreenのカードUIと効果に接続済み。進行解放と完成品質カードアイコンは後続 |
+| card_castle_guard | `public/assets/generated/cards/card_castle_guard.png` | 城山のまもり | generated / connected | P7の取得イベント、保存フラグ、BattleScreenカード効果に接続。完成品質カードアイコン調整は後続 |
 | card_star_seal | `public/assets/generated/cards/card_star_seal.png` | 星封じ | pending | P5.1 BattleScreenのカードUIと効果に接続済み。進行解放と完成品質カードアイコンは後続 |
 
 ## UI

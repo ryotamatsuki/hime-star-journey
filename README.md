@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-現在は **P6.5: ローカル開発用マップエディタ** を実装中です。P6の画像付きプロローグ／道後温泉体験版は実装済みで、P7の松山城探索へ進む前に、道後温泉D0と松山城C0の歩行可能領域・衝突領域・配置物・道しるべをブラウザ上で視覚調整できるようにしています。
+現在は **P7: 松山城探索・松山城クエスト** を実装済みです。P6の画像付きプロローグ／道後温泉体験版、P6.5のローカル開発用マップエディタを土台に、松山城C0探索、城内の必須戦闘、ヒント導線、城山のまもり取得、P8開始条件の保存まで接続しています。
 
 - プロジェクトルール、技術制約、仕様書、ロードマップ、進捗管理、アセット台帳、生成プロンプトを整備済み。
 - `picture/` の主要ビジュアルを `docs/visual-reference/key-visuals/` に整理済み。
@@ -20,6 +20,7 @@
 - P5.9で旧企画書v0.7のストーリー正本を復元し、おばあちゃん、星守りの家系、みかん星のペンダント、みかん星の核、白鷺のお守り、シロ、カゲマサ、くろぼしの位置づけを企画書/GDD/要件定義/ROADMAPへ反映済み。
 - P6で生成済み画像13件を透過処理し、画像付き6シーンプロローグ、道後温泉クエスト、湯の星取得、星地図解放、松山城解放、SaveData v0.2.0移行を実装済み。旧セーブで `collectedStars` に `dogo` がある場合も松山城解放まで補完します。
 - P6.5で `map-editor.html` を追加し、道後温泉D0/松山城C0のJSONレイアウトをCanvas上で編集、検証、保存、JSON入出力、通常セーブを汚さないゲームプレビューで確認できるようにしています。
+- P7で星地図から松山城C0へ移動できる導線、松山城の歩行・衝突・配置JSON、影足軽／石垣鬼／黒羽ガラス／くらやみ井戸の戦闘、城山のまもり取得、P8開始フラグ、SaveData v0.3.0互換を実装済みです。P7では `collectedStars` に `castle` を追加せず、みかん星の核奪還・エンディング・カゲマサ最終戦はP8へ残します。
 - 会話本文は画像ではなくDOM上の実テキストとして表示し、会話枠画像は使わない方針に変更済み。
 - GitHub Pages向けにVite `base: "/hime-star-journey/"`、public assetのbase付き解決、Pages workflowを追加済み。
 - Browserプラグインは環境都合で利用できませんが、Edge headless/CDPでP6のタイトル、プロローグ6シーン、道後遷移、取得前星地図ロック、スキップ、代表画像HTTP 200、旧セーブ互換を補助確認しています。
@@ -73,6 +74,7 @@ Canvas描画、DOM UI、ゲームロジック、データ、セーブ処理、�
 - [TASKS](docs/TASKS.md)
 - [ASSET_TRACKER](docs/ASSET_TRACKER.md)
 - [BUILD_CHECKLIST](docs/BUILD_CHECKLIST.md)
+- [P6.5 マップエディタ取扱説明書](docs/MAP_EDITOR_MANUAL.md)
 
 ## アセット管理
 
@@ -95,6 +97,7 @@ npm run dev
 npm run dev:editor
 npm run maps:validate
 npm run editor:smoke
+npm run p7:browser
 ```
 
 Windows PowerShellでは次の形が安定します。
@@ -108,6 +111,7 @@ npm.cmd run dev
 npm.cmd run dev:editor
 npm.cmd run maps:validate
 npm.cmd run editor:smoke
+npm.cmd run p7:browser
 ```
 
 ViteのbaseをGitHub Pages用に設定しているため、ローカルdevサーバーの確認URLは以下です。

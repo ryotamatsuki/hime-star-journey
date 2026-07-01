@@ -15,7 +15,7 @@ import { getEncounterById } from "../data/encounters";
 import { getInteractablesForArea } from "../data/interactables";
 import { dogoArea, getMapArea, type MapAreaData, type WalkablePolygon } from "../data/maps";
 import { getNpcsForArea } from "../data/npcs";
-import { dogoQuest } from "../data/quests";
+import { castleQuest, dogoQuest } from "../data/quests";
 import { expandRect, intersects, type Rect } from "../systems/CollisionSystem";
 import { DialogueSystem } from "../systems/DialogueSystem";
 import type { BattleStartParams } from "../types/battle";
@@ -46,6 +46,7 @@ type EnemyContactInfo = {
 const PATH_GUIDE_DURATION_MS = 2800;
 const FIRST_ENEMY_HINT_RADIUS = 132;
 const YUNO_EVENT_DURATION_MS = 6400;
+const CASTLE_GUARD_EVENT_DURATION_MS = 5200;
 
 export class ExploreScreen implements GameScreen {
   readonly id: ScreenId = "explore";
@@ -77,6 +78,7 @@ export class ExploreScreen implements GameScreen {
   private objectiveElement: HTMLElement | null = null;
   private mapButton: HTMLButtonElement | null = null;
   private yunoEventMs = 0;
+  private castleGuardEventMs = 0;
 
   constructor(private readonly options: ExploreScreenOptions) {}
 
@@ -92,7 +94,7 @@ export class ExploreScreen implements GameScreen {
     this.saveData = this.options.saveManager.save({
       ...nextSave,
       currentScreenId: "explore",
-      currentChapterId: "dogo_explore",
+      currentChapterId: this.area.locationId === "castle" ? "castle_explore" : "dogo_explore",
       currentLocationId: this.area.locationId,
       currentAreaId: this.area.id
     });
@@ -113,7 +115,7 @@ export class ExploreScreen implements GameScreen {
     this.lastEnemyContact = null;
     this.debugOverlayVisible = false;
     this.pathGuideRemainingMs = 0;
-    this.message = "道後温泉に着いた。湯けむり通りをすすもう。";
+    this.message = this.getAreaIntroMessage();
     this.syncQuestProgress();
     this.renderUi();
     this.dialogueBox = new DialogueBox({
@@ -122,7 +124,7 @@ export class ExploreScreen implements GameScreen {
       onAdvance: () => this.advanceDialogue()
     });
     this.updateUi();
-    this.tryStartDialogue("dogo_intro_auto");
+    this.tryStartAreaIntroDialogue();
   }
 
   update(deltaTime: number): void {
@@ -135,6 +137,13 @@ export class ExploreScreen implements GameScreen {
     if (this.yunoEventMs > 0) {
       this.yunoEventMs += deltaTime * 1000;
       if (this.yunoEventMs >= YUNO_EVENT_DURATION_MS) this.completeYunoStarEvent();
+      this.updateUi();
+      return;
+    }
+
+    if (this.castleGuardEventMs > 0) {
+      this.castleGuardEventMs += deltaTime * 1000;
+      if (this.castleGuardEventMs >= CASTLE_GUARD_EVENT_DURATION_MS) this.completeCastleGuardEvent();
       this.updateUi();
       return;
     }
@@ -205,6 +214,12 @@ export class ExploreScreen implements GameScreen {
     }
 
     if (this.nearbyInteractable && this.options.inputManager.isActionStarted("confirm")) {
+      if (this.area.locationId === "castle") {
+        this.handleCastleInteractable(this.nearbyInteractable.id);
+        this.updateUi();
+        return;
+      }
+
       if (this.nearbyInteractable.id === "dogo_steam_spot") {
         this.markQuestHintSeen();
         this.tryStartDialogue("interactable_steam_hint");
@@ -227,6 +242,10 @@ export class ExploreScreen implements GameScreen {
 
     const touchedEnemy = this.findTouchedEnemy();
     if (touchedEnemy) {
+      if (!this.canStartTouchedEnemy(touchedEnemy)) {
+        this.updateUi();
+        return;
+      }
       this.startBattle(touchedEnemy);
       return;
     }
@@ -245,6 +264,7 @@ export class ExploreScreen implements GameScreen {
     this.renderMapLayer(ctx, this.area.foregroundAssetId, 0.86);
     this.renderSteamOverlay(ctx);
     this.renderYunoStarEvent(ctx);
+    this.renderCastleGuardEvent(ctx);
     this.renderDebugOverlay(ctx);
   }
 
@@ -270,10 +290,14 @@ export class ExploreScreen implements GameScreen {
     sourceOffsetY = 0
   ): void {
     const { canvas } = ctx;
+    if (!assetId) {
+      return;
+    }
+
     const image = assetId ? this.options.assetLoader.getImage(assetId) : undefined;
 
     if (!image) {
-      this.drawMissingMapLayer(ctx, assetId ?? "missing_map_layer", opacity);
+      this.drawMissingMapLayer(ctx, assetId, opacity);
       return;
     }
 
@@ -387,7 +411,7 @@ export class ExploreScreen implements GameScreen {
     );
     const location = document.createElement("p");
     location.className = "ui-kicker";
-    location.textContent = "現在地：道後温泉";
+    location.textContent = `現在地：${this.area.name}`;
     const objective = document.createElement("h2");
     this.objectiveElement = objective;
     const hints = document.createElement("p");
@@ -548,6 +572,10 @@ export class ExploreScreen implements GameScreen {
   }
 
   private shouldStartFirstEnemyHint(): boolean {
+    if (this.area.locationId !== "dogo") {
+      return false;
+    }
+
     if (!this.saveData || this.saveData.flags.dialogue_first_enemy_hint_seen) {
       return false;
     }
@@ -831,6 +859,20 @@ export class ExploreScreen implements GameScreen {
     };
   }
 
+  private canStartTouchedEnemy(enemy: EnemySymbol): boolean {
+    if (!this.saveData || this.area.locationId !== "castle") return true;
+
+    if (
+      enemy.symbolId === castleQuest.darkWellEnemySymbolId &&
+      !this.saveData.flags.castle_required_enemies_cleared
+    ) {
+      this.message = "くらやみ井戸の闇が強すぎる。先に三つの影をしずめよう。";
+      return false;
+    }
+
+    return true;
+  }
+
   private startBattle(enemy: EnemySymbol): void {
     if (!this.saveData || this.transitioningToBattle) {
       return;
@@ -859,6 +901,11 @@ export class ExploreScreen implements GameScreen {
   }
 
   private syncQuestProgress(): void {
+    if (this.area.locationId === "castle") {
+      this.syncCastleQuestProgress();
+      return;
+    }
+
     if (!this.saveData || this.saveData.flags.yuno_star_obtained) return;
     const allCalmed = dogoQuest.requiredEnemySymbolIds.every((id) => this.saveData?.defeatedEnemyIds.includes(id));
     let status = this.saveData.dogoQuestStatus;
@@ -874,6 +921,11 @@ export class ExploreScreen implements GameScreen {
   }
 
   private markQuestHintSeen(): void {
+    if (this.area.locationId === "castle") {
+      this.markCastleHintSeen();
+      return;
+    }
+
     if (!this.saveData || this.saveData.flags.dogo_quest_hint_seen) return;
     this.saveData = this.options.saveManager.save({
       ...this.saveData,
@@ -883,12 +935,237 @@ export class ExploreScreen implements GameScreen {
   }
 
   private getQuestObjective(): string {
+    if (this.area.locationId === "castle") {
+      return this.getCastleQuestObjective();
+    }
+
     if (!this.saveData) return "もくてき：道後温泉を見てまわろう";
     if (this.saveData.flags.yuno_star_obtained) return "もくてき：星地図で松山城を確かめよう";
     if (!this.saveData.flags.dogo_quest_hint_seen) return "もくてき：町の人に話を聞こう";
     const remaining = dogoQuest.requiredEnemySymbolIds.filter((id) => !this.saveData?.defeatedEnemyIds.includes(id)).length;
     if (remaining > 0) return `もくてき：迷っている影をしずめよう（あと${remaining}）`;
     return "もくてき：湯けむりの奥で、湯の星を取り戻そう";
+  }
+
+  private getAreaIntroMessage(): string {
+    return this.area.locationId === "castle"
+      ? "松山城に着いた。石垣の道に、くろぼしの影が落ちている。"
+      : "道後温泉に着いた。湯けむり通りをすすもう。";
+  }
+
+  private tryStartAreaIntroDialogue(): void {
+    if (this.area.locationId === "castle") {
+      this.tryStartDialogue("castle_intro_auto");
+      return;
+    }
+
+    this.tryStartDialogue("dogo_intro_auto");
+  }
+
+  private handleCastleInteractable(interactableId: string): void {
+    if (!this.saveData) return;
+
+    if (interactableId === "castle_gate_hint") {
+      this.markCastleHintSeen();
+      this.message = "石碑には『三つの影をしずめ、井戸の闇をほどけ』と刻まれている。";
+      return;
+    }
+
+    if (interactableId === "castle_dark_well") {
+      this.tryStartCastleDarkWell();
+      return;
+    }
+
+    if (interactableId === "castle_guard_shrine") {
+      this.tryStartCastleGuardEvent();
+      return;
+    }
+
+    this.nearbyInteractable?.interact();
+  }
+
+  private syncCastleQuestProgress(): void {
+    if (!this.saveData) return;
+
+    const nextFlags: Record<string, boolean> = { ...this.saveData.flags, castle_quest_started: true };
+    const requiredEnemiesCleared = castleQuest.requiredEnemySymbolIds.every((id) =>
+      this.saveData?.defeatedEnemyIds.includes(id)
+    );
+    const darkWellCleared =
+      this.saveData.defeatedEnemyIds.includes(castleQuest.darkWellEnemySymbolId) ||
+      nextFlags.castle_dark_well_cleared === true;
+    const guardObtained =
+      nextFlags.shiroyama_guard_obtained === true ||
+      this.saveData.acquiredCharms.includes(castleQuest.rewardCharmId);
+
+    let status = this.saveData.castleQuestStatus;
+    if (status === "notStarted") status = "started";
+    if (nextFlags.castle_hint_seen && status === "started") status = "hintSeen";
+    if (requiredEnemiesCleared) {
+      nextFlags.castle_required_enemies_cleared = true;
+      status = "enemiesCleared";
+    }
+    if (darkWellCleared) {
+      nextFlags.castle_dark_well_cleared = true;
+      nextFlags.castle_guard_ready = true;
+      status = "guardReady";
+    }
+    if (guardObtained) {
+      nextFlags.shiroyama_guard_obtained = true;
+      nextFlags.castle_boss_route_unlocked = true;
+      nextFlags.p8_kagemasa_route_unlocked = true;
+      status = "cleared";
+    }
+
+    const flagsChanged = Object.entries(nextFlags).some(
+      ([key, value]) => this.saveData?.flags[key] !== value
+    );
+    if (flagsChanged || status !== this.saveData.castleQuestStatus) {
+      this.saveData = this.options.saveManager.save({
+        ...this.saveData,
+        castleQuestStatus: status,
+        flags: nextFlags
+      });
+    }
+  }
+
+  private markCastleHintSeen(): void {
+    if (!this.saveData || this.saveData.flags.castle_hint_seen) return;
+    this.saveData = this.options.saveManager.save({
+      ...this.saveData,
+      castleQuestStatus: this.saveData.castleQuestStatus === "started" ? "hintSeen" : this.saveData.castleQuestStatus,
+      flags: {
+        ...this.saveData.flags,
+        castle_quest_started: true,
+        castle_hint_seen: true
+      }
+    });
+  }
+
+  private getCastleQuestObjective(): string {
+    if (!this.saveData) return "もくてき：松山城を調べよう";
+    if (this.saveData.flags.shiroyama_guard_obtained) {
+      return "もくてき：城山のまもりを手に入れた。P8でカゲマサのもとへ向かおう";
+    }
+    if (!this.saveData.flags.castle_hint_seen) {
+      return "もくてき：城山の見回りか登城口の石碑から手がかりを得よう";
+    }
+    const remaining = castleQuest.requiredEnemySymbolIds.filter((id) => !this.saveData?.defeatedEnemyIds.includes(id)).length;
+    if (remaining > 0) return `もくてき：松山城の三つの影をしずめよう（あと${remaining}体）`;
+    if (!this.saveData.flags.castle_dark_well_cleared) return "もくてき：くらやみ井戸の闇をほどこう";
+    return "もくてき：天守前の祠で城山のまもりを受け取ろう";
+  }
+
+  private tryStartCastleDarkWell(): void {
+    if (!this.saveData) return;
+    this.syncCastleQuestProgress();
+
+    if (!this.saveData.flags.castle_required_enemies_cleared) {
+      this.message = "井戸の闇が強すぎる。先に、松山城をふさぐ三つの影をしずめよう。";
+      return;
+    }
+
+    if (!this.saveData.defeatedEnemyIds.includes(castleQuest.darkWellEnemySymbolId)) {
+      const wellEnemy = this.enemySymbols.find((enemy) => enemy.symbolId === castleQuest.darkWellEnemySymbolId);
+      if (wellEnemy) {
+        this.message = "井戸の底から黒い影が立ちのぼった。くらやみ井戸と向き合おう。";
+        this.startBattle(wellEnemy);
+        return;
+      }
+    }
+
+    this.saveData = this.options.saveManager.save({
+      ...this.saveData,
+      castleQuestStatus: "guardReady",
+      flags: {
+        ...this.saveData.flags,
+        castle_dark_well_cleared: true,
+        castle_guard_ready: true
+      },
+      lastSynopsis: "松山城のくらやみ井戸をしずめ、天守前に守りの光が戻りました。"
+    });
+    this.tryStartDialogue("castle_guard_ready_hint");
+    this.message = "井戸の闇がほどけた。天守前の祠へ向かおう。";
+  }
+
+  private tryStartCastleGuardEvent(): void {
+    if (!this.saveData) return;
+    this.syncCastleQuestProgress();
+
+    if (!this.saveData.flags.castle_dark_well_cleared) {
+      this.message = "祠はまだ暗いままだ。くらやみ井戸の闇をほどく必要がありそうだ。";
+      return;
+    }
+
+    if (this.saveData.flags.shiroyama_guard_obtained) {
+      this.message = "城山のまもりは、ひめのペンダントのそばで静かに光っている。";
+      return;
+    }
+
+    this.castleGuardEventMs = 1;
+    this.message = "祠から、石垣色のやさしい光がこぼれはじめた。";
+    this.nearbyInteractable = null;
+    this.nearbyNpc = null;
+  }
+
+  private renderCastleGuardEvent(ctx: CanvasRenderingContext2D): void {
+    if (this.castleGuardEventMs <= 0) return;
+    const { canvas } = ctx;
+    const t = this.castleGuardEventMs / CASTLE_GUARD_EVENT_DURATION_MS;
+    ctx.save();
+    ctx.fillStyle = `rgba(80, 58, 110, ${Math.min(0.34, t * 0.52)})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const pulse = Math.sin(this.elapsedTimeMs / 180) * 0.5 + 0.5;
+    const size = 150 + pulse * 18;
+    const image = this.options.assetLoader.getImage("card_castle_guard");
+    ctx.globalCompositeOperation = "screen";
+    ctx.globalAlpha = Math.min(1, t * 2.8);
+    ctx.translate(canvas.width / 2, canvas.height / 2 - 24);
+    if (image) {
+      ctx.drawImage(image, -size / 2, -size / 2, size, size);
+    } else {
+      this.drawTinyStar(ctx, 0, 0, size / 4, "rgba(210, 220, 255, 0.9)");
+    }
+    ctx.restore();
+
+    if (t > 0.2 && t < 0.55) this.message = "シロ「それが城山のまもり。影の道を通るための、小さな守りだよ。」";
+    else if (t >= 0.55) this.message = "ひめ「これで、カゲマサのいる場所へ進めるんだね。」";
+  }
+
+  private completeCastleGuardEvent(): void {
+    if (!this.saveData || this.saveData.flags.shiroyama_guard_obtained) {
+      this.castleGuardEventMs = 0;
+      return;
+    }
+
+    const acquiredCharms = Array.from(new Set([...this.saveData.acquiredCharms, castleQuest.rewardCharmId]));
+    const clearedQuestIds = Array.from(new Set([...this.saveData.clearedQuestIds, castleQuest.id]));
+    const unlockedCards = Array.from(new Set([...this.saveData.unlockedCards, "card_castle_guard"]));
+    this.saveData = this.options.saveManager.save({
+      ...this.saveData,
+      castleQuestStatus: "cleared",
+      currentChapterId: "p8_ready",
+      acquiredCharms,
+      acquiredItems: {
+        ...this.saveData.acquiredItems,
+        shiroyama_guard: 1
+      },
+      unlockedCards,
+      clearedQuestIds,
+      flags: {
+        ...this.saveData.flags,
+        castle_quest_started: true,
+        castle_required_enemies_cleared: true,
+        castle_dark_well_cleared: true,
+        castle_guard_ready: true,
+        shiroyama_guard_obtained: true,
+        castle_boss_route_unlocked: true,
+        p8_kagemasa_route_unlocked: true
+      },
+      lastSynopsis: "松山城で城山のまもりを受け取り、カゲマサがいる場所へ進む条件が整いました。"
+    });
+    this.castleGuardEventMs = 0;
+    this.message = "城山のまもりを手に入れた。カゲマサがいる場所への道が開いた。";
   }
 
   private tryStartYunoStarEvent(): void {

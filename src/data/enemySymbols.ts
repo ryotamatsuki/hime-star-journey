@@ -96,6 +96,67 @@ const enemySymbolDefinitions: EnemySymbolDefinition[] = [
     animationType: "scurry",
     assetId: "enemy_dogo_mouse",
     label: "ゆげネズミ"
+  },
+  {
+    symbolId: "C-E01",
+    encounterId: "enc_castle_soldier_01",
+    locationId: "castle",
+    areaId: "C0",
+    required: true,
+    defeatedFlag: "enemy_defeated_C-E01",
+    collider: { x: -24, y: -28, width: 48, height: 36 },
+    animationType: "wander",
+    assetId: "enemy_castle_soldier",
+    label: "影足軽"
+  },
+  {
+    symbolId: "C-E02",
+    encounterId: "enc_castle_oni_01",
+    locationId: "castle",
+    areaId: "C0",
+    required: true,
+    defeatedFlag: "enemy_defeated_C-E02",
+    collider: { x: -28, y: -32, width: 56, height: 42 },
+    animationType: "shake",
+    assetId: "enemy_castle_oni",
+    label: "石垣鬼"
+  },
+  {
+    symbolId: "C-E03",
+    encounterId: "enc_castle_crow_soldier_01",
+    locationId: "castle",
+    areaId: "C0",
+    required: true,
+    defeatedFlag: "enemy_defeated_C-E03",
+    collider: { x: -24, y: -28, width: 48, height: 36 },
+    animationType: "float",
+    assetId: "enemy_castle_crow",
+    label: "黒羽ガラス"
+  },
+  {
+    symbolId: "C-E04",
+    encounterId: "enc_castle_well_01",
+    locationId: "castle",
+    areaId: "C0",
+    required: true,
+    defeatedFlag: "enemy_defeated_C-E04",
+    openedPathFlag: "castle_dark_well_cleared_path",
+    collider: { x: -30, y: -32, width: 60, height: 44 },
+    animationType: "blink",
+    assetId: "enemy_castle_well",
+    label: "くらやみ井戸"
+  },
+  {
+    symbolId: "C-E05",
+    encounterId: "enc_castle_soldier_02",
+    locationId: "castle",
+    areaId: "C0",
+    required: false,
+    defeatedFlag: "enemy_defeated_C-E05",
+    collider: { x: -24, y: -28, width: 48, height: 36 },
+    animationType: "wander",
+    assetId: "enemy_castle_soldier",
+    label: "影足軽"
   }
 ];
 
