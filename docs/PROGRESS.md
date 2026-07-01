@@ -837,7 +837,7 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 
 ## 2026-07-01 P7: 松山城探索・松山城クエスト
 
-- 状態: 実装中・自動検証済み。実ブラウザの全手動通し確認は残タスク。
+- 状態: 実装完了・自動/ブラウザ検証済み。
 - P6.5で追加した `src/data/map-layouts/castle-C0.json` をP7用の実データへ更新し、歩行可能領域、衝突領域、開始位置、カメラ範囲、敵、NPC、調べる対象、イベント、道しるべを定義した。
 - 星地図の松山城ノードから `castle / C0` のExploreScreenへ移動できるようTravelSystemを接続した。
 - 松山城敵として、影足軽、石垣鬼、黒羽ガラス、くらやみ井戸をEnemyData/EncounterData/EnemySymbolDataへ接続した。
@@ -859,10 +859,11 @@ P5では複数敵対応BattleScreen本実装に入る。P4で整備した `StarM
 | `npm.cmd run editor:smoke` | 成功 | マップエディタのロード/検証/保存APIスモーク |
 | `npm.cmd run build` | 成功 | Vite production build成功 |
 | 静的P7監査 | 成功 | 松山城必須敵、調べる対象、TravelSystem、城山のまもり保存、`castle` 星未取得、`gameCompleted` 未設定を確認 |
+| `npm.cmd run p7:browser` | 成功 | Chromiumブラウザ実行環境で星地図ロック/解放、松山城C0遷移、H/G、クエスト段階、1対1/1対2戦闘ロジック、城山のまもり保存、P8開始条件、マップエディタHTML取得を確認 |
+| `git diff --check` | 成功 | whitespace errorなし |
 
 ### P7 未解決・次フェーズ送り
 
-- 実ブラウザで星地図→松山城→必須戦闘→くらやみ井戸→城山のまもり取得までを人間操作で通す確認は未完了。
 - P7の範囲外として、カゲマサ最終戦、星封じカードの進行解放、みかん星の核奪還、城の星取得、MVPエンディングはP8に残す。
 
 

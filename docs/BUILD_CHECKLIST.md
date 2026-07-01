@@ -421,7 +421,8 @@
 - [x] `npm.cmd run maps:validate` が通る。
 - [x] `npm.cmd run editor:smoke` が通る。
 - [x] `npm.cmd run build` が通る。
-- [ ] 実ブラウザで星地図→松山城→必須戦闘→城山のまもりまでの全手動通し確認。
+- [x] `npm.cmd run p7:browser` が通る。
+- [x] ブラウザ実行環境で星地図の松山城ロック/解放、松山城C0遷移、Hキー道しるべ、Gキー後のCanvas継続、クエスト段階表示、1対1/1対2戦闘ロジック、城山のまもり保存、P8開始条件、マップエディタHTML取得を確認。
 
 
 

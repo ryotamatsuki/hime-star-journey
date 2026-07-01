@@ -452,6 +452,10 @@ P7の導線を明確にするため、C-E01、C-E02、C-E03を必須戦闘とし
 
 道後温泉は前景・湯けむりオーバーレイを使うが、松山城C0では背景1枚で探索できる。任意レイヤーが未指定の場合は `missing_map_layer` の代替表示を描かず、必要な背景画像の読み込み失敗時だけ代替図形に任せる。
 
+### P7ブラウザ検証は専用Verifierで再現可能にする
+
+通常のEdge headless/CDPが環境依存で不安定だったため、`p7-browser-verifier.html` と `src/p7BrowserVerifier.ts` を追加し、Chromiumブラウザ実行環境でGameAppの星地図/探索DOM、SaveManager、TravelSystem、BattleSystem、castle-C0 JSONを検証する。検証ページ内ではCanvas描画だけno-op化し、productionゲーム本体の描画処理は変更しない。
+
 
 
 

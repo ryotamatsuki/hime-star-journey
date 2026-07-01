@@ -36,5 +36,11 @@ export default [
         }
       ]
     }
+  },
+  {
+    files: ["scripts/**/*.mjs", "vite-plugins/**/*.mjs"],
+    rules: {
+      "no-undef": "off"
+    }
   }
 ];
