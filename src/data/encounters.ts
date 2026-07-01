@@ -76,7 +76,7 @@ export const encounters: EncounterData[] = [
   {
     id: "enc_castle_crow_soldier_01",
     name: "黒羽ガラスと影足軽",
-    required: false,
+    required: true,
     enemies: [{ enemyId: "castle_crow" }, { enemyId: "castle_soldier" }]
   },
   {
@@ -88,7 +88,7 @@ export const encounters: EncounterData[] = [
   {
     id: "enc_castle_soldier_02",
     name: "影足軽",
-    required: true,
+    required: false,
     enemies: [{ enemyId: "castle_soldier" }]
   },
   {

@@ -31,6 +31,15 @@ export type SaveData = {
     | "yunoStarReady"
     | "yunoStarObtained"
     | "cleared";
+  castleQuestStatus:
+    | "notStarted"
+    | "started"
+    | "hintSeen"
+    | "enemiesCleared"
+    | "darkWellCleared"
+    | "guardReady"
+    | "guardObtained"
+    | "cleared";
   lastSynopsis: string;
   savedAt: string;
 };

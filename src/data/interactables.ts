@@ -1,7 +1,7 @@
 import { getMapLayout, getPositionedObject, normalizeLocationId } from "./mapLayoutRegistry";
 import type { Rect } from "../systems/CollisionSystem";
 
-export type InteractableKind = "sign" | "steam" | "star_hint";
+export type InteractableKind = "sign" | "steam" | "star_hint" | "castle_hint" | "dark_well" | "castle_guard";
 
 export type InteractableData = {
   id: string;
@@ -52,6 +52,38 @@ const interactableDefinitions: InteractableDefinition[] = [
     label: "湯の星の気配",
     kind: "star_hint",
     message: "ここに湯の星の気配が集まっている。"
+  },
+  {
+    id: "castle_gate_hint",
+    locationId: "castle",
+    areaId: "C0",
+    width: 120,
+    height: 92,
+    label: "登城口の石碑",
+    kind: "castle_hint",
+    message: "石碑の文字が黒くにじんでいる。『三つの影をしずめ、井戸の闇をほどけ』と読めた。"
+  },
+  {
+    id: "castle_dark_well",
+    locationId: "castle",
+    areaId: "C0",
+    width: 128,
+    height: 112,
+    label: "くらやみ井戸",
+    kind: "dark_well",
+    requiredFlags: ["castle_required_enemies_cleared"],
+    message: "井戸の底で、くろぼしの影がまだ揺れている。"
+  },
+  {
+    id: "castle_guard_shrine",
+    locationId: "castle",
+    areaId: "C0",
+    width: 128,
+    height: 112,
+    label: "城山のまもり",
+    kind: "castle_guard",
+    requiredFlags: ["castle_dark_well_cleared"],
+    message: "小さな祠に、石垣色の光をまとったお守りが置かれている。"
   }
 ];
 

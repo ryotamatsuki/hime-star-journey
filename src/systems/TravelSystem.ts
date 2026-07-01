@@ -29,7 +29,7 @@ export function getNodeStatus(node: StarMapNodeData, save: SaveData): StarMapNod
 
   if (node.locationId === "castle") {
     return isLocationUnlocked("castle", save) || save.flags.location_castle_unlocked
-      ? "unlocked"
+      ? save.flags.castle_boss_route_unlocked ? "inProgress" : "unlocked"
       : "locked";
   }
 
@@ -50,19 +50,30 @@ export function isNodeSelectable(node: StarMapNodeData, save: SaveData): boolean
 }
 
 export function getCurrentObjective(save: SaveData): string {
+  if (save.flags.shiroyama_guard_obtained || save.flags.castle_boss_route_unlocked) {
+    return "城山のまもりを手に入れた。カゲマサのいる場所へ向かう準備ができた。";
+  }
+
+  if (save.currentLocationId === "castle" || save.flags.castle_quest_started) {
+    if (!save.flags.castle_hint_seen) return "松山城を調べ、城内の異変の手がかりを見つけよう";
+    if (!save.flags.castle_required_enemies_cleared) return "松山城の三つの影をしずめよう";
+    if (!save.flags.castle_dark_well_cleared) return "くらやみ井戸の闇をほどこう";
+    return "天守前の祠で城山のまもりを受け取ろう";
+  }
+
   if (!save.flags.star_dogo_collected && !save.collectedStars.includes("dogo")) {
     return "道後温泉で湯の星の気配を探そう";
   }
 
   if (save.flags.location_castle_unlocked || save.unlockedLocations.includes("castle")) {
-    return "星地図で松山城を確認しよう";
+    return "星地図から松山城へ向かおう";
   }
 
   return "星地図で次の行き先を確かめよう";
 }
 
 export function getSynopsis(save: SaveData): string {
-  return save.lastSynopsis || "ひめとシロは、愛媛にちらばる小さな星を探しています。";
+  return save.lastSynopsis || "ひめとシロは、小さな星を探す旅を続けています。";
 }
 
 export function getTravelDestination(
@@ -72,7 +83,7 @@ export function getTravelDestination(
   if (!isNodeSelectable(node, save)) {
     return {
       type: "message",
-      message: `${node.name}はまだ星の光が届いていません。`
+      message: `${node.name}には、まだ星の光が届いていません。`
     };
   }
 
@@ -87,8 +98,10 @@ export function getTravelDestination(
 
   if (node.locationId === "castle") {
     return {
-      type: "message",
-      message: "シロ「黒い影は松山城へ続いているよ。次は、お城を調べよう。」"
+      type: "screen",
+      screenId: "explore",
+      locationId: "castle",
+      areaId: "C0"
     };
   }
 

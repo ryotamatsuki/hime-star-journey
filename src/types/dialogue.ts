@@ -3,6 +3,7 @@ export type DialogueSpeakerId =
   | "shiro"
   | "dogo_guide"
   | "yumori_grandma"
+  | "castle_scout"
   | "system";
 
 export type DialogueLine = {

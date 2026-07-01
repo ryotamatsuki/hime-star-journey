@@ -10,6 +10,17 @@ export type ValidationIssue = {
 
 const PLAYER_RADIUS = 24;
 const REQUIRED_DOGO_TARGETS = ["D-E01", "D-E02", "D-E03", "D-E04"];
+const REQUIRED_CASTLE_TARGETS = [
+  "C-E01",
+  "C-E02",
+  "C-E03",
+  "C-E04",
+  "npc_castle_scout",
+  "castle_gate_hint",
+  "castle_dark_well",
+  "castle_guard_shrine",
+  "castle_guard_event"
+];
 
 export function validateMapLayout(layout: MapLayoutData, gridSize = 24): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
@@ -88,8 +99,9 @@ export function validateMapLayout(layout: MapLayoutData, gridSize = 24): Validat
     issues.push({ severity: "error", message: "プレイヤー開始位置が衝突領域に重なっています。", targetId: "playerStart" });
   }
 
+  const requiredTargetIds = layout.locationId === "castle" ? REQUIRED_CASTLE_TARGETS : REQUIRED_DOGO_TARGETS;
   const targets = [
-    ...layout.enemySpawns.filter((enemy) => REQUIRED_DOGO_TARGETS.includes(enemy.id)),
+    ...layout.enemySpawns.filter((enemy) => requiredTargetIds.includes(enemy.id)),
     ...layout.npcPositions,
     ...layout.interactablePositions,
     ...layout.eventPositions

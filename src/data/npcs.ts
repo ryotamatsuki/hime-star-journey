@@ -38,6 +38,17 @@ const npcDefinitions: NpcDefinition[] = [
     interactionRadius: 80,
     direction: "left",
     animationType: "idle"
+  },
+  {
+    id: "npc_castle_scout",
+    name: "城山の見回り",
+    locationId: "castle",
+    areaId: "C0",
+    assetId: "npc_dogo_guide",
+    dialogueId: "npc_castle_scout_default",
+    interactionRadius: 96,
+    direction: "down",
+    animationType: "idle"
   }
 ];
 
