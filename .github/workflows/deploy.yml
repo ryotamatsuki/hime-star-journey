@@ -53,7 +53,8 @@ jobs:
         run: |
           npm run dev -- --host 127.0.0.1 > /tmp/hime-vite.log 2>&1 &
           for i in {1..60}; do
-            if curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p7-browser-verifier.html > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p7-browser-verifier.html > /dev/null \
+              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p8-browser-verifier.html > /dev/null; then
               exit 0
             fi
             sleep 1
@@ -65,6 +66,11 @@ jobs:
         env:
           P7_BROWSER_PATH: /usr/bin/google-chrome
         run: npm run p7:browser
+
+      - name: P8 browser regression gate
+        env:
+          P8_BROWSER_PATH: /usr/bin/google-chrome
+        run: npm run p8:browser
 
       - name: Configure Pages
         if: github.event_name != 'pull_request'
