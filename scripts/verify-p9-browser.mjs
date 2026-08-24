@@ -30,7 +30,8 @@ class Cdp {
       const pending = this.pending.get(payload.id);
       if (!pending) return;
       this.pending.delete(payload.id);
-      payload.error ? pending.reject(new Error(payload.error.message)) : pending.resolve(payload.result);
+      if (payload.error) pending.reject(new Error(payload.error.message));
+      else pending.resolve(payload.result);
     });
   }
   send(method, params = {}) {
@@ -69,8 +70,13 @@ try {
   for (let i = 0; i < 100; i += 1) {
     try {
       const response = await fetch(`http://127.0.0.1:${port}/json/version`);
-      if (response.ok) { version = await response.json(); break; }
-    } catch {}
+      if (response.ok) {
+        version = await response.json();
+        break;
+      }
+    } catch {
+      await wait(25);
+    }
     await wait(100);
   }
   if (!version) throw new Error("Chrome CDP did not start");
@@ -91,7 +97,10 @@ try {
   let passed = false;
   for (let i = 0; i < 300; i += 1) {
     text = await cdp.eval("document.body?.innerText ?? ''");
-    if (text.includes("P9_BROWSER_VERIFICATION:PASS")) { passed = true; break; }
+    if (text.includes("P9_BROWSER_VERIFICATION:PASS")) {
+      passed = true;
+      break;
+    }
     if (text.includes("P9_BROWSER_VERIFICATION:FAIL")) throw new Error(text);
     await wait(250);
   }
