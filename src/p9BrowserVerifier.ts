@@ -101,7 +101,10 @@ function verifyNotebookData(): void {
   const save = p9CompleteSave();
   assert(notebookEntries.length === 10, "旅の手帳は10項目で構成される");
   assert(getUnlockedNotebookEntries(save).length === 10, "MVP完了セーブでは手帳10項目がすべて解放される");
-  const early = p9CompleteSave({ flags: { shiro_met: true }, collectedStars: [], defeatedEnemyIds: [], acquiredItems: {} });
+
+  const manager = new SaveManager("__p9_notebook_fixture__");
+  const early = manager.createInitialSaveData();
+  early.flags.shiro_met = true;
   assert(getUnlockedNotebookEntries(early).length < notebookEntries.length, "未進行セーブでは未解放ページを残す");
 }
 
@@ -136,7 +139,7 @@ async function verifyLiveP9(): Promise<void> {
   assert(document.body.innerText.includes("旅の記録 10/10"), "MVP完了時の手帳解放数を表示する");
   assert(document.body.innerText.includes("星封じと取り戻した光"), "カゲマサ再封印の記録を表示する");
   assert(document.body.innerText.includes("使えるカード"), "解放済みカード一覧を表示する");
-  assert(document.body.innerText.includes("地域メモ：松山城 / C0"), "地域メモを表示する");
+  assert(document.body.innerText.includes("地域メモ: 松山城 / C0"), "地域メモを表示する");
   assert(document.body.innerText.includes("オートセーブ"), "手帳にオートセーブ情報を表示する");
   assert(manager.load()?.currentScreenId === "explore", "手帳を開いてもセーブの再開地点をnotebookへ上書きしない");
 
