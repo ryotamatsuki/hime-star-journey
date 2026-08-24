@@ -1,13 +1,26 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const BROWSER_PATH =
-  process.env.P7_BROWSER_PATH ??
-  "C:\\Users\\Owner\\AppData\\Local\\ms-playwright\\chromium-1223\\chrome-win64\\chrome.exe";
+const browserCandidates = [
+  process.env.P7_BROWSER_PATH,
+  process.platform === "win32"
+    ? "C:\\Users\\Owner\\AppData\\Local\\ms-playwright\\chromium-1223\\chrome-win64\\chrome.exe"
+    : undefined,
+  "/usr/bin/google-chrome",
+  "/usr/bin/google-chrome-stable",
+  "/usr/bin/chromium",
+  "/usr/bin/chromium-browser"
+].filter(Boolean);
+const BROWSER_PATH = browserCandidates.find((candidate) => existsSync(candidate));
 const VERIFIER_URL = process.env.P7_VERIFIER_URL ?? "http://127.0.0.1:5173/hime-star-journey/p7-browser-verifier.html";
 const PORT = Number(process.env.P7_CDP_PORT ?? 9347);
+
+if (!BROWSER_PATH) {
+  throw new Error(`Chromium/Chrome executable not found. Tried: ${browserCandidates.join(", ")}. Set P7_BROWSER_PATH explicitly.`);
+}
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -72,15 +85,10 @@ class Cdp {
 async function launchBrowser() {
   const profile = await mkdtemp(path.join(tmpdir(), "hime-p7-cdp-"));
   const browser = spawn(BROWSER_PATH, [
-    "--headless",
+    "--headless=new",
     "--no-sandbox",
-    "--single-process",
     "--disable-dev-shm-usage",
     "--disable-gpu",
-    "--disable-gpu-compositing",
-    "--disable-gpu-sandbox",
-    "--disable-accelerated-2d-canvas",
-    "--disable-accelerated-video-decode",
     "--disable-background-networking",
     "--disable-component-update",
     "--disable-sync",
@@ -108,7 +116,7 @@ async function launchBrowser() {
   }
 
   await cleanup();
-  throw new Error("Chromium CDP did not start");
+  throw new Error(`Chromium CDP did not start: ${BROWSER_PATH}`);
 }
 
 async function createPage() {
@@ -134,6 +142,7 @@ if (!response.ok) {
   throw new Error(`Verifier URL is not available: ${response.status} ${VERIFIER_URL}`);
 }
 console.log(`OK verifier URL returns ${response.status}`);
+console.log(`Using browser: ${BROWSER_PATH}`);
 
 const { cleanup } = await launchBrowser();
 try {

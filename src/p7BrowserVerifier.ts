@@ -13,36 +13,6 @@ const resultList = document.querySelector<HTMLOListElement>("#p7-verifier-result
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
 const uiRoot = document.querySelector<HTMLElement>("#ui-root");
 
-const noop = () => undefined;
-const fakeGradient = { addColorStop: noop };
-const fakeContext = new Proxy<{ canvas: HTMLCanvasElement | null }>({ canvas }, {
-  get(target, property) {
-    if (property === "canvas") return target.canvas;
-    if (property === "measureText") return () => ({ width: 120 });
-    if (property === "createLinearGradient" || property === "createRadialGradient") return () => fakeGradient;
-    if (property === "save" || property === "restore" || property === "beginPath" || property === "closePath" ||
-      property === "fill" || property === "stroke" || property === "fillRect" || property === "strokeRect" ||
-      property === "clearRect" || property === "drawImage" || property === "translate" || property === "scale" ||
-      property === "rotate" || property === "arc" || property === "ellipse" || property === "moveTo" ||
-      property === "lineTo" || property === "quadraticCurveTo" || property === "bezierCurveTo" ||
-      property === "setLineDash" || property === "fillText" || property === "strokeText" || property === "rect") {
-      return noop;
-    }
-    return Reflect.get(target, property);
-  },
-  set(target, property, value) {
-    Reflect.set(target, property, value);
-    return true;
-  }
-}) as unknown as CanvasRenderingContext2D;
-
-HTMLCanvasElement.prototype.getContext = function getContext(type: string): CanvasRenderingContext2D | null {
-  return type === "2d" ? fakeContext : null;
-} as typeof HTMLCanvasElement.prototype.getContext;
-HTMLCanvasElement.prototype.toDataURL = function toDataURL(): string {
-  return `data:image/png;base64,${"a".repeat(2048)}`;
-};
-
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function record(message: string): void {
@@ -194,7 +164,8 @@ async function testStarMapTravel(): Promise<void> {
   assert(document.body.innerText.includes("道しるべ表示中"), "Hキーで松山城の道しるべを表示できる");
   dispatchKey("KeyG");
   await sleep(250);
-  assert(canvas!.toDataURL("image/png").length > 1000, "Gキー後もCanvas描画が継続する");
+  const rendered = canvas!.toDataURL("image/png");
+  assert(rendered.startsWith("data:image/png;base64,") && rendered.length > 1000, "Gキー後も実Canvas描画が継続する");
   app.stop();
 }
 
@@ -260,6 +231,28 @@ async function testQuestObjectives(): Promise<void> {
       }),
       "城山のまもり",
       "くらやみ井戸後は城山のまもりを目的表示する"
+    ],
+    [
+      baseSave({
+        currentScreenId: "explore",
+        currentChapterId: "p8_ready",
+        currentLocationId: "castle",
+        currentAreaId: "C0",
+        castleQuestStatus: "cleared",
+        acquiredCharms: ["shiroyama_guard"],
+        flags: {
+          castle_quest_started: true,
+          castle_hint_seen: true,
+          castle_required_enemies_cleared: true,
+          castle_dark_well_cleared: true,
+          castle_guard_ready: true,
+          shiroyama_guard_obtained: true,
+          p8_kagemasa_route_unlocked: true,
+          dialogue_castle_intro_seen: true
+        }
+      }),
+      "カゲマサのもとへ進む準備が整った",
+      "P7完了後の目的表示に内部フェーズ名を出さない"
     ]
   ];
 
@@ -267,6 +260,7 @@ async function testQuestObjectives(): Promise<void> {
     const app = await runAppWithSave(save);
     await waitFor(() => Boolean(document.querySelector(".explore-ui")), message);
     assert(document.body.innerText.includes(expectedText), message);
+    assert(!document.body.innerText.includes("P8で"), "プレイヤー向けUIに内部フェーズ名を表示しない");
     app.stop();
   }
 }
@@ -297,6 +291,36 @@ function testBattles(): void {
   assert(isBattleVictory(oneOnTwo), "ブラウザ実行環境で松山城1対2戦闘ロジックが勝利まで動作する");
 }
 
+function testBossSealInvariant(): void {
+  const encounter = getEncounterById("enc_boss_kagemasa");
+  assert(encounter, "カゲマサEncounterが存在する");
+  let state = createBattleState(encounter, baseSave({
+    hp: 999,
+    maxHp: 999,
+    mp: 999,
+    maxMp: 999,
+    unlockedCards: ["card_mikan_attack", "card_star_seal"]
+  }));
+  const boss = state.enemies[0];
+  assert(boss, "カゲマサBattleActorが生成される");
+
+  for (let i = 0; i < 40 && !isBattleVictory(state); i += 1) {
+    const result = applyBattleCard(state, "card_mikan_attack", boss.instanceId);
+    state = result.state;
+    if (state.phase === "enemyAction") state = resolveEnemyTurn(state).state;
+    if (state.enemies[0]?.hp === 1) break;
+  }
+  assert(state.enemies[0]?.hp === 1, "通常攻撃ではカゲマサHPを0にできず封印待ちになる");
+  assert(!isBattleVictory(state), "カゲマサはHPを削り切るだけでは勝利にならない");
+
+  for (let i = 0; i < 10 && !isBattleVictory(state); i += 1) {
+    const result = applyBattleCard(state, "card_star_seal", boss.instanceId);
+    state = result.state;
+    if (state.phase === "enemyAction") state = resolveEnemyTurn(state).state;
+  }
+  assert(isBattleVictory(state), "星封じゲージ完了時だけカゲマサ戦勝利になる");
+}
+
 function testSaveCompatibility(): void {
   const manager = new SaveManager("__p7_browser_verifier_compat__");
   const normalized = manager.save(baseSave({
@@ -305,7 +329,7 @@ function testSaveCompatibility(): void {
     currentAreaId: "C0",
     currentScreenId: "starMap",
     castleQuestStatus: "cleared",
-    defeatedEnemyIds: ["C-E01", "C-E02", "C-E03", "C-E04"],
+    defeatedEnemyIds: ["C-E01", "C-E02", "C-E03", "C-E04", "C-E04"],
     clearedQuestIds: ["quest_dogo_yukemuri_star", "quest_castle_shiroyama_guard"],
     acquiredItems: { shiroyama_guard: 1 },
     acquiredCharms: ["shiroyama_guard"],
@@ -326,6 +350,20 @@ function testSaveCompatibility(): void {
   assert(normalized.acquiredCharms.includes("shiroyama_guard"), "城山のまもりが再読み込み後も保持される");
   assert(!normalized.collectedStars.includes("castle"), "P7ではcastleをcollectedStarsへ追加しない");
   assert(normalized.flags.gameCompleted !== true && !("gameCompleted" in normalized), "P7ではgameCompletedをtrueにしない");
+  assert(normalized.defeatedEnemyIds.filter((id) => id === "C-E04").length === 1, "セーブ配列の重複を除去する");
+
+  const corrupted = manager.normalizeSaveData({
+    ...baseSave(),
+    hp: 999,
+    maxHp: 30,
+    mp: -12,
+    maxMp: 10,
+    acquiredItems: { good: 2.9, negative: -5, invalid: Number.NaN }
+  });
+  assert(corrupted.hp === 30, "HPをmaxHp以内に正規化する");
+  assert(corrupted.mp === 0, "MPを0以上に正規化する");
+  assert(corrupted.acquiredItems.good === 2, "所持数を非負整数へ正規化する");
+  assert(!("negative" in corrupted.acquiredItems) && !("invalid" in corrupted.acquiredItems), "不正な所持数を除去する");
   manager.clear();
 }
 
@@ -355,6 +393,7 @@ async function main(): Promise<void> {
     setStatus("running");
     testMapAndTravelData();
     testBattles();
+    testBossSealInvariant();
     testSaveCompatibility();
     await testStarMapTravel();
     await testQuestObjectives();

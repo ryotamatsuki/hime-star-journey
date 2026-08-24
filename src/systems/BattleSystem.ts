@@ -89,6 +89,11 @@ export function canUseCard(state: BattleState, card: BattleCardData): boolean {
     return false;
   }
 
+  const availableCardIds = normalizeBattleCardIds(actor.availableCardIds ?? []);
+  if (!availableCardIds.includes(card.id)) {
+    return false;
+  }
+
   if (card.targetType === "self") {
     return true;
   }
@@ -116,8 +121,8 @@ export function applyBattleCard(
     return { state, logs: ["カードを使えません。"] };
   }
 
-  if (actor.mp < card.mpCost) {
-    return { state, logs: [`MPが足りません。${card.name}は使えません。`] };
+  if (!canUseCard(state, card)) {
+    return { state, logs: [`今は${card.name}を使えません。`] };
   }
 
   const nextState = cloneBattleState(state);
@@ -159,10 +164,20 @@ export function applyBattleCard(
   }
 
   const damage = calculateCardDamage(nextActor, target, card);
-  target.hp = Math.max(0, target.hp - damage);
+  const isUnsealedBoss =
+    nextState.isBossBattle &&
+    target.actorType === "boss" &&
+    Boolean(nextState.sealGauge) &&
+    (nextState.sealGauge?.value ?? 0) > 0;
+  const nextHp = Math.max(0, target.hp - damage);
+  target.hp = isUnsealedBoss ? Math.max(1, nextHp) : nextHp;
 
   const logs = [`${nextActor.name}は${card.name}を使った。`, `${target.name}に${damage}ダメージ。`];
   let effectKind: BattleEffectKind = card.role === "seal" ? "seal" : "attack";
+
+  if (isUnsealedBoss && nextHp <= 0) {
+    logs.push("カゲマサの影は崩れかけたが、星封じを完成させなければ再封印できない。" );
+  }
 
   if (nextState.isBossBattle && nextState.sealGauge && card.bossSealDamage) {
     nextState.sealGauge.value = Math.max(0, nextState.sealGauge.value - card.bossSealDamage);
@@ -235,8 +250,8 @@ export function resolveEnemyTurn(state: BattleState): BattleActionResult {
 }
 
 export function isBattleVictory(state: BattleState): boolean {
-  if (state.isBossBattle && state.sealGauge && state.sealGauge.value <= 0) {
-    return true;
+  if (state.isBossBattle) {
+    return Boolean(state.sealGauge && state.sealGauge.value <= 0);
   }
 
   return state.enemies.every((enemy) => enemy.hp <= 0);
@@ -297,11 +312,8 @@ function cloneActor(actor: BattleActor): BattleActor {
 function chooseTarget(state: BattleState, targetInstanceId?: string): BattleActor | undefined {
   const aliveEnemies = getAliveEnemies(state);
 
-  if (targetInstanceId) {
-    const target = aliveEnemies.find((enemy) => enemy.instanceId === targetInstanceId);
-    if (target) {
-      return target;
-    }
+  if (targetInstanceId !== undefined) {
+    return aliveEnemies.find((enemy) => enemy.instanceId === targetInstanceId);
   }
 
   return aliveEnemies[0];
