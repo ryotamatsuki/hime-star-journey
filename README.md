@@ -4,27 +4,27 @@
 
 ## 現在のフェーズ
 
-P7「松山城探索・松山城クエスト」と **P7.1 Release Hardening** は実装・PR検証済みです。次はP8「カゲマサ戦・みかん星の核奪還・MVPエンディング」です。
+P8「カゲマサ戦・みかん星の核奪還・MVPエンディング」を実装し、PR Release Gateを確認中です。P8通過後の次フェーズはP9「旅の手帳・BGM/SE・セーブ調整」です。
 
-P7 runtimeの正本は次のとおりです。
+P8 runtimeの正本:
 
-- 松山城は `locationId: "castle"` / `areaId: "C0"` の1枚の探索マップ。
-- 必須戦闘は `C-E01`〜`C-E03`、くらやみ井戸は `C-E04`、`C-E05` は任意戦闘。
-- 城山のまもり取得後に `p8_kagemasa_route_unlocked` を保存する。
-- P7では `collectedStars` に `castle` を追加せず、`gameCompleted` も設定しない。
-- カゲマサ再封印、みかん星の核奪還、城の星、MVPエンディングはP8で実装する。
+- P7完了時の `p8_kagemasa_route_unlocked` から「天守奥へ進む」導線が出る。
+- P8進行は肥大化したExploreScreenへ追加せず、`P8FlowController` に分離。
+- カゲマサ戦開始時にHP/MPを回復し、`card_star_seal` を解放する。
+- ボス戦は `enc_boss_kagemasa` / `B-E01` / `isBoss: true`。
+- 通常ダメージだけではカゲマサを倒せず、`sealGauge <= 0` による星封じ完成のみ正式勝利。
+- 勝利後にみかん星の核、城の星、ペンダントの光を回復し、`gameCompleted` を保存する。
+- P8完了直後は `EndingScreen` へ進み、未解放の空白の星を残して次の冒険を示す。
 
 主な実装状況:
 
-- TypeScript / Vite / HTML Canvas 2D / DOM UI / localStorageの基盤を実装済み。
-- P6で画像付き6シーンプロローグ、道後温泉クエスト、湯の星取得、星地図・松山城解放を実装済み。
-- P6.5で `map-editor.html` を追加し、道後D0/松山城C0のレイアウトJSONを視覚編集・検証・保存できるようにしています。
-- P7で星地図→松山城C0、城内戦闘、NPC/調べるヒント、くらやみ井戸、城山のまもり取得まで接続済み。
-- P7.1でキーボードとDOMボタンのNPC interactionを同一処理へ統一し、マウス/タッチでも同じクエストフラグが更新されるよう修正しました。
-- SaveDataはHP/MP上限、ID重複、不正な所持数、boolean flags、ScreenId等を正規化します。
-- ボス戦は通常ダメージだけでは勝利せず、`sealGauge <= 0` による再封印のみを正式勝利条件とします。
-- GitHub ActionsはPR/mainの双方で、型・lint・マップ検証・エディタsmoke・build・実ブラウザ回帰検証をRelease Gateとして実行します。
-- P7.1 PRでは `npm ci`、typecheck、lint、maps:validate、editor:smoke、build、Linux Chrome `p7:browser` の全Gate PASSを確認済みです。
+- TypeScript / Vite / HTML Canvas 2D / DOM UI / localStorage基盤。
+- P6: 画像付き6シーンプロローグ、道後温泉クエスト、湯の星、星地図・松山城解放。
+- P6.5: `map-editor.html` による道後D0/松山城C0レイアウトの視覚編集・検証・保存。
+- P7: 星地図→松山城C0、城内戦闘、NPC/調べるヒント、くらやみ井戸、城山のまもり。
+- P7.1: NPC入力経路統一、Save/Battle不変条件、実ブラウザCI Release Gate。
+- P7.2: 道後D0の背景上の地面とwalkable polygonを整合。
+- P8: カゲマサ戦、星封じ、核奪還、城の星、MVP完了保存、EndingScreen。
 
 ## 技術方針
 
@@ -37,7 +37,7 @@ P7 runtimeの正本は次のとおりです。
 - セーブ: localStorage
 - ループ: requestAnimationFrame
 
-Canvas描画、DOM UI、ゲームロジック、データ、セーブ処理、アニメーション処理は分離します。P8で探索クエストの新規ロジックを追加する場合は、肥大化したExploreScreenへ直接条件分岐を積み増さず、クエスト進行・特殊イベントをcontroller/serviceへ抽出してから追加します。
+Canvas描画、DOM UI、ゲームロジック、データ、セーブ処理、アニメーション処理を分離します。P8ではExploreScreenへ条件分岐を積み増さず、最終章の導線と状態遷移を専用controllerへ切り出しています。
 
 ## MVP範囲
 
@@ -55,15 +55,15 @@ Canvas描画、DOM UI、ゲームロジック、データ、セーブ処理、�
 
 ## 戦闘設計の重要ルール
 
-- 味方はMVPではひめ1人。ただし内部的には `partyMembers: BattleActor[]` で管理します。
-- 敵は `enemies: BattleActor[]` で管理します。
-- 敵シンボルは `enemyId` ではなく `encounterId` を参照します。
-- `EncounterData` は敵1体または2体を生成できます。
-- MVPでは1対3以上の戦闘は実装しません。
-- 攻撃カードで敵が複数いる場合はターゲット選択UIを表示します。
-- 回復・防御カードはひめ自身に自動適用します。
-- 通常戦闘は敵全員のHPが0以下で勝利します。
-- カゲマサ戦はHPを削るだけでは勝利せず、星封じゲージを0にして再封印した場合のみ勝利します。
+- 味方はMVPではひめ1人。ただし内部的には `partyMembers: BattleActor[]` で管理。
+- 敵は `enemies: BattleActor[]` で管理。
+- 敵シンボルは `enemyId` ではなく `encounterId` を参照。
+- `EncounterData` は敵1体または2体を生成可能。
+- MVPでは1対3以上の戦闘は実装しない。
+- 攻撃カードで敵が複数いる場合はターゲット選択UIを表示。
+- 回復・防御カードはひめ自身に自動適用。
+- 通常戦闘は敵全員のHPが0以下で勝利。
+- カゲマサ戦はHPを削るだけでは勝利せず、星封じゲージを0にして再封印した場合のみ勝利。
 
 ## 主要ドキュメント
 
@@ -78,6 +78,7 @@ Canvas描画、DOM UI、ゲームロジック、データ、セーブ処理、�
 - [ASSET_TRACKER](docs/ASSET_TRACKER.md)
 - [BUILD_CHECKLIST](docs/BUILD_CHECKLIST.md)
 - [P6.5 マップエディタ取扱説明書](docs/MAP_EDITOR_MANUAL.md)
+- [P8 implementation contract](docs/P8_IMPLEMENTATION.md)
 
 ## アセット管理
 
@@ -85,7 +86,7 @@ Canvas描画、DOM UI、ゲームロジック、データ、セーブ処理、�
 - 参照画像: `docs/visual-reference/key-visuals/`
 - ゲーム内で読む生成画像: `public/assets/generated/`
 
-画像読み込みに失敗しても、実装側ではCanvasの代替図形を描いてゲームを停止させない方針です。起動時は現状AssetManifestを一括ロードします。P8でアセット追加後にタイトル表示時間を再計測し、必要ならboot/area/battle/ending単位の段階ロードへ変更します。
+画像読み込みに失敗してもCanvas代替描画でゲームを停止させない方針です。現状はAssetManifestを起動時に一括ロードしており、P9で実測して必要なら段階ロードへ変更します。
 
 ## 開発・検証コマンド
 
@@ -98,11 +99,12 @@ npm run editor:smoke
 npm run build
 npm run dev
 npm run p7:browser
+npm run p8:browser
 ```
 
-Windows PowerShellで `npm.ps1` のExecution Policyに止められる場合は、`npm.cmd run ...` を使用してください。`p7:browser` は `P7_BROWSER_PATH` を指定でき、Windowsの既存Chromiumに加えてLinuxのChrome/Chromiumも探索します。
+Windows PowerShellで `npm.ps1` のExecution Policyに止められる場合は `npm.cmd run ...` を使用してください。ブラウザ回帰は `P7_BROWSER_PATH` / `P8_BROWSER_PATH` を指定でき、Windows ChromiumとLinux Chrome/Chromiumの双方に対応します。
 
-ViteのbaseをGitHub Pages用に設定しているため、ローカルdevサーバーの確認URLは次のとおりです。
+ローカルゲーム:
 
 ```text
 http://127.0.0.1:5173/hime-star-journey/
@@ -114,8 +116,6 @@ http://127.0.0.1:5173/hime-star-journey/
 http://127.0.0.1:5173/hime-star-journey/map-editor.html
 ```
 
-エディタの保存APIはVite開発サーバー専用です。保存時は `.map-editor-backups/` にバックアップを作成し、production buildではファイル書き込みAPIを持ちません。
-
 ## GitHub Pages / Release Gate
 
 公開URL:
@@ -124,4 +124,4 @@ http://127.0.0.1:5173/hime-star-journey/map-editor.html
 https://ryotamatsuki.github.io/hime-star-journey/
 ```
 
-`.github/workflows/deploy.yml` はPRで検証のみを行い、main pushでは同じ検証を全て通過した場合のみPagesへdeployします。Gateは `typecheck`、`lint`、`maps:validate`、`editor:smoke`、`build`、`p7:browser` です。
+`.github/workflows/deploy.yml` はPRで検証のみを行い、main pushでは同じ検証を全て通過した場合のみPagesへdeployします。P8時点のGateは `typecheck`、`lint`、`maps:validate`、`editor:smoke`、`build`、`p7:browser`、`p8:browser` です。
