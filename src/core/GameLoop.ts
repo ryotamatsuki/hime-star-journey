@@ -9,7 +9,8 @@ export class GameLoop {
   constructor(
     private readonly ctx: CanvasRenderingContext2D,
     private readonly screenManager: ScreenManager,
-    private readonly inputManager: InputManager
+    private readonly inputManager: InputManager,
+    private readonly beforeFrame?: () => void
   ) {}
 
   start(): void {
@@ -39,6 +40,7 @@ export class GameLoop {
     const deltaTime = Math.min((timestamp - this.lastFrameTime) / 1000, 0.1);
     this.lastFrameTime = timestamp;
 
+    this.beforeFrame?.();
     this.screenManager.update(deltaTime);
     this.screenManager.render(this.ctx);
     this.inputManager.endFrame();
