@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -12,7 +15,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -37,18 +40,44 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Validate map layouts
+        run: npm run maps:validate
+
+      - name: Verify map editor smoke contract
+        run: npm run editor:smoke
+
       - name: Build
         run: npm run build
 
+      - name: Start verifier dev server
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/hime-vite.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p7-browser-verifier.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/hime-vite.log
+          exit 1
+
+      - name: P7 browser regression gate
+        env:
+          P7_BROWSER_PATH: /usr/bin/google-chrome
+        run: npm run p7:browser
+
       - name: Configure Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
