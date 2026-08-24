@@ -36,7 +36,11 @@ export function prepareP8BossSave(save: SaveData): SaveData {
 }
 
 export function isP8BossVictoryPending(save: SaveData): boolean {
-  return save.defeatedEnemyIds.includes(BOSS_SYMBOL_ID) && save.flags.kagemasa_sealed !== true;
+  return (
+    save.flags.kagemasa_battle_started === true &&
+    save.defeatedEnemyIds.includes(BOSS_SYMBOL_ID) &&
+    save.flags.kagemasa_sealed !== true
+  );
 }
 
 export function completeP8Save(save: SaveData): SaveData {
@@ -49,6 +53,7 @@ export function completeP8Save(save: SaveData): SaveData {
     starLevel: Math.max(3, save.starLevel),
     hp: save.maxHp,
     mp: save.maxMp,
+    defeatedEnemyIds: Array.from(new Set([...save.defeatedEnemyIds, BOSS_SYMBOL_ID])),
     collectedStars: Array.from(new Set([...save.collectedStars, CASTLE_STAR_ID])),
     unlockedCards: Array.from(new Set([...save.unlockedCards, STAR_SEAL_CARD_ID])),
     acquiredItems: {
