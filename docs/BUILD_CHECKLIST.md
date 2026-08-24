@@ -1,83 +1,87 @@
 ﻿# BUILD_CHECKLIST
 
-このチェックリストは現在のP7.1 Release Hardening以降で、mainへ入れる変更とGitHub Pages公開を判定するRelease Gateです。
+このチェックリストはP8時点のmain投入・GitHub Pages公開を判定するRelease Gateです。
 
 ## PR必須Gate
 
-- [ ] `npm ci` が成功する。
-- [ ] `npm run typecheck` が成功する。
-- [ ] `npm run lint` が成功する。
-- [ ] `npm run maps:validate` が成功し、`dogo-D0` / `castle-C0` にerrorsがない。
-- [ ] `npm run editor:smoke` が成功する。
-- [ ] `npm run build` が成功する。
-- [ ] Vite dev serverで `/hime-star-journey/p7-browser-verifier.html` がHTTP 200を返す。
-- [ ] Linux Chrome/Chromiumで `npm run p7:browser` が成功する。
-- [ ] PRではPages deployを実行しない。
+- [ ] `npm ci`
+- [ ] `npm run typecheck`
+- [ ] `npm run lint`
+- [ ] `npm run maps:validate`
+- [ ] `npm run editor:smoke`
+- [ ] `npm run build`
+- [ ] P7/P8 verifier URLがVite dev serverでHTTP 200
+- [ ] Linux Chromeで `npm run p7:browser`
+- [ ] Linux Chromeで `npm run p8:browser`
+- [ ] PRではPages configure/upload/deployを実行しない
 
-## P7/P7.1回帰契約
+## P7/P7.2回帰契約
 
-- [x] 星地図で未解放の松山城へ移動できない。
-- [x] 湯の星取得済み状態では松山城 `castle/C0` へ移動できる。
-- [x] 松山城でHキーの道しるべを利用できる。
-- [x] Gキー後も実Canvas描画が継続する。
-- [x] 松山城の目的表示がヒント→必須3戦→くらやみ井戸→城山のまもりの順に進む。
-- [x] P7完了後のプレイヤー向けUIに「P8で」など内部フェーズ名を表示しない。
-- [x] 松山城1対1戦闘が勝利まで動く。
-- [x] 松山城1対2戦闘が勝利まで動く。
-- [x] `castle-C0` の必須レイアウトIDを読み込める。
-- [x] 城山のまもり取得済みセーブからP8開始条件を復元できる。
-- [x] P7では `collectedStars` に `castle` を追加しない。
-- [x] P7では `gameCompleted` を設定しない。
+- [x] 湯の星取得済み状態から松山城 `castle/C0` へ移動できる
+- [x] 松山城の目的表示がヒント→必須3戦→くらやみ井戸→城山のまもりの順に進む
+- [x] P7では `collectedStars` に `castle` を追加しない
+- [x] P7では `gameCompleted` を設定しない
+- [x] 道後D0は背景準拠walkable polygonをruntime移動判定に利用する
+- [x] P7 browser gateをP8後も維持する
 
-## Input / Quest整合
+## P8進行契約
 
-- [x] NPCのEnter/Space操作とDOM「話す」ボタンが同じinteraction処理を通る。
-- [x] 道後NPCをDOMボタンから話した場合も `dogo_quest_hint_seen` を更新する設計である。
-- [x] 松山城NPCをDOMボタンから話した場合も `castle_hint_seen` を更新する設計である。
-- [ ] P10のproduction E2Eでマウス/タッチ中心の通し操作を確認する。
+- [x] `p8_kagemasa_route_unlocked` がない場合はボス導線を出さない
+- [x] P7完了後に「天守奥へ進む」導線を表示する
+- [x] P8進行をExploreScreenへ積み増さず `P8FlowController` へ分離する
+- [x] P8監視は200ms intervalで行い、localStorageを描画フレームごとに読まない
+- [x] ボス開始時にHP/MPを全回復する
+- [x] ボス開始時に `card_star_seal` を解放する
+- [x] `kagemasa_battle_started` を保存する
 
-## BattleSystem不変条件
+## カゲマサ戦不変条件
 
-- [x] 使用カードが現在phaseで使用可能かBattleSystem自身が検証する。
-- [x] アンロックされていないカードをBattleSystemが拒否する。
-- [x] 不正な明示target IDを別の敵へ暗黙フォールバックしない。
-- [x] 通常戦闘は敵全員HP0で勝利する。
-- [x] 封印未完了のカゲマサは通常ダメージでHP0にならない。
-- [x] カゲマサはHPを削るだけでは勝利にならない。
-- [x] カゲマサは `sealGauge <= 0` の場合だけ勝利になる。
+- [x] `enc_boss_kagemasa` を `isBoss: true` で開始する
+- [x] カゲマサは通常ダメージだけではHP0にならない
+- [x] カゲマサは通常ダメージだけでは勝利にならない
+- [x] `sealGauge <= 0` の場合だけ正式勝利になる
+- [x] 星封じカードでsealGaugeを削れる
+- [x] P8 browser verifierで実際に星封じ勝利までBattleSystemを実行する
 
-## SaveData不変条件
+## P8完了Save不変条件
 
-- [x] 現行Save versionへ正規化する。
-- [x] `maxHp >= 1` を保証する。
-- [x] `maxMp >= 0` を保証する。
-- [x] HP/MPを0〜最大値へclampする。
-- [x] 主要ID配列の重複を除去する。
-- [x] アイテム数は有限の非負整数だけを保持する。
-- [x] `flags` はboolean値だけを採用する。
-- [x] 不正な `currentScreenId` を既知画面へfallbackする。
-- [x] chapter/location/areaの非文字列・空文字を既定値へfallbackする。
+- [x] `defeatedEnemyIds` に `B-E01` を保持する
+- [x] `flags.kagemasa_sealed === true`
+- [x] `flags.mikan_core_recovered === true`
+- [x] `acquiredItems.mikan_star_core >= 1`
+- [x] `flags.castle_star_obtained === true`
+- [x] `flags.star_castle_collected === true`
+- [x] `collectedStars` に `castle` を追加する
+- [x] `flags.pendant_light_restored === true`
+- [x] `flags.dogo_restored === true`
+- [x] `flags.castle_restored === true`
+- [x] `flags.p8_completed === true`
+- [x] `flags.gameCompleted === true`
+- [x] P8完了直後は `currentScreenId === "ending"`
+- [x] finalizationを単一関数で一括更新し、部分完了状態を作らない
+- [x] `kagemasa_battle_started` なしのB-E01混入だけではP8完了扱いにしない
 
-## マップエディタ契約
+## EndingScreen契約
 
-- [x] `map-editor.html` がproduction buildの入力に含まれる。
-- [x] 道後温泉D0と松山城C0のレイアウトJSONを読み込める。
-- [x] Vite dev専用load/save/validate APIをproduction buildへ持ち込まない。
-- [x] 保存前に `.map-editor-backups/` へバックアップする。
-- [x] ゲームプレビューは通常セーブと別キーを使う。
-- [x] 不正レイアウトを保存API側でも拒否する。
+- [x] みかん星の核・城の星・ペンダント回復を文面で示す
+- [x] 未解放の空白の星を残す
+- [x] 星地図へ戻れる
+- [x] タイトルへ戻れる
+- [x] タイトルへ戻ってもEnding再開地点を上書きしない
+- [x] タイトルの「つづきから」でEndingへ復帰できることをブラウザ回帰に含める
+
+## Save/Battle既存不変条件
+
+- [x] HP/MP/max値域を正規化する
+- [x] ID配列をdedupeする
+- [x] flagsはbooleanだけを採用する
+- [x] 不正ScreenIdを既知画面へfallbackする
+- [x] BattleSystem自身がphase/MP/アンロックカード/targetを検証する
 
 ## main / GitHub Pages Gate
 
-- [ ] main pushでもPRと同じbuild jobを通過する。
-- [ ] build job成功後だけPages artifactをuploadする。
-- [ ] build job成功後だけdeploy jobを実行する。
-- [ ] P10で公開URLから新規セーブのMVP E2Eを実行する。
-- [ ] P10でConsole error、HTTP 4xx、必須asset欠落がないことを確認する。
-
-## P8実装開始条件
-
-- [ ] P7.1 PRのGitHub Actionsが全てPASSしている。
-- [x] GDD/README/ROADMAP/PROGRESS/TASKSの `castle/C0` / `C-E*` 体系がruntimeと一致している。
-- [x] ボス戦の星封じ必須勝利条件が回帰検証に固定されている。
-- [ ] ExploreScreenへP8の探索進行を追加する場合、クエスト進行/特殊イベント責務を先にcontroller/serviceへ抽出する。
+- [ ] PR #5最終headで全Gate PASS
+- [ ] mainへsquash merge
+- [ ] main pushでも同じbuild gateを通過
+- [ ] build成功後だけPages artifact upload/deploy
+- [ ] P10で公開URLの新規セーブMVP E2Eを実行
