@@ -96,7 +96,7 @@ export class AudioManager {
   private playBgmStep(): void {
     if (!this.unlocked || !this.context || this.muted) return;
     const pattern = BGM_PATTERNS[this.currentBgm];
-    const frequency = pattern[this.patternIndex % pattern.length] ?? pattern[0];
+    const frequency = pattern[this.patternIndex % pattern.length] ?? pattern[0] ?? 261.63;
     this.patternIndex += 1;
     this.playTone(frequency, 0.55, 0.035, this.currentBgm === "battle" ? "square" : "sine");
     if (this.currentBgm !== "battle") this.playTone(frequency / 2, 0.7, 0.018, "triangle");
