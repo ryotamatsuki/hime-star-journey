@@ -15,7 +15,7 @@
 | P6 | プロローグ／道後温泉体験版 | ペンダント、シロ、核奪取、道後異変、湯の星、松山城解放 | 実装完了 |
 | P6.5 | ローカル開発用マップエディタ | 道後D0/松山城C0の歩行・衝突・配置・道しるべ編集 | 完了 |
 | P7 | 松山城探索・松山城クエスト | `castle/C0`、C-E01〜C-E04、くらやみ井戸、城山のまもり | 完了 |
-| P7.1 | Release Hardening | 入力経路整合、Save/Battle不変条件、仕様同期、CI Release Gate | 実装中 |
+| P7.1 | Release Hardening | 入力経路整合、Save/Battle不変条件、仕様同期、CI Release Gate | 完了 |
 | P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 星封じ、再封印、核奪還、城の星、終了演出 | 未着手 |
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 未着手 |
 | P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 未着手 |
@@ -29,15 +29,15 @@
 - P7完了時は `p8_kagemasa_route_unlocked` を保存するが、`collectedStars` に `castle` は追加しない。
 - みかん星の核奪還、城の星、カゲマサ再封印、`gameCompleted` はP8の責務。
 
-## P7.1 完了条件
+## P7.1 完了内容
 
-- DOM/キーボードのNPC interactionが同じ進行処理を通る。
-- SaveDataがHP/MP、重複ID、不正アイテム数を正規化する。
-- ボス戦は通常ダメージでは勝利せず、`sealGauge <= 0` のみで勝利する。
-- `MVP詳細GDD.md`、README、ROADMAP、PROGRESS、TASKS、BUILD_CHECKLISTのID体系とP7/P8境界がruntimeと一致する。
-- PRで `typecheck`、`lint`、`maps:validate`、`editor:smoke`、`build`、`p7:browser` が全て成功する。
-- main push時は同じGateを通過した場合のみGitHub Pagesへdeployする。
+- DOM/キーボードのNPC interactionを同じ進行処理へ統一。
+- SaveDataのHP/MP、重複ID、不正アイテム数、boolean flags、ScreenId等を正規化。
+- ボス戦は通常ダメージでは勝利せず、`sealGauge <= 0` のみで勝利する不変条件を実装。
+- `MVP詳細GDD.md`、README、ROADMAP、PROGRESS、TASKS、BUILD_CHECKLISTのID体系とP7/P8境界をruntimeへ同期。
+- PRで `typecheck`、`lint`、`maps:validate`、`editor:smoke`、`build`、`p7:browser` の全Gate PASSを確認。
+- PRではPages deployをskipし、main pushのみ全Gate成功後にdeployするworkflow分岐を確認。
 
 ## 次フェーズ
 
-P7.1のRelease Gate通過後にP8へ進みます。P8はP7で保存した `p8_kagemasa_route_unlocked` を入口に、カゲマサ戦、みかん星の核奪還、城の星取得、MVPエンディングを実装します。カゲマサ戦では「通常攻撃でHPを削り切る」ことを勝利条件にせず、星封じゲージ完了による再封印のみを正式勝利とします。
+次はP8です。P8はP7で保存した `p8_kagemasa_route_unlocked` を入口に、カゲマサ戦、みかん星の核奪還、城の星取得、MVPエンディングを実装します。カゲマサ戦では「通常攻撃でHPを削り切る」ことを勝利条件にせず、星封じゲージ完了による再封印のみを正式勝利とします。
