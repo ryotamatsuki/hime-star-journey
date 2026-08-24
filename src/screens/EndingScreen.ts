@@ -149,9 +149,8 @@ export class EndingScreen implements GameScreen {
   }
 
   private goToTitle(): void {
-    if (this.saveData) {
-      this.options.saveManager.save({ ...this.saveData, currentScreenId: "title" });
-    }
+    // Keep the ending checkpoint in localStorage. TitleScreen is only a temporary view;
+    // overwriting currentScreenId with "title" would make "つづきから" resolve to prologue.
     this.options.screenManager.change("title");
   }
 
