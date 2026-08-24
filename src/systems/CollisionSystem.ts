@@ -10,7 +10,9 @@ export type Point = {
   y: number;
 };
 
-export type WalkablePolygon = Point[];
+export type WalkablePolygon = Point[] | {
+  points: Point[];
+};
 
 export type MovementResult = {
   rect: Rect;
@@ -141,10 +143,11 @@ function pointInRect(point: Point, rect: Rect): boolean {
 
 function pointInPolygon(point: Point, polygon: WalkablePolygon): boolean {
   let inside = false;
+  const points = Array.isArray(polygon) ? polygon : polygon.points;
 
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
-    const a = polygon[i];
-    const b = polygon[j];
+  for (let i = 0, j = points.length - 1; i < points.length; j = i, i += 1) {
+    const a = points[i];
+    const b = points[j];
     if (!a || !b) continue;
     if (pointOnSegment(point, a, b)) return true;
 
