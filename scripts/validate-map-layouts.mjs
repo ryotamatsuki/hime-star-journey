@@ -23,6 +23,7 @@ function validate(layout) {
   const issues = [];
   const ids = new Set();
   const markerIds = new Set();
+  const mapId = `${layout.locationId}-${layout.areaId}`;
   const arrays = ["walkableRects", "walkablePolygons", "collisionRects", "guidePaths", "enemySpawns", "npcPositions", "interactablePositions", "eventPositions", "markers"];
 
   assertRequiredIds(layout, issues);
@@ -55,7 +56,82 @@ function validate(layout) {
     register(pathData.id, issues, ids);
     if ((pathData.points ?? []).length < 2) issues.push({ severity: "warning", message: `${pathData.id} は経路点が少なすぎます。` });
   }
+  if (mapId === "dogo-D0") validateDogoWalkability(layout, issues);
   return issues.length > 0 ? issues : [{ severity: "ok", message: "マップレイアウト検証OK" }];
+}
+
+function validateDogoWalkability(layout, issues) {
+  const criticalPoints = [
+    { id: "playerStart", ...layout.playerStart },
+    ...(layout.enemySpawns ?? []),
+    ...(layout.npcPositions ?? []),
+    ...(layout.interactablePositions ?? []),
+    ...(layout.eventPositions ?? []),
+    ...(layout.guidePaths ?? []).flatMap((pathData) => pathData.points ?? [])
+  ];
+
+  for (const point of criticalPoints) {
+    if (!isWalkable(point, layout)) {
+      issues.push({ severity: "error", message: `${point.id ?? "guide point"} がDogoの歩行ポリゴン外です。` });
+    }
+  }
+
+  const playerCollider = {
+    x: layout.playerStart.x - 21,
+    y: layout.playerStart.y - 18,
+    width: 42,
+    height: 28
+  };
+  if (!isWalkableRect(playerCollider, layout)) {
+    issues.push({ severity: "error", message: "Dogoのプレイヤー開始コライダーが歩行ポリゴン内に収まりません。" });
+  }
+}
+
+function isWalkable(point, layout) {
+  return (layout.walkableRects ?? []).some((rect) => pointInRect(point, rect))
+    || (layout.walkablePolygons ?? []).some((polygon) => pointInPolygon(point, polygon.points ?? []));
+}
+
+function isWalkableRect(rect, layout) {
+  const points = [
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.width, y: rect.y },
+    { x: rect.x, y: rect.y + rect.height },
+    { x: rect.x + rect.width, y: rect.y + rect.height },
+    { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+  ];
+  return points.every((point) => isWalkable(point, layout));
+}
+
+function pointInRect(point, rect) {
+  return point.x >= rect.x
+    && point.x <= rect.x + rect.width
+    && point.y >= rect.y
+    && point.y <= rect.y + rect.height;
+}
+
+function pointInPolygon(point, polygon) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+    const a = polygon[i];
+    const b = polygon[j];
+    if (!a || !b) continue;
+    if (pointOnSegment(point, a, b)) return true;
+    const crosses = ((a.y > point.y) !== (b.y > point.y))
+      && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
+function pointOnSegment(point, start, end) {
+  const cross = (point.y - start.y) * (end.x - start.x)
+    - (point.x - start.x) * (end.y - start.y);
+  if (Math.abs(cross) > 0.001) return false;
+  return point.x >= Math.min(start.x, end.x) - 0.001
+    && point.x <= Math.max(start.x, end.x) + 0.001
+    && point.y >= Math.min(start.y, end.y) - 0.001
+    && point.y <= Math.max(start.y, end.y) + 0.001;
 }
 
 function assertRequiredIds(layout, issues) {
