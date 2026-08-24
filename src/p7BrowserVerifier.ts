@@ -94,6 +94,13 @@ function dispatchKey(code: string): void {
   window.dispatchEvent(new KeyboardEvent("keyup", { code, key: code, bubbles: true }));
 }
 
+async function holdKey(code: string, durationMs: number): Promise<void> {
+  window.dispatchEvent(new KeyboardEvent("keydown", { code, key: code, bubbles: true }));
+  await sleep(durationMs);
+  window.dispatchEvent(new KeyboardEvent("keyup", { code, key: code, bubbles: true }));
+  await sleep(100);
+}
+
 async function closeDialogueIfPresent(): Promise<void> {
   for (let i = 0; i < 8; i += 1) {
     const button = [...document.querySelectorAll("button")]
@@ -265,6 +272,34 @@ async function testQuestObjectives(): Promise<void> {
   }
 }
 
+async function testDogoExploreRuntime(): Promise<void> {
+  const app = await runAppWithSave(baseSave({
+    currentScreenId: "explore",
+    currentChapterId: "dogo_explore",
+    currentLocationId: "dogo",
+    currentAreaId: "D0"
+  }));
+  await waitFor(() => Boolean(document.querySelector(".explore-ui")), "dogo explore");
+  await closeDialogueIfPresent();
+
+  const runtime = app as unknown as {
+    screenManager: {
+      currentScreen?: {
+        player?: { x: number; y: number };
+      };
+    };
+  };
+  const player = runtime.screenManager.currentScreen?.player;
+  assert(player, "道後温泉の実探索画面にプレイヤーが生成される");
+  const startY = player.y;
+  await holdKey("ArrowUp", 360);
+  assert(player.y < startY, "道後温泉の実探索画面で石畳上を歩ける");
+  const movedY = player.y;
+  await holdKey("ArrowDown", 360);
+  assert(player.y > movedY, "道後温泉の歩行ポリゴン上で反対方向にも戻れる");
+  app.stop();
+}
+
 function finishBattle(state: BattleState): BattleState {
   let next = state;
   let guard = 0;
@@ -368,6 +403,22 @@ function testSaveCompatibility(): void {
 }
 
 function testMapAndTravelData(): void {
+  const dogoLayout = getMapLayout("dogo", "D0");
+  assert(dogoLayout, "dogo-D0 JSONレイアウトをブラウザ実行環境で読み込める");
+  assert(dogoLayout.walkableRects.length === 0 && dogoLayout.walkablePolygons.length >= 10, "dogo-D0が背景に沿った歩行ポリゴンを使用する");
+  const dogoCriticalPoints = [
+    dogoLayout.playerStart,
+    ...dogoLayout.enemySpawns,
+    ...dogoLayout.npcPositions,
+    ...dogoLayout.interactablePositions,
+    ...dogoLayout.eventPositions,
+    ...dogoLayout.guidePaths.flatMap((path) => path.points)
+  ];
+  assert(
+    dogoCriticalPoints.every((point) => isWalkablePoint(point, dogoLayout)),
+    "dogo-D0の開始位置・配置物・道しるべが歩行ポリゴン上にある"
+  );
+
   const layout = getMapLayout("castle", "C0");
   assert(layout, "castle-C0 JSONレイアウトをブラウザ実行環境で読み込める");
   assert(layout.playerStart.x === 420 && layout.playerStart.y === 850, "castle-C0の開始位置がJSONから読まれる");
@@ -388,6 +439,28 @@ function testMapAndTravelData(): void {
   assert(destination.type === "screen" && destination.locationId === "castle" && destination.areaId === "C0", "TravelSystemが松山城C0を返す");
 }
 
+function isWalkablePoint(point: { x: number; y: number }, layout: ReturnType<typeof getMapLayout>): boolean {
+  if (!layout) return false;
+  return layout.walkableRects.some((rect) => point.x >= rect.x
+    && point.x <= rect.x + rect.width
+    && point.y >= rect.y
+    && point.y <= rect.y + rect.height)
+    || layout.walkablePolygons.some((polygon) => pointInPolygon(point, polygon.points));
+}
+
+function pointInPolygon(point: { x: number; y: number }, polygon: { x: number; y: number }[]): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+    const a = polygon[i];
+    const b = polygon[j];
+    if (!a || !b) continue;
+    const crosses = ((a.y > point.y) !== (b.y > point.y))
+      && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
 async function main(): Promise<void> {
   try {
     setStatus("running");
@@ -397,6 +470,7 @@ async function main(): Promise<void> {
     testSaveCompatibility();
     await testStarMapTravel();
     await testQuestObjectives();
+    await testDogoExploreRuntime();
     const editorResponse = await fetch("/hime-star-journey/map-editor.html");
     assert(editorResponse.ok, "ブラウザからマップエディタHTMLを取得できる");
     setStatus("pass");
