@@ -12,32 +12,34 @@
 | P5 | 複数敵対応バトル | EncounterData、BattleActor配列、ターゲット選択、カード効果 | 完了 |
 | P5.1 | 戦闘画面レイアウト改善 | 道後温泉通常戦闘専用背景、配置、カードUI、可読性調整 | 完了 |
 | P5.9 | ストーリー正本復元・企画書整合 | 星守り、みかん星の核、シロ、カゲマサ、くろぼし設定を整合 | 完了 |
-| P6 | プロローグ／道後温泉体験版 | ペンダント、シロ、核奪取、道後異変、湯の星、松山城解放 | 実装完了 |
+| P6 | プロローグ／道後温泉体験版 | ペンダント、シロ、核奪取、道後異変、湯の星、松山城解放 | 完了 |
 | P6.5 | ローカル開発用マップエディタ | 道後D0/松山城C0の歩行・衝突・配置・道しるべ編集 | 完了 |
 | P7 | 松山城探索・松山城クエスト | `castle/C0`、C-E01〜C-E04、くらやみ井戸、城山のまもり | 完了 |
 | P7.1 | Release Hardening | 入力経路整合、Save/Battle不変条件、仕様同期、CI Release Gate | 完了 |
-| P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 星封じ、再封印、核奪還、城の星、終了演出 | 未着手 |
+| P7.2 | 道後歩行領域実景整合 | 背景上の地面とwalkable polygonを一致させる | 完了 |
+| P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 星封じ、再封印、核奪還、城の星、終了演出 | 実装完了・Release Gate確認中 |
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 未着手 |
 | P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 未着手 |
 
-## P7 runtime正本
+## P8 runtime正本
 
-- 松山城は `locationId: "castle"` / `areaId: "C0"` の1マップ構成。
-- 必須敵は `C-E01`〜`C-E03`、くらやみ井戸イベント戦は `C-E04`。
-- `C-E05` は任意戦闘。
-- P7報酬は「城山のまもり」。
-- P7完了時は `p8_kagemasa_route_unlocked` を保存するが、`collectedStars` に `castle` は追加しない。
-- みかん星の核奪還、城の星、カゲマサ再封印、`gameCompleted` はP8の責務。
+- P8開始条件は `flags.p8_kagemasa_route_unlocked === true`。
+- P7完了後、探索画面または星地図に「天守奥へ進む」を表示する。
+- ボス開始時にHP/MPを全回復し、`card_star_seal` を解放する。
+- カゲマサ戦は `enc_boss_kagemasa` / `B-E01` / `isBoss: true`。
+- カゲマサは通常ダメージだけではHP 0にならず、`sealGauge <= 0` のみ正式勝利。
+- 勝利後は `collectedStars` に `castle` を追加し、`acquiredItems.mikan_star_core >= 1` とする。
+- `kagemasa_sealed`、`mikan_core_recovered`、`castle_star_obtained`、`pendant_light_restored`、`p8_completed`、`gameCompleted` を保存する。
+- P8完了直後の `currentScreenId` は `ending`。
+- EndingScreenでは道後・松山城の回復と、未解放の空白の星を示して次の冒険へつなぐ。
 
-## P7.1 完了内容
+## P8設計判断
 
-- DOM/キーボードのNPC interactionを同じ進行処理へ統一。
-- SaveDataのHP/MP、重複ID、不正アイテム数、boolean flags、ScreenId等を正規化。
-- ボス戦は通常ダメージでは勝利せず、`sealGauge <= 0` のみで勝利する不変条件を実装。
-- `MVP詳細GDD.md`、README、ROADMAP、PROGRESS、TASKS、BUILD_CHECKLISTのID体系とP7/P8境界をruntimeへ同期。
-- PRで `typecheck`、`lint`、`maps:validate`、`editor:smoke`、`build`、`p7:browser` の全Gate PASSを確認。
-- PRではPages deployをskipし、main pushのみ全Gate成功後にdeployするworkflow分岐を確認。
+- `ExploreScreen` は既に大きいため、P8の導線・状態遷移は `P8FlowController` に分離する。
+- BattleSystemのP7.1ボス不変条件を再利用し、P8側で別の勝利判定を重複実装しない。
+- P8 finalizationは `completeP8Save()` で一括更新し、核だけ取得・星だけ未取得のような中間不整合を作らない。
+- P8専用のChrome/CDP回帰 `npm run p8:browser` をRelease Gateへ追加する。
 
 ## 次フェーズ
 
-次はP8です。P8はP7で保存した `p8_kagemasa_route_unlocked` を入口に、カゲマサ戦、みかん星の核奪還、城の星取得、MVPエンディングを実装します。カゲマサ戦では「通常攻撃でHPを削り切る」ことを勝利条件にせず、星封じゲージ完了による再封印のみを正式勝利とします。
+P8 Release Gate通過後はP9です。P9では旅の手帳、進行メモ、オートセーブの最終調整、BGM/SEの最小実装を行い、P10の新規セーブ通しプレイへ接続します。
