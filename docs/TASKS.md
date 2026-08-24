@@ -1,199 +1,71 @@
 ﻿# TASKS
 
-## P6.5 ローカル開発用マップエディタ
+このファイルは現在フェーズ以降の実行タスクを管理します。完了済みフェーズの詳細履歴は `docs/PROGRESS.md` とGit履歴を参照してください。
 
-- [x] 道後温泉D0の配置・歩行・衝突・道しるべをJSONへ分離
-- [x] 松山城C0の将来用マップJSONテンプレート追加
-- [x] ゲーム側がJSONレイアウトからMapArea/敵/NPC/調べる対象を生成
-- [x] Canvasベースのマップエディタ画面追加
-- [x] 添付参考画像の意図に合わせたツールバー、右インスペクター、レイヤー、検証、JSON入出力、統合ゲームプレビューを実装
-- [x] カメラ範囲とマーカーの編集レイヤー追加
-- [x] 矩形移動/リサイズ、ポリゴン頂点移動、頂点追加/削除、辺分割、面反転、スナップ、Undo/Redo
-- [x] Vite dev専用のload/save/validate API追加
-- [x] 検証エラー時の保存停止とdev保存API側の不正JSON拒否
-- [x] 保存前バックアップ `.map-editor-backups/` 追加
-- [x] 通常セーブを汚さないゲームプレビュー用一時セーブ
-- [x] `npm.cmd run typecheck`
-- [x] `npm.cmd run lint`
-- [x] `npm.cmd run maps:validate`
-- [x] `npm.cmd run editor:smoke`
-- [x] `npm.cmd run build`
-- [x] Edge CDPで実ブラウザ上のパン操作・検証・保存・プレビュー起動確認
+## P7.1 Release Hardening
 
-## P0 リポジトリ初期化
+### 進行・UI
 
-- [x] P0-01: ローカルGitリポジトリ初期化
-- [x] P0-02: README.md 整備
-- [x] P0-03: AGENTS.md 整備
-- [x] P0-04: docs/specs/企画書.md 整備
-- [x] P0-05: docs/specs/MVP詳細GDD.md 整備
-- [x] P0-06: docs/specs/MVP要件定義書.md 整備
-- [x] P0-07: docs/specs/MVP実装仕様書.md 整備
-- [x] P0-08: docs/ROADMAP.md 整備
-- [x] P0-09: docs/PROGRESS.md 整備
-- [x] P0-10: docs/BUILD_CHECKLIST.md 整備
-- [x] P0-11: docs/ASSET_TRACKER.md 整備
-- [x] P0-12: docs/asset-prompts/style-guide.md 整備
-- [x] P0-13: docs/asset-prompts/asset-manifest.md 整備
-- [x] P0-14: 主要ビジュアル参照の整理
-- [x] P0-15: 生成済み背景・UI画像の配置確認
+- [x] キーボードのNPC会話とDOM「話す」ボタンを同一interaction処理へ統一
+- [x] マウス/タッチ経路でも道後・松山城のヒント既読flagを更新
+- [x] プレイヤー向け目的表示から内部フェーズ名「P8」を除去
 
-注: GitHubリモート作成、コミット、PR作成は所有者アカウントと公開先の判断が必要なため、このローカルP0作業では未実行。
+### BattleSystem
 
-## P1 基盤実装
+- [x] `applyBattleCard()` 内でphase/MP/アンロック済みカードを再検証
+- [x] 不正な明示target IDを先頭敵へフォールバックしない
+- [x] 封印未完了のカゲマサHPを通常攻撃で0にできないようにする
+- [x] ボス戦勝利条件を `sealGauge <= 0` のみにする
+- [x] ブラウザ回帰検証に「通常攻撃では勝てない／星封じで勝つ」を追加
 
-- [x] TypeScript + Vite
-- [x] `package.json`
-- [x] Canvas
-- [x] DOM UI root
-- [x] GameApp
-- [x] GameLoop
-- [x] ScreenManager
-- [x] InputManager
-- [x] SaveManager
-- [x] AssetLoader
-- [x] TitleScreen
-- [x] PrologueScreen仮実装
-- [x] ブラウザ操作による保存フロー自動検証
+### SaveData
 
-## P2 アセット・アニメーション基盤
+- [x] `maxHp >= 1` / `maxMp >= 0` を保証
+- [x] HP/MPを0〜最大値へclamp
+- [x] ID配列の重複を除去
+- [x] 不正なアイテム所持数を除去し非負整数へ正規化
+- [ ] flagsとcurrentScreenIdを壊れたJSONから安全に正規化
 
-- [x] 生成アセットの追加
-- [x] ひめ歩行スプライト
-- [ ] ひめバトルスプライト
-- [x] シロ浮遊スプライト
-- [ ] 通常敵8種
-- [x] カゲマサ
-- [ ] カードアイコン
-- [x] UIフレーム
-- [x] SpriteAnimator
-- [x] Y座標による奥行き描画
-- [x] 足元影
-- [x] 簡易エフェクト
+### Browser / CI
 
-## P3 探索画面
+- [x] P7 verifierのfake Canvas差し替えを除去
+- [x] 実Canvas `toDataURL()` で描画継続を確認
+- [x] Windows固定Chromium依存を緩和しLinux Chrome/Chromium探索に対応
+- [x] PRでもGitHub Actionsを実行
+- [x] CIへ `maps:validate` を追加
+- [x] CIへ `editor:smoke` を追加
+- [x] CIへ実ブラウザ `p7:browser` を追加
+- [x] main deployを全Gate通過後に限定
+- [ ] PR上のGitHub Actionsで全Gate PASSを確認
 
-- [x] ひめ移動
-- [x] シロ追従
-- [x] 敵シンボル表示
-- [x] 敵シンボル接触判定
-- [x] 一度しずめた敵の非復活
-- [ ] 会話UI
-- [x] 調べ物
+### 仕様・台帳
 
-## P3.5 道後温泉歩行可能領域の視認性改善
-
-- [x] `walkableRects` の追加
-- [x] Gキー開発者用debug overlay
-- [x] Hキー道しるべ表示
-- [x] collisionRectsの軽微調整
-- [x] G/Hキーの実ブラウザ確認
-
-## P4 星地図
-
-- [x] StarMapScreen本実装
-- [x] PrologueScreenからStarMapScreenへ遷移
-- [x] ExploreScreenからMキー/UIでStarMapScreenへ遷移
-- [x] StarMapScreenから道後温泉ExploreScreenへ遷移
-- [x] 手動セーブ
-- [x] つづきから `starMap` / `explore` 再開
-- [x] 道後温泉解放済み表示
-- [x] 松山城初期未解放表示
-- [x] 道後温泉クリア後の松山城解放
-- [x] 未解放星表示
-- [x] GitHub Pages向けbuild設定
-- [x] GitHub Pages deploy workflow
-- [x] P4全ルートの実ブラウザ確認
-
-## P4.5 DialogueBox・DialogueSystem・NPC基盤
-
-- [x] DialogueBox
-- [x] DialogueSystem
-- [x] NPC基盤
-- [x] 道後温泉NPC配置
-- [x] 会話イベント接続
-
-## P5 複数敵対応バトル
-
-- [x] EncounterData
-- [x] EnemySymbolDataの `encounterId`
-- [x] BattleActor
-- [x] BattleState
-- [x] `partyMembers: BattleActor[]`
-- [x] `enemies: BattleActor[]`
-- [x] 1対1
-- [x] 1対2
-- [x] ターゲット選択UI
-- [x] カード効果
-- [x] カゲマサ封印ゲージ
-
-## P5.1 戦闘専用背景＋戦闘画面レイアウト改善
-
-- [x] 道後温泉通常戦闘専用背景の再生成
-- [x] 旧 `dogo_battle_bg.png` のバックアップ
-- [x] BattleScreenのひめ・敵配置改善
-- [x] 1体敵・2体敵の表示位置整理
-- [x] ターゲット選択ハイライト改善
-- [x] カードUIの読みやすさ改善
-- [x] 戦闘メッセージ表示改善
-- [x] 戦闘関連文言の文字化け修正
-- [x] P5 BattleSystemロジック維持確認
-
-## P5.9 ストーリー正本復元・企画書整合
-
-- [x] 旧企画書 v0.7 のストーリー確認
-- [x] 企画書の全体ストーリー修正
-- [x] 企画書の主人公・相棒設定修正
-- [x] 企画書のMVPストーリー詳細追加
-- [x] 星守りの家系設定追加
-- [x] みかん星の核だけが奪われ、外枠と弱い星地図機能が残る設定追加
-- [x] GDDのプロローグ・道後導入整合
-- [x] 要件定義のプロローグ要件追加
-- [x] 実装仕様書のストーリー前提追加
-- [x] ROADMAPのフェーズ再整理
-- [x] PROGRESS更新
-- [x] DECISIONS更新
-- [x] P6で参照するストーリー要件の整理
-
-## P6 画像生成＋アニメーション付きプロローグ／道後温泉体験版完成
-
-- [x] 既存P6画像の保全、RGBA透過処理、品質検証
-- [x] おばあちゃんからペンダントを受け取る6シーンプロローグ
-- [x] 道後温泉でシロと出会うイベント
-- [x] カゲマサの手下によるみかん星の核奪取イベント
-- [x] ペンダント外枠が残る演出
-- [x] 道後温泉の異変演出
-- [x] 道後温泉クエスト状態と必須敵4体判定
-- [x] 湯の星入手イベントと重複防止
-- [x] 星地図・松山城解放
-- [x] SaveData v0.2.0移行と旧セーブ互換
-- [ ] 全戦闘を含む新規ゲーム手動通し確認
-
-## P7 松山城探索・松山城クエスト
-
-- [x] 星地図から松山城C0探索へ移動
-- [x] 松山城C0の歩行可能領域・衝突領域・開始位置・カメラ範囲をJSON化
-- [x] 影足軽、石垣鬼、黒羽ガラス、くらやみ井戸の敵データとEncounterData接続
-- [x] C-E01〜C-E03の必須戦闘判定
-- [x] 必須戦闘後にくらやみ井戸へ挑める導線
-- [x] NPC/調べる対象によるヒント表示
-- [x] Hキー道しるべ、Gキーdebug overlayを松山城C0でも利用
-- [x] 城山のまもり取得イベント
-- [x] `shiroyama_guard_obtained`、`castle_boss_route_unlocked`、`p8_kagemasa_route_unlocked` 保存
-- [x] SaveData v0.3.0互換と既存セーブ補完
-- [x] P7では `collectedStars` に `castle` を追加しない
-- [x] P7では `gameCompleted` を設定しない
-- [x] マップエディタ検証対象に松山城C0必須配置を追加
-- [x] `npm.cmd run p7:browser` によるブラウザ実行環境でのP7遷移・クエスト・戦闘・保存確認
+- [x] `PROGRESS.md` をP7.1時点の正本へ更新
+- [x] `ROADMAP.md` にP7.1を追加
+- [x] READMEをP7.1とRelease Gateへ更新
+- [x] GDDの旧 `M0〜M6` / `M-E01〜M-E08` をruntime `castle/C0` / `C-E01〜C-E05` へ同期
+- [x] GDDへカゲマサの星封じ必須勝利条件を明記
+- [x] TASKSを現行タスクへ整理
+- [ ] BUILD_CHECKLISTを現行Release Gateへ整理
+- [ ] BUGSへP7.1で解決した進行経路不整合を記録
 
 ## P8 カゲマサ戦・みかん星の核奪還・MVPエンディング
 
-- [ ] 星封じカード
-- [ ] カゲマサ戦
+- [ ] P7.1 Release Gate通過を開始条件とする
+- [ ] ExploreScreenへ新規クエスト条件を積み増す前に、クエスト進行/特殊イベント責務をcontroller/serviceへ抽出
+- [ ] `p8_kagemasa_route_unlocked` からボス導線へ接続
+- [ ] 星封じカードの進行上の解放
+- [ ] カゲマサ戦UIで封印が勝利条件だと明確に伝える
+- [ ] 通常ダメージだけで勝てないことを保持
+- [ ] 星封じゲージ完了でカゲマサ再封印
 - [ ] みかん星の核奪還
 - [ ] ペンダントの光回復
-- [ ] 城の星入手
-- [ ] 未解放の空白星を見せるMVPエンディング
+- [ ] 城の星取得
+- [ ] `collectedStars` へ `castle` を追加
+- [ ] MVP終了演出
+- [ ] 未解放の空白星を表示
+- [ ] `gameCompleted` 相当の完了状態を仕様と実装で一致させる
+- [ ] P8ブラウザ回帰検証を追加
 
 ## P9 旅の手帳・BGM/SE・セーブ調整
 
@@ -203,19 +75,18 @@
 - [ ] あらすじ
 - [ ] オートセーブ調整
 - [ ] BGM/SEの最小整理
+- [ ] P8/P9追加アセット後の初期ロード時間を実測
+- [ ] 必要な場合だけboot/area/battle/endingの段階ロードへ変更
 
-## P10 通しプレイ・娘向け体験版調整・GitHub Pages公開確認
+## P10 通しプレイ・体験版調整・公開確認
 
-- [ ] MVP通しプレイ
-- [ ] プレイテスト記録
-- [ ] 難易度調整
-- [ ] ビルド確認
-- [ ] リリース前チェック
-- [ ] GitHub Pages公開確認
-
-
-
-
-
-
-
+- [ ] 新規localStorageからMVP通しプレイ
+- [ ] タイトル→プロローグ→道後全必須戦闘→湯の星→星地図→松山城→城山のまもり→カゲマサ→エンディングを確認
+- [ ] マウス/タッチ中心の操作経路を確認
+- [ ] キーボード中心の操作経路を確認
+- [ ] 旧セーブ移行を確認
+- [ ] 道後walkable/collisionの細部を目視調整
+- [ ] 難易度・短文・低年齢向け導線を調整
+- [ ] GitHub Pages公開URLでproduction E2E
+- [ ] コンソールエラー/404/必須アセット欠落なしを確認
+- [ ] Release checklist全項目PASS
