@@ -17,8 +17,8 @@
 | P7 | 松山城探索・松山城クエスト | `castle/C0`、C-E01〜C-E04、くらやみ井戸、城山のまもり | 完了 |
 | P7.1 | Release Hardening | 入力経路整合、Save/Battle不変条件、仕様同期、CI Release Gate | 完了 |
 | P7.2 | 道後歩行領域実景整合 | 背景上の地面とwalkable polygonを一致させる | 完了 |
-| P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 星封じ、再封印、核奪還、城の星、終了演出 | 実装完了・Release Gate確認中 |
-| P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 未着手 |
+| P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 星封じ、再封印、核奪還、城の星、終了演出 | 完了 |
+| P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 次フェーズ |
 | P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 未着手 |
 
 ## P8 runtime正本
@@ -33,13 +33,12 @@
 - P8完了直後の `currentScreenId` は `ending`。
 - EndingScreenでは道後・松山城の回復と、未解放の空白の星を示して次の冒険へつなぐ。
 
-## P8設計判断
+## P8完了確認
 
-- `ExploreScreen` は既に大きいため、P8の導線・状態遷移は `P8FlowController` に分離する。
-- BattleSystemのP7.1ボス不変条件を再利用し、P8側で別の勝利判定を重複実装しない。
-- P8 finalizationは `completeP8Save()` で一括更新し、核だけ取得・星だけ未取得のような中間不整合を作らない。
-- P8専用のChrome/CDP回帰 `npm run p8:browser` をRelease Gateへ追加する。
+- PR #5を `22b9cc2d30dcfbc2b41e5936b68f67717a195912` としてsquash merge済み。
+- PR #5 run #33および最終docs head run #36で、`npm ci`、typecheck、lint、maps:validate、editor:smoke、build、P7 browser、P8 browserが全てPASS。
+- PR上のPages configure/upload/deployは設計どおりskip。
 
 ## 次フェーズ
 
-P8 Release Gate通過後はP9です。P9では旅の手帳、進行メモ、オートセーブの最終調整、BGM/SEの最小実装を行い、P10の新規セーブ通しプレイへ接続します。
+次はP9です。旅の手帳、進行メモ、オートセーブの最終調整、BGM/SEの最小実装を行い、P10の新規セーブ通しプレイへ接続します。
