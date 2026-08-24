@@ -30,6 +30,7 @@
 - [x] `EndingScreen` を追加
 - [x] Endingで未解放の空白星を残し次の冒険を示す
 - [x] Endingから星地図／タイトルへ戻れる
+- [x] タイトルへ戻った後の「つづきから」でEndingへ復帰できる
 
 ### Browser / CI
 - [x] `p8-browser-verifier.html` を追加
@@ -38,7 +39,7 @@
 - [x] 実ブラウザでEndingScreenと空白星文言を検証
 - [x] `npm run p8:browser` を追加
 - [x] GitHub Actions Release GateへP8ブラウザ回帰を追加
-- [ ] PR #5最終headで全Release Gate PASSを確認
+- [x] PR #5 run #33で `npm ci` / typecheck / lint / maps / editor / build / P7 browser / P8 browser 全PASS
 - [ ] mainへsquash merge
 - [ ] main pushのRelease Gate / Pages deployを確認
 
@@ -49,7 +50,7 @@
 - [ ] あらすじ
 - [ ] オートセーブ調整
 - [ ] BGM/SEの最小整理
-- [ ] P8/P9追加アセット後の初期ロード時間を実測し、必要なら段階ロードへ変更
+- [ ] P8/P9追加後の初期ロード時間を実測し、必要なら段階ロードへ変更
 
 ## P10 通しプレイ・体験版調整・公開確認
 - [ ] 新規localStorageからMVP通しプレイ
