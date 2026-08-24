@@ -54,8 +54,9 @@
 - [x] HP/MPを0〜最大値へclampする。
 - [x] 主要ID配列の重複を除去する。
 - [x] アイテム数は有限の非負整数だけを保持する。
-- [ ] `flags` をboolean値だけに正規化する。
-- [ ] 不正な `currentScreenId` を安全な画面へfallbackする。
+- [x] `flags` はboolean値だけを採用する。
+- [x] 不正な `currentScreenId` を既知画面へfallbackする。
+- [x] chapter/location/areaの非文字列・空文字を既定値へfallbackする。
 
 ## マップエディタ契約
 
@@ -77,6 +78,6 @@
 ## P8実装開始条件
 
 - [ ] P7.1 PRのGitHub Actionsが全てPASSしている。
-- [ ] GDD/README/ROADMAP/PROGRESS/TASKSの `castle/C0` / `C-E*` 体系がruntimeと一致している。
-- [ ] ボス戦の星封じ必須勝利条件が回帰検証に固定されている。
+- [x] GDD/README/ROADMAP/PROGRESS/TASKSの `castle/C0` / `C-E*` 体系がruntimeと一致している。
+- [x] ボス戦の星封じ必須勝利条件が回帰検証に固定されている。
 - [ ] ExploreScreenへP8の探索進行を追加する場合、クエスト進行/特殊イベント責務を先にcontroller/serviceへ抽出する。
