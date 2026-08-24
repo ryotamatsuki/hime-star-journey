@@ -13,6 +13,7 @@
     "editor:smoke": "node scripts/verify-map-editor-smoke.mjs",
     "p7:browser": "node scripts/verify-p7-browser.mjs",
     "p8:browser": "node scripts/verify-p8-browser.mjs",
+    "p9:browser": "node scripts/verify-p9-browser.mjs",
     "assets:p6:process": "node scripts/process-chroma-assets.mjs",
     "assets:p6:verify": "node scripts/verify-transparent-assets.mjs"
   },

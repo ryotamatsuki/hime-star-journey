@@ -18,27 +18,26 @@
 | P7.1 | Release Hardening | 入力経路整合、Save/Battle不変条件、仕様同期、CI Release Gate | 完了 |
 | P7.2 | 道後歩行領域実景整合 | 背景上の地面とwalkable polygonを一致させる | 完了 |
 | P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 星封じ、再封印、核奪還、城の星、終了演出 | 完了 |
-| P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 次フェーズ |
-| P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 未着手 |
+| P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 完了 |
+| P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 次フェーズ |
 
-## P8 runtime正本
+## P9 runtime正本
 
-- P8開始条件は `flags.p8_kagemasa_route_unlocked === true`。
-- P7完了後、探索画面または星地図に「天守奥へ進む」を表示する。
-- ボス開始時にHP/MPを全回復し、`card_star_seal` を解放する。
-- カゲマサ戦は `enc_boss_kagemasa` / `B-E01` / `isBoss: true`。
-- カゲマサは通常ダメージだけではHP 0にならず、`sealGauge <= 0` のみ正式勝利。
-- 勝利後は `collectedStars` に `castle` を追加し、`acquiredItems.mikan_star_core >= 1` とする。
-- `kagemasa_sealed`、`mikan_core_recovered`、`castle_star_obtained`、`pendant_light_restored`、`p8_completed`、`gameCompleted` を保存する。
-- P8完了直後の `currentScreenId` は `ending`。
-- EndingScreenでは道後・松山城の回復と、未解放の空白の星を示して次の冒険へつなぐ。
+- `NotebookScreen` に旅の手帳10項目を実装し、進行flag/取得状態でページ解放を判定する。
+- 手帳には最新あらすじ、地域メモ、取得済み星、解放済みカード、最終保存時刻を表示する。
+- 探索・星地図・エンディングからNキーまたはDOMボタンで手帳を開ける。
+- 手帳表示中はセーブの `currentScreenId` を `notebook` へ書き換えず、元の安全な再開地点を保持する。
+- `AudioManager` はWeb Audio APIでタイトル/道後/松山城/戦闘/星地図/手帳の最小BGMパターンとUI SEを提供する。
+- ブラウザ自動再生規約に従い、最初のpointer/keyboard操作後にAudioContextを開始する。
+- `P9ExperienceController` はexplore/starMap/endingのみを安全なオートセーブcheckpointとして同期し、battle/prologue/notebook/titleは除外する。
+- `p9:browser` をRelease Gateへ追加し、P7/P8/P9の実Chrome回帰を直列実行する。
 
-## P8完了確認
+## P9完了確認
 
-- PR #5を `22b9cc2d30dcfbc2b41e5936b68f67717a195912` としてsquash merge済み。
-- PR #5 run #33および最終docs head run #36で、`npm ci`、typecheck、lint、maps:validate、editor:smoke、build、P7 browser、P8 browserが全てPASS。
-- PR上のPages configure/upload/deployは設計どおりskip。
+- PR #7 run #44で `npm ci`、typecheck、lint、maps:validate、editor:smoke、build、P7 browser、P8 browser、P9 browserが全てPASS。
+- P9 browserでは手帳10項目、進行ロック、手帳開閉、カード一覧、地域メモ、ミュートUI、再開地点非上書き、安全画面オートセーブを確認。
+- GameApp起動時間はP9 verifier内で計測・ログ出力し、P10 production E2Eで公開環境の実測値を最終確認する。
 
 ## 次フェーズ
 
-次はP9です。旅の手帳、進行メモ、オートセーブの最終調整、BGM/SEの最小実装を行い、P10の新規セーブ通しプレイへ接続します。
+次はP10です。新規localStorageからタイトル→プロローグ→道後→松山城→カゲマサ→エンディングまで完全通しし、キーボード/マウス/タッチ、難易度、文章量、公開Pagesの404/console error/asset欠落を最終確認します。

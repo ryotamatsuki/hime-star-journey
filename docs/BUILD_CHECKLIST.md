@@ -1,8 +1,8 @@
 ﻿# BUILD_CHECKLIST
 
-このチェックリストはP8完了時点のRelease Gate記録です。
+このチェックリストはP9完了時点のRelease Gate記録です。
 
-## PR #5 Release Gate
+## PR #7 Release Gate
 
 - [x] `npm ci`
 - [x] `npm run typecheck`
@@ -10,53 +10,60 @@
 - [x] `npm run maps:validate`
 - [x] `npm run editor:smoke`
 - [x] `npm run build`
-- [x] P7/P8 verifier URLがHTTP 200
+- [x] P7/P8/P9 verifier URLがHTTP 200
 - [x] Linux Chrome `npm run p7:browser`
 - [x] Linux Chrome `npm run p8:browser`
+- [x] Linux Chrome `npm run p9:browser`
 - [x] PRではPages configure/upload/deployをskip
-- [x] docs-only final head run #36でも全Gate PASS
-- [x] PR #5をsquash merge
-- [x] main SHA `22b9cc2d30dcfbc2b41e5936b68f67717a195912`
+- [x] PR #7 run #44で全Gate PASS
 
-## P8 runtime契約
+## P9 旅の手帳契約
 
-- [x] `p8_kagemasa_route_unlocked` からボス導線を表示
-- [x] P8進行を `P8FlowController` へ分離
-- [x] 200ms interval監視でlocalStorageの毎フレームreadを回避
-- [x] ボス開始時にHP/MP全回復・`card_star_seal` 解放
-- [x] `enc_boss_kagemasa` / `B-E01` / `isBoss: true`
-- [x] 通常ダメージだけではカゲマサHP0/勝利にならない
-- [x] `sealGauge <= 0` のみ正式勝利
-- [x] `completeP8Save()` でP8最終状態を一括保存
+- [x] 旅の記録は10項目
+- [x] 進行状態に応じて未解放ページを残す
+- [x] 最新あらすじを表示
+- [x] 地域メモを表示
+- [x] 取得済み星を表示
+- [x] 解放済みカード一覧を表示
+- [x] 最終保存時刻を表示
+- [x] explore/starMap/endingからNキーまたはDOMボタンで開ける
+- [x] Notebook表示で保存済み `currentScreenId` を `notebook` へ上書きしない
+- [x] Notebookを閉じると元の安全な画面へ戻る
 
-## P8最終Save契約
+## P9 Audio契約
 
-- [x] `defeatedEnemyIds` includes `B-E01`
-- [x] `flags.kagemasa_sealed === true`
-- [x] `flags.mikan_core_recovered === true`
-- [x] `acquiredItems.mikan_star_core >= 1`
-- [x] `flags.castle_star_obtained === true`
-- [x] `collectedStars` includes `castle`
-- [x] `flags.pendant_light_restored === true`
-- [x] `flags.dogo_restored === true`
-- [x] `flags.castle_restored === true`
-- [x] `flags.p8_completed === true`
-- [x] `flags.gameCompleted === true`
-- [x] 完了直後 `currentScreenId === "ending"`
-- [x] `kagemasa_battle_started` なしのB-E01混入だけではP8完了にしない
+- [x] Web Audio APIだけで最小BGM/SEを実装し外部音源依存を増やさない
+- [x] title/dogo/castle/battle/stars/notebookでBGMパターンを切り替える
+- [x] UI操作SEを提供する
+- [x] AudioContextは最初のユーザー操作後に開始する
+- [x] 手帳からミュート状態を切り替えられる
+- [x] `GameApp.stop()` でAudioContext/timer/event listenerを破棄する
 
-## EndingScreen契約
+## P9 AutoSave契約
 
-- [x] みかん星の核・城の星・ペンダント回復を表示
-- [x] 未解放の空白の星を表示
-- [x] 星地図へ戻れる
-- [x] タイトルへ戻れる
-- [x] タイトルへ戻ってもEnding checkpointを上書きしない
-- [x] 「つづきから」でEndingへ復帰する実ブラウザ回帰あり
+- [x] explore/starMap/endingだけを安全なcheckpoint同期対象にする
+- [x] battle/prologue/notebook/titleではcheckpointを書き換えない
+- [x] `flags.autosave_enabled === true` を保存する
+- [x] 手帳を開いても再開地点を失わない
+- [x] P9 browserでexplore checkpoint同期を実ブラウザ確認する
 
-## P9/P10へ残すGate
+## P9 browser契約
 
-- [ ] P9で旅の手帳/BGM-SE/セーブ調整後の全Gate
-- [ ] P9でAssetManifest初期ロード時間を実測
-- [ ] P10で公開Pagesの新規セーブ完全E2E
-- [ ] P10でConsole error / HTTP 4xx / 必須asset欠落なしを確認
+- [x] 手帳10項目を検証
+- [x] MVP完了セーブで10/10解放を検証
+- [x] 初期セーブでは未解放ページが残ることを検証
+- [x] 実探索画面に「旅の手帳 N」を表示
+- [x] 手帳画面の記録・カード・地域メモ・オートセーブ表示を検証
+- [x] ミュートUI切替を検証
+- [x] 手帳表示中もresume screenを保持することを検証
+- [x] GameApp起動時間をverifierログへ出力
+
+## P10 Release前最終Gate
+
+- [ ] 新規localStorageからタイトル→Endingまでproduction完全E2E
+- [ ] キーボード中心・マウス/タッチ中心の双方で主要導線を確認
+- [ ] 旅の手帳を序盤/道後完了/P7完了/P8完了の各時点で確認
+- [ ] BGM/SEの音量・切替・長時間再生を実機確認
+- [ ] 公開Pagesで初期ロード時間を実測し、必要ならAssetManifestを段階ロード化
+- [ ] Console error / HTTP 4xx / 必須asset欠落なしを確認
+- [ ] `npm audit` が報告している依存パッケージ脆弱性を公開前に分類し、必要な更新を判断する
