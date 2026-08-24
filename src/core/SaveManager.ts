@@ -7,6 +7,17 @@ const stringArray = (value: unknown, fallback: string[] = []): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : fallback;
 const finiteNumber = (value: unknown, fallback: number): number =>
   typeof value === "number" && Number.isFinite(value) ? value : fallback;
+const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+const itemCounts = (value: unknown): Record<string, number> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter((entry): entry is [string, number] =>
+        typeof entry[1] === "number" && Number.isFinite(entry[1]) && entry[1] >= 0
+      )
+      .map(([key, count]) => [key, Math.floor(count)])
+  );
+};
 
 export class SaveManager {
   constructor(private readonly saveKey: string = SAVE_KEY) {}
@@ -142,6 +153,10 @@ export class SaveManager {
     if (flags.castle_guard_ready) castleQuestStatus = "guardReady";
     if (shiroyamaGuardObtained) castleQuestStatus = "cleared";
     const currentScreenId = progressed && source.currentScreenId === "prologue" ? "explore" : source.currentScreenId ?? initial.currentScreenId;
+    const maxHp = Math.max(1, Math.floor(finiteNumber(source.maxHp, initial.maxHp)));
+    const maxMp = Math.max(0, Math.floor(finiteNumber(source.maxMp, initial.maxMp)));
+    const hp = clamp(Math.floor(finiteNumber(source.hp, initial.hp)), 0, maxHp);
+    const mp = clamp(Math.floor(finiteNumber(source.mp, initial.mp)), 0, maxMp);
     return {
       ...initial,
       ...source,
@@ -150,19 +165,19 @@ export class SaveManager {
       currentLocationId: source.currentLocationId === "dogo_onsen" ? "dogo" : source.currentLocationId ?? initial.currentLocationId,
       partyMemberIds: stringArray(source.partyMemberIds, initial.partyMemberIds),
       activePartyMemberIds: stringArray(source.activePartyMemberIds, initial.activePartyMemberIds),
-      starLevel: dogoCollected ? Math.max(2, finiteNumber(source.starLevel, 2)) : finiteNumber(source.starLevel, initial.starLevel),
-      hp: finiteNumber(source.hp, initial.hp),
-      mp: finiteNumber(source.mp, initial.mp),
-      maxHp: finiteNumber(source.maxHp, initial.maxHp),
-      maxMp: finiteNumber(source.maxMp, initial.maxMp),
+      starLevel: dogoCollected ? Math.max(2, finiteNumber(source.starLevel, 2)) : Math.max(0, finiteNumber(source.starLevel, initial.starLevel)),
+      hp,
+      mp,
+      maxHp,
+      maxMp,
       unlockedCards: stringArray(source.unlockedCards, initial.unlockedCards),
       collectedStars: Array.from(new Set(collectedStars)),
       unlockedLoreIds: stringArray(source.unlockedLoreIds),
-      defeatedEnemyIds: stringArray(source.defeatedEnemyIds),
-      clearedQuestIds,
-      unlockedLocations,
-      openedPaths: stringArray(source.openedPaths),
-      acquiredItems: source.acquiredItems && typeof source.acquiredItems === "object" ? source.acquiredItems : {},
+      defeatedEnemyIds: Array.from(new Set(stringArray(source.defeatedEnemyIds))),
+      clearedQuestIds: Array.from(new Set(clearedQuestIds)),
+      unlockedLocations: Array.from(new Set(unlockedLocations)),
+      openedPaths: Array.from(new Set(stringArray(source.openedPaths))),
+      acquiredItems: itemCounts(source.acquiredItems),
       acquiredCharms: Array.from(new Set(shiroyamaGuardObtained
         ? [...sourceAcquiredCharms, "shiroyama_guard"]
         : sourceAcquiredCharms)),
