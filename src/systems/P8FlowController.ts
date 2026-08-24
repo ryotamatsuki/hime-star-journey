@@ -6,6 +6,7 @@ const BOSS_SYMBOL_ID = "B-E01";
 const BOSS_ENCOUNTER_ID = "enc_boss_kagemasa";
 const STAR_SEAL_CARD_ID = "card_star_seal";
 const CASTLE_STAR_ID = "castle";
+const FLOW_POLL_INTERVAL_MS = 200;
 
 export function isP8BossReady(save: SaveData): boolean {
   return (
@@ -86,25 +87,22 @@ type P8FlowControllerOptions = {
 };
 
 export class P8FlowController {
-  private animationFrameId = 0;
-  private disposed = false;
+  private intervalId: number | null = null;
 
   constructor(private readonly options: P8FlowControllerOptions) {}
 
   start(): void {
-    this.disposed = false;
-    this.tick();
+    this.stopInterval();
+    this.checkFlow();
+    this.intervalId = window.setInterval(() => this.checkFlow(), FLOW_POLL_INTERVAL_MS);
   }
 
   stop(): void {
-    this.disposed = true;
-    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+    this.stopInterval();
     this.removeBossEntryButton();
   }
 
-  private tick = (): void => {
-    if (this.disposed) return;
-
+  private checkFlow(): void {
     const save = this.options.saveManager.load();
     const screenId = this.options.screenManager.getCurrentScreenId();
 
@@ -112,7 +110,6 @@ export class P8FlowController {
       const completed = this.options.saveManager.save(completeP8Save(save));
       this.removeBossEntryButton();
       this.options.screenManager.change("ending", { saveData: completed });
-      this.animationFrameId = requestAnimationFrame(this.tick);
       return;
     }
 
@@ -121,9 +118,7 @@ export class P8FlowController {
     } else {
       this.removeBossEntryButton();
     }
-
-    this.animationFrameId = requestAnimationFrame(this.tick);
-  };
+  }
 
   private ensureBossEntryButton(save: SaveData): void {
     if (this.options.uiRoot.querySelector<HTMLButtonElement>("[data-p8-boss-entry='true']")) return;
@@ -166,6 +161,13 @@ export class P8FlowController {
     });
 
     this.options.uiRoot.append(button);
+  }
+
+  private stopInterval(): void {
+    if (this.intervalId !== null) {
+      window.clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
   }
 
   private removeBossEntryButton(): void {
