@@ -24,7 +24,9 @@
 - [x] HP/MPを0〜最大値へclamp
 - [x] ID配列の重複を除去
 - [x] 不正なアイテム所持数を除去し非負整数へ正規化
-- [ ] flagsとcurrentScreenIdを壊れたJSONから安全に正規化
+- [x] `flags` をboolean値だけに正規化
+- [x] 不正な `currentScreenId` を既知画面へfallback
+- [x] chapter/location/areaの非文字列・空文字を既定値へfallback
 
 ### Browser / CI
 
@@ -46,8 +48,8 @@
 - [x] GDDの旧 `M0〜M6` / `M-E01〜M-E08` をruntime `castle/C0` / `C-E01〜C-E05` へ同期
 - [x] GDDへカゲマサの星封じ必須勝利条件を明記
 - [x] TASKSを現行タスクへ整理
-- [ ] BUILD_CHECKLISTを現行Release Gateへ整理
-- [ ] BUGSへP7.1で解決した進行経路不整合を記録
+- [x] BUILD_CHECKLISTを現行Release Gateへ整理
+- [x] BUGSへP7.1で解決した不具合と残課題を整理
 
 ## P8 カゲマサ戦・みかん星の核奪還・MVPエンディング
 
