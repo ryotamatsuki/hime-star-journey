@@ -4,16 +4,18 @@
 
 ## PR必須Gate
 
-- [ ] `npm ci`
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run maps:validate`
-- [ ] `npm run editor:smoke`
-- [ ] `npm run build`
-- [ ] P7/P8 verifier URLがVite dev serverでHTTP 200
-- [ ] Linux Chromeで `npm run p7:browser`
-- [ ] Linux Chromeで `npm run p8:browser`
-- [ ] PRではPages configure/upload/deployを実行しない
+- [x] `npm ci`
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run maps:validate`
+- [x] `npm run editor:smoke`
+- [x] `npm run build`
+- [x] P7/P8 verifier URLがVite dev serverでHTTP 200
+- [x] Linux Chromeで `npm run p7:browser`
+- [x] Linux Chromeで `npm run p8:browser`
+- [x] PRではPages configure/upload/deployを実行しない
+
+PR #5 run #33で上記を全て確認済み。
 
 ## P7/P7.2回帰契約
 
@@ -70,17 +72,8 @@
 - [x] タイトルへ戻ってもEnding再開地点を上書きしない
 - [x] タイトルの「つづきから」でEndingへ復帰できることをブラウザ回帰に含める
 
-## Save/Battle既存不変条件
-
-- [x] HP/MP/max値域を正規化する
-- [x] ID配列をdedupeする
-- [x] flagsはbooleanだけを採用する
-- [x] 不正ScreenIdを既知画面へfallbackする
-- [x] BattleSystem自身がphase/MP/アンロックカード/targetを検証する
-
 ## main / GitHub Pages Gate
 
-- [ ] PR #5最終headで全Gate PASS
 - [ ] mainへsquash merge
 - [ ] main pushでも同じbuild gateを通過
 - [ ] build成功後だけPages artifact upload/deploy
