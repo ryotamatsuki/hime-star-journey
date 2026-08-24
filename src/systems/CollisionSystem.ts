@@ -5,6 +5,13 @@ export type Rect = {
   height: number;
 };
 
+export type Point = {
+  x: number;
+  y: number;
+};
+
+export type WalkablePolygon = Point[];
+
 export type MovementResult = {
   rect: Rect;
   collidedX: boolean;
@@ -41,6 +48,58 @@ export function expandRect(rect: Rect, amount: number): Rect {
   };
 }
 
+export function isRectWithinWalkableAreas(
+  rect: Rect,
+  walkableRects: Rect[],
+  walkablePolygons: WalkablePolygon[]
+): boolean {
+  const samplePoints = [
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.width, y: rect.y },
+    { x: rect.x, y: rect.y + rect.height },
+    { x: rect.x + rect.width, y: rect.y + rect.height },
+    { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+  ];
+
+  return samplePoints.every((point) =>
+    walkableRects.some((walkableRect) => pointInRect(point, walkableRect))
+    || walkablePolygons.some((polygon) => pointInPolygon(point, polygon))
+  );
+}
+
+export function moveRectWithinWalkableAreas(
+  rect: Rect,
+  deltaX: number,
+  deltaY: number,
+  walkableRects: Rect[],
+  walkablePolygons: WalkablePolygon[],
+  bounds: Rect
+): MovementResult {
+  let nextRect = { ...rect };
+  let collidedX = false;
+  let collidedY = false;
+
+  const xRect = clampToBounds({ ...nextRect, x: nextRect.x + deltaX }, bounds);
+  if (isRectWithinWalkableAreas(xRect, walkableRects, walkablePolygons)) {
+    nextRect = xRect;
+  } else {
+    collidedX = true;
+  }
+
+  const yRect = clampToBounds({ ...nextRect, y: nextRect.y + deltaY }, bounds);
+  if (isRectWithinWalkableAreas(yRect, walkableRects, walkablePolygons)) {
+    nextRect = yRect;
+  } else {
+    collidedY = true;
+  }
+
+  return {
+    rect: nextRect,
+    collidedX,
+    collidedY
+  };
+}
+
 export function moveRectWithCollisions(
   rect: Rect,
   deltaX: number,
@@ -71,4 +130,39 @@ export function moveRectWithCollisions(
     collidedX,
     collidedY
   };
+}
+
+function pointInRect(point: Point, rect: Rect): boolean {
+  return point.x >= rect.x
+    && point.x <= rect.x + rect.width
+    && point.y >= rect.y
+    && point.y <= rect.y + rect.height;
+}
+
+function pointInPolygon(point: Point, polygon: WalkablePolygon): boolean {
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+    const a = polygon[i];
+    const b = polygon[j];
+    if (!a || !b) continue;
+    if (pointOnSegment(point, a, b)) return true;
+
+    const crosses = ((a.y > point.y) !== (b.y > point.y))
+      && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x;
+    if (crosses) inside = !inside;
+  }
+
+  return inside;
+}
+
+function pointOnSegment(point: Point, start: Point, end: Point): boolean {
+  const cross = (point.y - start.y) * (end.x - start.x)
+    - (point.x - start.x) * (end.y - start.y);
+  if (Math.abs(cross) > 0.001) return false;
+
+  return point.x >= Math.min(start.x, end.x) - 0.001
+    && point.x <= Math.max(start.x, end.x) + 0.001
+    && point.y >= Math.min(start.y, end.y) - 0.001
+    && point.y <= Math.max(start.y, end.y) + 0.001;
 }
