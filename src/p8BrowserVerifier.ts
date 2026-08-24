@@ -38,7 +38,7 @@ function setStatus(value: "pass" | "fail", message = ""): void {
 
 function p7CompleteSave(overrides: Partial<SaveData> = {}): SaveData {
   const now = new Date().toISOString();
-  return {
+  const base: SaveData = {
     version: "0.3.0",
     currentChapterId: "p8_ready",
     currentLocationId: "castle",
@@ -85,30 +85,13 @@ function p7CompleteSave(overrides: Partial<SaveData> = {}): SaveData {
     dogoQuestStatus: "cleared",
     castleQuestStatus: "cleared",
     lastSynopsis: "P8ブラウザ検証用セーブです。",
-    savedAt: now,
+    savedAt: now
+  };
+
+  return {
+    ...base,
     ...overrides,
-    flags: { ...{
-      location_castle_unlocked: true,
-      prologue_completed: true,
-      shiro_met: true,
-      mikan_core_stolen: true,
-      dogo_anomaly_started: true,
-      dogo_quest_started: true,
-      dogo_quest_hint_seen: true,
-      dogo_quest_cleared: true,
-      star_dogo_collected: true,
-      yuno_star_obtained: true,
-      yuno_star_event_seen: true,
-      star_map_unlocked: true,
-      castle_quest_started: true,
-      castle_hint_seen: true,
-      castle_required_enemies_cleared: true,
-      castle_dark_well_cleared: true,
-      castle_guard_ready: true,
-      shiroyama_guard_obtained: true,
-      castle_boss_route_unlocked: true,
-      p8_kagemasa_route_unlocked: true
-    }, ...(overrides.flags ?? {}) }
+    flags: { ...base.flags, ...(overrides.flags ?? {}) }
   };
 }
 
@@ -131,7 +114,11 @@ function testPureP8StateTransitions(): void {
   assert(prepared.flags.star_seal_unlocked === true, "星封じ解放flagを保存する");
   assert(prepared.hp === prepared.maxHp && prepared.mp === prepared.maxMp, "ボス前にHP/MPを回復する");
 
-  const defeated = { ...prepared, currentScreenId: "explore" as const, defeatedEnemyIds: [...prepared.defeatedEnemyIds, "B-E01"] };
+  const defeated: SaveData = {
+    ...prepared,
+    currentScreenId: "explore",
+    defeatedEnemyIds: [...prepared.defeatedEnemyIds, "B-E01"]
+  };
   assert(isP8BossVictoryPending(defeated), "B-E01撃破後はP8完了保存待ちと判定する");
 
   const completed = completeP8Save(defeated);
@@ -177,8 +164,7 @@ async function testLiveBossEntryAndEnding(): Promise<void> {
   await waitFor(() => Boolean(document.querySelector("[data-p8-boss-entry='true']")), "P8 boss entry button");
   assert(document.body.innerText.includes("天守奥へ進む"), "P7完了後の探索画面に天守奥への導線が表示される");
 
-  const bossButton = document.querySelector<HTMLButtonElement>("[data-p8-boss-entry='true']");
-  bossButton?.click();
+  document.querySelector<HTMLButtonElement>("[data-p8-boss-entry='true']")?.click();
   await waitFor(() => document.body.innerText.includes("黒よろいの大将カゲマサ"), "Kagemasa battle screen");
   assert(document.body.innerText.includes("星封じ"), "カゲマサ戦で星封じカード/ゲージが表示される");
   const startedSave = manager.load();
@@ -191,7 +177,13 @@ async function testLiveBossEntryAndEnding(): Promise<void> {
   });
   manager.save(postBoss);
 
-  const endingApp = new GameApp({ canvas, uiRoot, saveKey: SAVE_KEY, initialScreenId: "ending", initialParams: { saveData: postBoss } });
+  const endingApp = new GameApp({
+    canvas,
+    uiRoot,
+    saveKey: SAVE_KEY,
+    initialScreenId: "ending",
+    initialParams: { saveData: postBoss }
+  });
   await endingApp.start();
   await waitFor(() => Boolean(document.querySelector(".ending-screen-ui")), "EndingScreen");
   assert(document.body.innerText.includes("小さな星めぐりは、まだ続く"), "EndingScreenでMVP終了演出を表示する");
