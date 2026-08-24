@@ -2,7 +2,12 @@ import { drawEllipseShadow } from "../animation/Effects";
 import { AssetLoader } from "../core/AssetLoader";
 import type { Camera } from "../core/Camera";
 import { InputManager } from "../core/InputManager";
-import { moveRectWithCollisions, type Rect } from "../systems/CollisionSystem";
+import {
+  moveRectWithCollisions,
+  moveRectWithinWalkableAreas,
+  type Rect,
+  type WalkablePolygon
+} from "../systems/CollisionSystem";
 
 export type Direction = "up" | "down" | "left" | "right";
 
@@ -36,7 +41,9 @@ export class Player {
     deltaTime: number,
     inputManager: InputManager,
     collisionRects: Rect[],
-    bounds: Rect
+    bounds: Rect,
+    walkableRects?: Rect[],
+    walkablePolygons?: WalkablePolygon[]
   ): void {
     const xAxis =
       (inputManager.isActionDown("right") ? 1 : 0) -
@@ -51,13 +58,22 @@ export class Player {
       const normalizedX = xAxis / length;
       const normalizedY = yAxis / length;
       const currentCollider = this.getCollider();
-      const movement = moveRectWithCollisions(
-        currentCollider,
-        normalizedX * this.speed * deltaTime,
-        normalizedY * this.speed * deltaTime,
-        collisionRects,
-        bounds
-      );
+      const movement = walkableRects && walkablePolygons
+        ? moveRectWithinWalkableAreas(
+          currentCollider,
+          normalizedX * this.speed * deltaTime,
+          normalizedY * this.speed * deltaTime,
+          walkableRects,
+          walkablePolygons,
+          bounds
+        )
+        : moveRectWithCollisions(
+          currentCollider,
+          normalizedX * this.speed * deltaTime,
+          normalizedY * this.speed * deltaTime,
+          collisionRects,
+          bounds
+        );
 
       this.x += movement.rect.x - currentCollider.x;
       this.y += movement.rect.y - currentCollider.y;

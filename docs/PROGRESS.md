@@ -2,11 +2,11 @@
 
 ## 現在の状態
 
-- 完了フェーズ: **P7.1 Release Hardening**
+- 完了フェーズ: **P7.1 Release Hardening / Dogo D0 walkability alignment**
 - P7基準main: `88510a95877cced3f793ed5b6b91843eb58db9f7`
 - P7.1作業ブランチ: `fix/p7-release-hardening`
 - P7.1 PR: #3 `fix(p7.1): harden release gate before P8`
-- 状態: Runtime修正、仕様同期、CI Release Gate強化を完了し、GitHub Actions run #14で全検証PASSを確認。
+- 状態: Runtime修正、仕様同期、CI Release Gate強化、道後D0の背景準拠歩行ポリゴン調整を完了。GitHub Actions run #14で全検証PASSを確認し、今回のD0修正では追加の実Chrome回帰も組み込む。
 - 次フェーズ: P8 カゲマサ戦・みかん星の核奪還・MVPエンディング
 - 最終更新日: 2026-08-25
 
@@ -17,7 +17,7 @@
 | P0 | リポジトリ初期化 | 完了 | 文書・開発基盤確認済み |
 | P1 | TypeScript/Vite/Canvas/DOM/セーブ基盤 | 完了 | typecheck/lint/build確認済み |
 | P2 | アセット・アニメーション基盤 | 完了 | Runtime Asset・fallback・描画基盤確認済み |
-| P3/P3.5 | 道後温泉探索・歩行領域改善 | 実装完了 | G/H・衝突・探索導線確認済み。細部の歩行領域調整余地あり |
+| P3/P3.5 | 道後温泉探索・歩行領域改善 | 実装完了 | D0は背景準拠のwalkablePolygonsをruntime移動判定へ接続。G/H・衝突・探索導線確認済み |
 | P4/P4.5/P4.6 | 星地図・会話・UI仕上げ | 完了 | 星地図遷移、会話、Pages base確認済み |
 | P5/P5.1 | 複数敵カードバトル・戦闘UI | 完了 | 1対1/1対2ロジック確認済み |
 | P5.9 | ストーリー正本復元 | 完了 | 企画/GDD/要件/実装仕様へ反映済み |
@@ -77,6 +77,13 @@
    - GDDの旧 `M0〜M6` / `M-E01〜M-E08` をruntimeの `castle/C0` / `C-E01〜C-E05` へ同期。
    - README/ROADMAP/PROGRESS/TASKS/BUILD_CHECKLIST/BUGSのP7/P8境界を統一。
 
+## 2026-08-25 道後D0歩行領域の背景整合
+
+- 生成背景の斜め・曲線の石畳に対して、従来の大きな矩形 `walkableRects` を廃止し、D0の石畳に沿った `walkablePolygons` へ置換。
+- 道後温泉のruntime移動だけは、プレイヤーコライダーの四隅と中心が歩行領域内にあることを確認して移動する方式へ変更。松山城の矩形collision挙動は維持。
+- 開始位置、敵、NPC、道しるべ、イベント位置を背景上の石畳へ補正し、開始地点から全配置先への到達性と開始コライダーの収まりを `maps:validate` で検証。
+- P7 browser verifierにもD0レイアウトの歩行ポリゴン・実探索画面の前後移動確認を追加。
+
 ## GitHub Actions P7.1検証結果
 
 PR #3 / run #14 のbuild jobで以下を確認しました。
@@ -99,7 +106,7 @@ PR #3 / run #14 のbuild jobで以下を確認しました。
 
 ### P10で確認するプレイ品質
 
-- 道後温泉のwalkableRects/collisionRectsは生成背景の斜め形状と完全一致ではない。進行不能ではなく、P10通しプレイ時の操作感調整事項として扱う。
+- 道後D0の主要な歩行領域と配置点の背景ずれは今回解消した。P10では新規セーブで石畳端の操作感、全敵接触、マウス/タッチ経路を最終確認する。
 - P6の「4戦闘を人手で操作して湯の星まで歩く」確認は、P10の新規セーブMVP通しプレイに統合する。
 
 ### アセットロード

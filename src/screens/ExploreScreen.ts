@@ -190,7 +190,9 @@ export class ExploreScreen implements GameScreen {
       deltaTime,
       this.options.inputManager,
       this.area.collisionRects,
-      this.area.cameraBounds
+      this.area.cameraBounds,
+      this.area.locationId === "dogo" ? this.area.walkableRects : undefined,
+      this.area.locationId === "dogo" ? this.area.walkablePolygons ?? [] : undefined
     );
     this.companion.update(deltaTime, this.player);
 
@@ -737,7 +739,7 @@ export class ExploreScreen implements GameScreen {
     ctx.textAlign = "left";
     ctx.fillText("DEV DEBUG ONLY: Gで表示切替", 28, 38);
     ctx.font = "13px sans-serif";
-    ctx.fillText("赤: collisionRects / 緑: walkableRects / カメラ追従", 28, 60);
+    ctx.fillText("赤: collisionRects / 青: walkable areas / カメラ追従", 28, 60);
 
     ctx.restore();
   }
