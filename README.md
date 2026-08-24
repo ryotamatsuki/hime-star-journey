@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-P7「松山城探索・松山城クエスト」は実装済みで、現在は **P7.1 Release Hardening** です。P8着手前に、入力経路差による進行不整合、セーブ正規化、ボス戦勝利条件、仕様書のID体系、GitHub ActionsのRelease Gateを整備しています。
+P7「松山城探索・松山城クエスト」と **P7.1 Release Hardening** は実装・PR検証済みです。次はP8「カゲマサ戦・みかん星の核奪還・MVPエンディング」です。
 
 P7 runtimeの正本は次のとおりです。
 
@@ -20,10 +20,11 @@ P7 runtimeの正本は次のとおりです。
 - P6で画像付き6シーンプロローグ、道後温泉クエスト、湯の星取得、星地図・松山城解放を実装済み。
 - P6.5で `map-editor.html` を追加し、道後D0/松山城C0のレイアウトJSONを視覚編集・検証・保存できるようにしています。
 - P7で星地図→松山城C0、城内戦闘、NPC/調べるヒント、くらやみ井戸、城山のまもり取得まで接続済み。
-- P7.1でキーボードとDOMボタンのNPC interactionを同一処理へ統一し、マウス/タッチでも同じクエストフラグが更新されるよう修正しています。
-- SaveDataはHP/MP上限、ID重複、不正な所持数を正規化します。
+- P7.1でキーボードとDOMボタンのNPC interactionを同一処理へ統一し、マウス/タッチでも同じクエストフラグが更新されるよう修正しました。
+- SaveDataはHP/MP上限、ID重複、不正な所持数、boolean flags、ScreenId等を正規化します。
 - ボス戦は通常ダメージだけでは勝利せず、`sealGauge <= 0` による再封印のみを正式勝利条件とします。
 - GitHub ActionsはPR/mainの双方で、型・lint・マップ検証・エディタsmoke・build・実ブラウザ回帰検証をRelease Gateとして実行します。
+- P7.1 PRでは `npm ci`、typecheck、lint、maps:validate、editor:smoke、build、Linux Chrome `p7:browser` の全Gate PASSを確認済みです。
 
 ## 技術方針
 
