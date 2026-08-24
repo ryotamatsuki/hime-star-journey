@@ -207,9 +207,7 @@ export class ExploreScreen implements GameScreen {
     this.nearbyNpc = this.findNearbyNpc();
 
     if (this.nearbyNpc && this.options.inputManager.isActionStarted("confirm")) {
-      this.markQuestHintSeen();
-      this.tryStartDialogue(this.nearbyNpc.dialogueId);
-      this.updateUi();
+      this.interactWithNearbyNpc();
       return;
     }
 
@@ -425,12 +423,7 @@ export class ExploreScreen implements GameScreen {
     this.talkButton.type = "button";
     this.talkButton.textContent = "話す";
     this.talkButton.hidden = true;
-    this.talkButton.addEventListener("click", () => {
-      if (this.nearbyNpc) {
-        this.tryStartDialogue(this.nearbyNpc.dialogueId);
-        this.updateUi();
-      }
-    });
+    this.talkButton.addEventListener("click", () => this.interactWithNearbyNpc());
     this.pathGuideButton = document.createElement("button");
     this.pathGuideButton.className = "menu-button explore-guide-button";
     this.pathGuideButton.type = "button";
@@ -564,6 +557,13 @@ export class ExploreScreen implements GameScreen {
   private findNearbyNpc(): NPC | null {
     const interactionRect = this.player.getCollider();
     return this.npcs.find((npc) => intersects(interactionRect, npc.getInteractionRect())) ?? null;
+  }
+
+  private interactWithNearbyNpc(): void {
+    if (!this.nearbyNpc || this.dialogueSystem.isActive()) return;
+    this.markQuestHintSeen();
+    this.tryStartDialogue(this.nearbyNpc.dialogueId);
+    this.updateUi();
   }
 
   private findTouchedEnemy(): EnemySymbol | null {
@@ -1045,7 +1045,7 @@ export class ExploreScreen implements GameScreen {
   private getCastleQuestObjective(): string {
     if (!this.saveData) return "もくてき：松山城を調べよう";
     if (this.saveData.flags.shiroyama_guard_obtained) {
-      return "もくてき：城山のまもりを手に入れた。P8でカゲマサのもとへ向かおう";
+      return "もくてき：城山のまもりを手に入れた。カゲマサのもとへ進む準備が整った";
     }
     if (!this.saveData.flags.castle_hint_seen) {
       return "もくてき：城山の見回りか登城口の石碑から手がかりを得よう";
