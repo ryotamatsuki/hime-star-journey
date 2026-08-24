@@ -90,7 +90,7 @@ export class NotebookScreen implements GameScreen {
     Object.assign(title.style, { margin: "0", fontSize: "clamp(26px, 4vw, 40px)" });
     const progress = document.createElement("p");
     const unlockedCount = this.saveData ? getUnlockedNotebookEntries(this.saveData).length : 0;
-    progress.textContent = `旅の記録 ${unlockedCount}/${notebookEntries.length}　・　N / Esc で閉じる`;
+    progress.textContent = `旅の記録 ${unlockedCount}/${notebookEntries.length} / N・Esc で閉じる`;
     Object.assign(progress.style, { margin: "5px 0 0", opacity: "0.72" });
     titleWrap.append(title, progress);
 
@@ -145,7 +145,7 @@ export class NotebookScreen implements GameScreen {
       const name = document.createElement("strong");
       name.textContent = unlocked ? entry.title : "？？？";
       const region = document.createElement("small");
-      region.textContent = unlocked ? `　${entry.region}` : "　まだ見つけていない記録";
+      region.textContent = unlocked ? ` / ${entry.region}` : " / まだ見つけていない記録";
       Object.assign(region.style, { opacity: ".66" });
       const text = document.createElement("p");
       text.textContent = unlocked ? entry.text : "旅を進めると、このページに思い出が増えていきます。";
@@ -171,7 +171,7 @@ export class NotebookScreen implements GameScreen {
 
     const region = document.createElement("p");
     const regionName = this.saveData.currentLocationId === "castle" ? "松山城" : "道後温泉";
-    region.textContent = `地域メモ：${regionName} / ${this.saveData.currentAreaId}`;
+    region.textContent = `地域メモ: ${regionName} / ${this.saveData.currentAreaId}`;
     panel.append(region);
 
     const starHeading = document.createElement("h3");
@@ -188,7 +188,7 @@ export class NotebookScreen implements GameScreen {
       const card = getBattleCard(id);
       if (!card) continue;
       const item = document.createElement("li");
-      item.textContent = `${card.name}：${card.description}`;
+      item.textContent = `${card.name}: ${card.description}`;
       Object.assign(item.style, { marginBottom: "7px" });
       list.append(item);
     }
@@ -198,7 +198,7 @@ export class NotebookScreen implements GameScreen {
     saveHeading.textContent = "オートセーブ";
     const saveText = document.createElement("p");
     const date = new Date(this.saveData.savedAt);
-    saveText.textContent = Number.isNaN(date.getTime()) ? "保存時刻不明" : `最終保存：${date.toLocaleString("ja-JP")}`;
+    saveText.textContent = Number.isNaN(date.getTime()) ? "保存時刻不明" : `最終保存: ${date.toLocaleString("ja-JP")}`;
     panel.append(saveHeading, saveText);
     return panel;
   }
