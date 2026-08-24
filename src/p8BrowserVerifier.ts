@@ -37,7 +37,6 @@ function setStatus(value: "pass" | "fail", message = ""): void {
 }
 
 function p7CompleteSave(overrides: Partial<SaveData> = {}): SaveData {
-  const now = new Date().toISOString();
   const base: SaveData = {
     version: "0.3.0",
     currentChapterId: "p8_ready",
@@ -85,7 +84,7 @@ function p7CompleteSave(overrides: Partial<SaveData> = {}): SaveData {
     dogoQuestStatus: "cleared",
     castleQuestStatus: "cleared",
     lastSynopsis: "P8ブラウザ検証用セーブです。",
-    savedAt: now
+    savedAt: new Date().toISOString()
   };
 
   return {
@@ -104,6 +103,11 @@ async function waitFor(predicate: () => boolean, message: string, timeoutMs = 60
   throw new Error(`Timed out: ${message}`);
 }
 
+function findButton(label: string): HTMLButtonElement | undefined {
+  return [...document.querySelectorAll<HTMLButtonElement>("button")]
+    .find((button) => button.textContent?.includes(label));
+}
+
 function testPureP8StateTransitions(): void {
   const p7 = p7CompleteSave();
   assert(isP8BossReady(p7), "P7完了セーブはカゲマサ戦開始条件を満たす");
@@ -119,7 +123,8 @@ function testPureP8StateTransitions(): void {
     currentScreenId: "explore",
     defeatedEnemyIds: [...prepared.defeatedEnemyIds, "B-E01"]
   };
-  assert(isP8BossVictoryPending(defeated), "B-E01撃破後はP8完了保存待ちと判定する");
+  assert(isP8BossVictoryPending(defeated), "正式なボス開始後のB-E01撃破だけをP8完了待ちと判定する");
+  assert(!isP8BossVictoryPending({ ...p7, defeatedEnemyIds: [...p7.defeatedEnemyIds, "B-E01"] }), "ボス開始flagなしのB-E01混入ではP8を完了しない");
 
   const completed = completeP8Save(defeated);
   assert(completed.currentScreenId === "ending", "P8完了時はEndingScreenへ保存する");
@@ -127,6 +132,7 @@ function testPureP8StateTransitions(): void {
   assert(completed.flags.mikan_core_recovered === true, "みかん星の核奪還flagを保存する");
   assert(completed.flags.gameCompleted === true, "MVP完了flagを保存する");
   assert(completed.collectedStars.includes("castle"), "城の星をcollectedStarsへ追加する");
+  assert(completed.defeatedEnemyIds.includes("B-E01"), "P8完了保存はボス撃破IDを保持する");
   assert((completed.acquiredItems.mikan_star_core ?? 0) >= 1, "みかん星の核を所持品へ追加する");
 }
 
@@ -167,8 +173,7 @@ async function testLiveBossEntryAndEnding(): Promise<void> {
   document.querySelector<HTMLButtonElement>("[data-p8-boss-entry='true']")?.click();
   await waitFor(() => document.body.innerText.includes("黒よろいの大将カゲマサ"), "Kagemasa battle screen");
   assert(document.body.innerText.includes("星封じ"), "カゲマサ戦で星封じカード/ゲージが表示される");
-  const startedSave = manager.load();
-  assert(startedSave?.flags.kagemasa_battle_started === true, "カゲマサ戦開始flagを実ブラウザで保存する");
+  assert(manager.load()?.flags.kagemasa_battle_started === true, "カゲマサ戦開始flagを実ブラウザで保存する");
   app.stop();
 
   const postBoss = completeP8Save({
@@ -188,6 +193,14 @@ async function testLiveBossEntryAndEnding(): Promise<void> {
   await waitFor(() => Boolean(document.querySelector(".ending-screen-ui")), "EndingScreen");
   assert(document.body.innerText.includes("小さな星めぐりは、まだ続く"), "EndingScreenでMVP終了演出を表示する");
   assert(document.body.innerText.includes("空白の星"), "EndingScreenで次の冒険につながる空白の星を示す");
+
+  findButton("タイトルへ")?.click();
+  await waitFor(() => Boolean(document.querySelector(".title-screen-ui")), "title from ending");
+  assert(manager.load()?.currentScreenId === "ending", "タイトルへ戻ってもEndingの再開地点を上書きしない");
+  findButton("つづきから")?.click();
+  await waitFor(() => Boolean(document.querySelector(".ending-screen-ui")), "continue ending checkpoint");
+  assert(document.body.innerText.includes("小さな星めぐりは、まだ続く"), "タイトルのつづきからでEndingへ復帰できる");
+
   endingApp.stop();
   manager.clear();
 }
