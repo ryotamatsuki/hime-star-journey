@@ -340,7 +340,18 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
     { id: "D-E01", label: "道後の影1", points: [{ x: 800, y: 720 }, { x: 760, y: 682 }] },
     { id: "D-E04", label: "道後の影4", points: [{ x: 800, y: 720 }, { x: 900, y: 620 }, { x: 938, y: 500 }] },
     { id: "D-E02", label: "道後の影2", points: [{ x: 800, y: 720 }, { x: 900, y: 620 }, { x: 1050, y: 500 }, { x: 1090, y: 450 }] },
-    { id: "D-E03", label: "道後の影3", points: [{ x: 800, y: 720 }, { x: 900, y: 620 }, { x: 1100, y: 620 }, { x: 1350, y: 650 }, { x: 1520, y: 700 }] }
+    {
+      id: "D-E03",
+      label: "道後の影3",
+      points: [
+        { x: 1100, y: 460 },
+        { x: 1190, y: 500 },
+        { x: 1280, y: 550 },
+        { x: 1380, y: 620 },
+        { x: 1490, y: 690 },
+        { x: 1520, y: 700 }
+      ]
+    }
   ];
   for (const route of dogoRoutes) {
     await moveAlong(route.points, route.label);
