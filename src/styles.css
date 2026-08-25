@@ -1000,3 +1000,9 @@ button {
     display: grid;
   }
 }
+
+@media (pointer: coarse), (hover: none) {
+  .explore-touch-controls {
+    display: grid;
+  }
+}
