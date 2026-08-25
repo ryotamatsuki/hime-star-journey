@@ -14,6 +14,20 @@ type TitleScreenOptions = {
   assetLoader: AssetLoader;
 };
 
+export function resolveContinueTarget(
+  saveData: SaveData,
+  hasScreen: (screenId: ScreenId) => boolean
+): ScreenId {
+  if (saveData.currentScreenId === "title") return "prologue";
+
+  // A battle has no resumable UI snapshot. Return to the saved exploration area;
+  // P8's route button can re-enter the boss battle safely when appropriate.
+  if (saveData.currentScreenId === "battle") return "explore";
+
+  if (hasScreen(saveData.currentScreenId)) return saveData.currentScreenId;
+  return "prologue";
+}
+
 export class TitleScreen implements GameScreen {
   readonly id: ScreenId = "title";
   private elapsedTimeMs = 0;
@@ -125,15 +139,7 @@ export class TitleScreen implements GameScreen {
   }
 
   private resolveContinueTarget(saveData: SaveData): ScreenId {
-    if (saveData.currentScreenId === "title") {
-      return "prologue";
-    }
-
-    if (this.options.screenManager.has(saveData.currentScreenId)) {
-      return saveData.currentScreenId;
-    }
-
-    return "prologue";
+    return resolveContinueTarget(saveData, (screenId) => this.options.screenManager.has(screenId));
   }
 
   private drawCoverImage(

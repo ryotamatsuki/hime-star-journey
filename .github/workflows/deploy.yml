@@ -55,7 +55,8 @@ jobs:
           for i in {1..60}; do
             if curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p7-browser-verifier.html > /dev/null \
               && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p8-browser-verifier.html > /dev/null \
-              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p9-browser-verifier.html > /dev/null; then
+              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p9-browser-verifier.html > /dev/null \
+              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p10-browser-verifier.html > /dev/null; then
               exit 0
             fi
             sleep 1
@@ -77,6 +78,11 @@ jobs:
         env:
           P9_BROWSER_PATH: /usr/bin/google-chrome
         run: npm run p9:browser
+
+      - name: P10 browser release gate
+        env:
+          P10_BROWSER_PATH: /usr/bin/google-chrome
+        run: npm run p10:browser
 
       - name: Configure Pages
         if: github.event_name != 'pull_request'
