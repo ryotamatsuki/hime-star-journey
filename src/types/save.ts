@@ -42,4 +42,11 @@ export type SaveData = {
     | "cleared";
   lastSynopsis: string;
   savedAt: string;
+  /** P12 telemetry is intentionally small and remains backward-compatible with v1 saves. */
+  p12SessionElapsedMs?: number;
+  p12LastDiscoveryElapsedMs?: number;
+  p12DiscoveryIds?: string[];
+  p12DiscoveryIntervalsMs?: number[];
+  p12CheckpointElapsedMs?: number;
+  p12CheckpointIds?: string[];
 };

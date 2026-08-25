@@ -49,6 +49,50 @@ const npcDefinitions: NpcDefinition[] = [
     interactionRadius: 96,
     direction: "down",
     animationType: "idle"
+  },
+  {
+    id: "npc_p12_port_master",
+    name: "港の船大工",
+    locationId: "shimanami",
+    areaId: "A2-0",
+    assetId: "npc_dogo_guide",
+    dialogueId: "npc_p12_port_master",
+    interactionRadius: 96,
+    direction: "down",
+    animationType: "idle"
+  },
+  {
+    id: "npc_p12_bridge_keeper",
+    name: "橋道の見張り",
+    locationId: "shimanami",
+    areaId: "A2-1",
+    assetId: "npc_dogo_guide",
+    dialogueId: "npc_p12_bridge_keeper",
+    interactionRadius: 88,
+    direction: "right",
+    animationType: "idle"
+  },
+  {
+    id: "npc_p12_island_keeper",
+    name: "島の船守",
+    locationId: "shimanami",
+    areaId: "A2-2",
+    assetId: "npc_yumori_grandma",
+    dialogueId: "npc_p12_island_keeper",
+    interactionRadius: 88,
+    direction: "right",
+    animationType: "idle"
+  },
+  {
+    id: "npc_p12_watchkeeper",
+    name: "見張り台の子",
+    locationId: "shimanami",
+    areaId: "A2-3",
+    assetId: "npc_dogo_guide",
+    dialogueId: "npc_p12_watchkeeper",
+    interactionRadius: 88,
+    direction: "down",
+    animationType: "float"
   }
 ];
 

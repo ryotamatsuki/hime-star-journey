@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "locationId": "shimanami",
+  "areaId": "A2-2",
+  "name": "島の坂道・集落",
+  "worldWidth": 1920,
+  "worldHeight": 1080,
+  "backgroundAssetId": "bg_shimanami",
+  "playerStart": { "x": 260, "y": 540 },
+  "cameraBounds": { "id": "camera_shimanami_A2_2", "x": 0, "y": 0, "width": 1920, "height": 1080 },
+  "walkableRects": [
+    { "id": "shimanami_A2_2_village_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "島の坂道" }
+  ],
+  "walkablePolygons": [],
+  "collisionRects": [],
+  "guidePaths": [
+    { "id": "shimanami_A2_2_village_path", "label": "集落を抜ける坂道", "points": [{ "x": 260, "y": 540 }, { "x": 700, "y": 620 }, { "x": 1140, "y": 500 }, { "x": 1580, "y": 540 }] }
+  ],
+  "enemySpawns": [
+    { "id": "A2-E02", "x": 930, "y": 600, "label": "しおガニ" }
+  ],
+  "npcPositions": [
+    { "id": "npc_p12_island_keeper", "x": 420, "y": 580, "label": "島の船守" }
+  ],
+  "interactablePositions": [
+    { "id": "p12_island_discovery", "x": 540, "y": 580, "width": 112, "height": 92, "label": "島の記憶" },
+    { "id": "p12_island_to_watchtower", "x": 1520, "y": 540, "width": 120, "height": 92, "label": "見張り台への坂" }
+  ],
+  "eventPositions": [],
+  "markers": [
+    { "id": "shimanami_A2_2_village_label", "x": 240, "y": 180, "label": "島の坂道・集落" }
+  ]
+}

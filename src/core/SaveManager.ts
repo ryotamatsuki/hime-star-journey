@@ -30,6 +30,10 @@ const itemCounts = (value: unknown): Record<string, number> => {
       .map(([key, count]) => [key, Math.floor(count)])
   );
 };
+const nonNegativeNumberArray = (value: unknown): number[] =>
+  Array.isArray(value)
+    ? value.filter((item): item is number => typeof item === "number" && Number.isFinite(item) && item >= 0)
+    : [];
 const screenId = (value: unknown, fallback: ScreenId): ScreenId =>
   typeof value === "string" && VALID_SCREEN_IDS.has(value as ScreenId) ? value as ScreenId : fallback;
 
@@ -85,12 +89,23 @@ export class SaveManager {
       acquiredCharms: [],
       flags: {
         location_castle_unlocked: false,
-        prologue_started: true
+        prologue_started: true,
+        p12_unlocked: false,
+        p12_started: false,
+        p12_completed: false,
+        p12_wind_ability: false,
+        p12_windmill_revisited: false
       },
       dogoQuestStatus: "notStarted",
       castleQuestStatus: "notStarted",
       lastSynopsis: "家族旅行の前、おばあちゃんから不思議なペンダントを託されました。",
-      savedAt: new Date().toISOString()
+      savedAt: new Date().toISOString(),
+      p12SessionElapsedMs: 0,
+      p12LastDiscoveryElapsedMs: 0,
+      p12DiscoveryIds: [],
+      p12DiscoveryIntervalsMs: [],
+      p12CheckpointElapsedMs: 0,
+      p12CheckpointIds: []
     };
   }
 
@@ -115,6 +130,26 @@ export class SaveManager {
       flags.star_map_unlocked = true;
       if (!unlockedLocations.includes("castle")) unlockedLocations.push("castle");
     }
+    const p12Collected = collectedStars.includes("shimanami")
+      || flags.star_shimanami_collected === true
+      || flags.p12_completed === true;
+    const p12Progressed = source.currentLocationId === "shimanami"
+      || finiteString(source.currentChapterId, "").startsWith("p12")
+      || stringArray(source.defeatedEnemyIds).some((id) => id.startsWith("A2-"))
+      || flags.p12_started === true
+      || flags.p12_wind_ability === true;
+    const p12Unlocked = p12Collected || p12Progressed || flags.p12_unlocked === true || flags.gameCompleted === true;
+    if (p12Unlocked) {
+      flags.p12_unlocked = true;
+      flags.star_map_unlocked = true;
+      if (!unlockedLocations.includes("shimanami")) unlockedLocations.push("shimanami");
+    }
+    if (p12Progressed || p12Collected) flags.p12_started = true;
+    if (p12Collected) {
+      flags.p12_completed = true;
+      flags.star_shimanami_collected = true;
+      if (!collectedStars.includes("shimanami")) collectedStars.push("shimanami");
+    }
     const sourceScreenId = screenId(source.currentScreenId, initial.currentScreenId);
     const progressed = dogoCollected || castleUnlocked || stringArray(source.defeatedEnemyIds).length > 0 ||
       source.currentChapterId === "dogo_explore" || sourceScreenId === "explore" || sourceScreenId === "battle";
@@ -135,6 +170,9 @@ export class SaveManager {
     const clearedQuestIds = stringArray(source.clearedQuestIds);
     if (dogoCollected && !clearedQuestIds.includes("quest_dogo_yukemuri_star")) {
       clearedQuestIds.push("quest_dogo_yukemuri_star");
+    }
+    if (p12Collected && !clearedQuestIds.includes("quest_shimanami_wind")) {
+      clearedQuestIds.push("quest_shimanami_wind");
     }
     const sourceAcquiredCharms = stringArray(source.acquiredCharms);
     const shiroyamaGuardObtained =
@@ -183,7 +221,11 @@ export class SaveManager {
       currentAreaId: finiteString(source.currentAreaId, initial.currentAreaId),
       partyMemberIds: stringArray(source.partyMemberIds, initial.partyMemberIds),
       activePartyMemberIds: stringArray(source.activePartyMemberIds, initial.activePartyMemberIds),
-      starLevel: dogoCollected ? Math.max(2, finiteNumber(source.starLevel, 2)) : Math.max(0, finiteNumber(source.starLevel, initial.starLevel)),
+      starLevel: p12Collected
+        ? Math.max(4, finiteNumber(source.starLevel, 4))
+        : dogoCollected
+          ? Math.max(2, finiteNumber(source.starLevel, 2))
+          : Math.max(0, finiteNumber(source.starLevel, initial.starLevel)),
       hp,
       mp,
       maxHp,
@@ -203,7 +245,13 @@ export class SaveManager {
       dogoQuestStatus,
       castleQuestStatus,
       lastSynopsis: typeof source.lastSynopsis === "string" ? source.lastSynopsis : initial.lastSynopsis,
-      savedAt: typeof source.savedAt === "string" ? source.savedAt : initial.savedAt
+      savedAt: typeof source.savedAt === "string" ? source.savedAt : initial.savedAt,
+      p12SessionElapsedMs: Math.max(0, finiteNumber(source.p12SessionElapsedMs, initial.p12SessionElapsedMs ?? 0)),
+      p12LastDiscoveryElapsedMs: Math.max(0, finiteNumber(source.p12LastDiscoveryElapsedMs, initial.p12LastDiscoveryElapsedMs ?? 0)),
+      p12DiscoveryIds: Array.from(new Set(stringArray(source.p12DiscoveryIds))),
+      p12DiscoveryIntervalsMs: nonNegativeNumberArray(source.p12DiscoveryIntervalsMs),
+      p12CheckpointElapsedMs: Math.max(0, finiteNumber(source.p12CheckpointElapsedMs, initial.p12CheckpointElapsedMs ?? 0)),
+      p12CheckpointIds: Array.from(new Set(stringArray(source.p12CheckpointIds)))
     };
   }
 }

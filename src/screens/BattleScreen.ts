@@ -185,7 +185,9 @@ export class BattleScreen implements GameScreen {
 
   private renderBackground(ctx: CanvasRenderingContext2D, width: number, height: number): void {
     const backgroundAssetId =
-      this.battleParams?.returnLocationId === "castle" || this.battleParams?.isBoss
+      this.battleParams?.returnLocationId === "shimanami"
+        ? "bg_shimanami"
+        : this.battleParams?.returnLocationId === "castle" || this.battleParams?.isBoss
         ? "bg_castle_battle"
         : "bg_dogo_battle";
 

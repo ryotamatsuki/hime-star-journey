@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>P11 Browser Verifier</title>
+    <style>
+      html, body { margin: 0; background: #17131f; color: #fff; font-family: sans-serif; }
+      #verifier { max-width: 900px; padding: 18px; background: #fff; color: #222; }
+    </style>
+  </head>
+  <body>
+    <section id="verifier">
+      <strong id="p11-verifier-status">P11_BROWSER_VERIFICATION:RUNNING</strong>
+      <ol id="p11-verifier-results"></ol>
+    </section>
+    <script type="module" src="/src/p11BrowserVerifier.ts"></script>
+  </body>
+</html>

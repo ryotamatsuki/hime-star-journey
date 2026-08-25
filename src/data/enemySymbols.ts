@@ -157,6 +157,54 @@ const enemySymbolDefinitions: EnemySymbolDefinition[] = [
     animationType: "wander",
     assetId: "enemy_castle_soldier",
     label: "影足軽"
+  },
+  {
+    symbolId: "A2-E01",
+    encounterId: "enc_shimanami_wind_thief",
+    locationId: "shimanami",
+    areaId: "A2-1",
+    required: true,
+    defeatedFlag: "enemy_defeated_A2-E01",
+    collider: { x: -26, y: -30, width: 52, height: 38 },
+    animationType: "scurry",
+    assetId: "enemy_shimanami_wind_thief",
+    label: "かぜぬすみ"
+  },
+  {
+    symbolId: "A2-E02",
+    encounterId: "enc_shimanami_tide_crab",
+    locationId: "shimanami",
+    areaId: "A2-2",
+    required: true,
+    defeatedFlag: "enemy_defeated_A2-E02",
+    collider: { x: -28, y: -25, width: 56, height: 36 },
+    animationType: "wander",
+    assetId: "enemy_shimanami_tide_crab",
+    label: "しおガニ"
+  },
+  {
+    symbolId: "A2-E03",
+    encounterId: "enc_shimanami_gull",
+    locationId: "shimanami",
+    areaId: "A2-4",
+    required: true,
+    defeatedFlag: "enemy_defeated_A2-E03",
+    collider: { x: -24, y: -28, width: 48, height: 36 },
+    animationType: "float",
+    assetId: "enemy_shimanami_gull",
+    label: "くろほガモメ"
+  },
+  {
+    symbolId: "A2-B01",
+    encounterId: "enc_boss_shimanami_octopus",
+    locationId: "shimanami",
+    areaId: "A2-5",
+    required: true,
+    defeatedFlag: "enemy_defeated_A2-B01",
+    animationType: "blink",
+    assetId: "boss_shimanami_octopus",
+    label: "しまかぜ大だこ",
+    collider: { x: -38, y: -40, width: 76, height: 54 }
   }
 ];
 

@@ -21,6 +21,7 @@ const REQUIRED_CASTLE_TARGETS = [
   "castle_guard_shrine",
   "castle_guard_event"
 ];
+const REQUIRED_P12_TARGETS = ["A2-E01", "A2-E02", "A2-E03", "A2-B01"];
 
 export function validateMapLayout(layout: MapLayoutData, gridSize = 24): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
@@ -99,7 +100,11 @@ export function validateMapLayout(layout: MapLayoutData, gridSize = 24): Validat
     issues.push({ severity: "error", message: "プレイヤー開始位置が衝突領域に重なっています。", targetId: "playerStart" });
   }
 
-  const requiredTargetIds = layout.locationId === "castle" ? REQUIRED_CASTLE_TARGETS : REQUIRED_DOGO_TARGETS;
+  const requiredTargetIds = layout.locationId === "castle"
+    ? REQUIRED_CASTLE_TARGETS
+    : layout.locationId === "shimanami"
+      ? REQUIRED_P12_TARGETS
+      : REQUIRED_DOGO_TARGETS;
   const targets = [
     ...layout.enemySpawns.filter((enemy) => requiredTargetIds.includes(enemy.id)),
     ...layout.npcPositions,

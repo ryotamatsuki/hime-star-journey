@@ -14,7 +14,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: "index.html",
-        mapEditor: "map-editor.html"
+        mapEditor: "map-editor.html",
+        p11Verifier: "p11-browser-verifier.html",
+        p12Verifier: "p12-browser-verifier.html"
       }
     }
   }

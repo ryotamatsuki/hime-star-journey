@@ -1,6 +1,7 @@
 import type { StarMapNodeData, StarMapNodeStatus } from "../data/starMap";
 import type { ScreenId } from "../types/game";
 import type { SaveData } from "../types/save";
+import { getP12AreaMeta, isP12Location } from "../data/p12";
 
 export type TravelDestination =
   | {
@@ -33,6 +34,16 @@ export function getNodeStatus(node: StarMapNodeData, save: SaveData): StarMapNod
       : "locked";
   }
 
+  if (isP12Location(node.locationId)) {
+    if (save.flags.p12_completed || save.flags.star_shimanami_collected || save.collectedStars.includes("shimanami")) {
+      return "cleared";
+    }
+    if (save.flags.p12_started || save.flags.p12_unlocked || save.currentLocationId === "shimanami" || save.unlockedLocations.includes("shimanami")) {
+      return "inProgress";
+    }
+    return "locked";
+  }
+
   if (node.requiredFlag && !save.flags[node.requiredFlag]) {
     return "locked";
   }
@@ -50,6 +61,14 @@ export function isNodeSelectable(node: StarMapNodeData, save: SaveData): boolean
 }
 
 export function getCurrentObjective(save: SaveData): string {
+  if (isP12Location(save.currentLocationId) || save.flags.p12_started) {
+    if (save.flags.p12_completed || save.flags.star_shimanami_collected) {
+      return "しまなみの星を取り戻した。星地図へ戻ろう。";
+    }
+    const area = getP12AreaMeta(save.currentAreaId);
+    return area?.objective ?? "しまなみの風の手がかりを探そう";
+  }
+
   if (save.flags.shiroyama_guard_obtained || save.flags.castle_boss_route_unlocked) {
     return "城山のまもりを手に入れた。カゲマサのいる場所へ向かう準備ができた。";
   }
@@ -102,6 +121,15 @@ export function getTravelDestination(
       screenId: "explore",
       locationId: "castle",
       areaId: "C0"
+    };
+  }
+
+  if (isP12Location(node.locationId)) {
+    return {
+      type: "screen",
+      screenId: "explore",
+      locationId: "shimanami",
+      areaId: "A2-0"
     };
   }
 

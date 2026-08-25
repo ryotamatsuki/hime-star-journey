@@ -187,6 +187,99 @@ export const dialogueEvents: DialogueEventData[] = [
         text: "井戸の闇がほどけた。天守前の祠に、城山のまもりが戻っているよ。"
       }
     ]
+  },
+  {
+    id: "p12_intro_auto",
+    triggerType: "auto",
+    once: true,
+    setFlagsOnComplete: {
+      p12_intro_seen: true,
+      p12_started: true
+    },
+    lines: [
+      {
+        speakerId: "shiro",
+        speakerName: "シロ",
+        portraitAssetId: "portrait_shiro",
+        text: "海の星が、しまなみの風にさらわれている。ここは今治港Hubだよ。"
+      },
+      {
+        speakerId: "hime",
+        speakerName: "ひめ",
+        portraitAssetId: "portrait_hime",
+        text: "橋道と小舟道……どちらを通っても、海城の見張り台へ行けるんだね。"
+      },
+      {
+        speakerId: "shiro",
+        speakerName: "シロ",
+        portraitAssetId: "portrait_shiro",
+        text: "風の手がかりを集めて、灯台の星を取り戻そう。"
+      }
+    ]
+  },
+  {
+    id: "npc_p12_port_master",
+    triggerType: "npc",
+    once: false,
+    lines: [
+      {
+        speakerId: "port_master",
+        speakerName: "港の船大工",
+        portraitAssetId: "npc_dogo_guide",
+        text: "橋道は風の記憶が残りやすい。小舟道は潮の音が手がかりになるよ。"
+      },
+      {
+        speakerId: "hime",
+        speakerName: "ひめ",
+        portraitAssetId: "portrait_hime",
+        text: "二つの道が、同じ見張り台につながっているんだね。"
+      }
+    ]
+  },
+  {
+    id: "npc_p12_bridge_keeper",
+    triggerType: "npc",
+    once: false,
+    lines: [
+      {
+        speakerId: "bridge_keeper",
+        speakerName: "橋道の見張り",
+        portraitAssetId: "npc_dogo_guide",
+        text: "橋の上では、風が昔の旅人の声を運んでくる。星の紐を探してごらん。"
+      }
+    ]
+  },
+  {
+    id: "npc_p12_island_keeper",
+    triggerType: "npc",
+    once: false,
+    lines: [
+      {
+        speakerId: "island_keeper",
+        speakerName: "島の船守",
+        portraitAssetId: "npc_yumori_grandma",
+        text: "集落の石垣に、風を待つ人の記憶が残っとる。急がず、音を聞いて進みんさい。"
+      }
+    ]
+  },
+  {
+    id: "npc_p12_watchkeeper",
+    triggerType: "npc",
+    once: false,
+    lines: [
+      {
+        speakerId: "watchkeeper",
+        speakerName: "見張り台の子",
+        portraitAssetId: "npc_dogo_guide",
+        text: "風の星は、風車が止まった場所にあるよ。受け取ったら、同じ羽根をもう一度見て。"
+      },
+      {
+        speakerId: "shiro",
+        speakerName: "シロ",
+        portraitAssetId: "portrait_shiro",
+        text: "風よみを手に入れる前と後で、同じ場所の意味が変わるんだね。"
+      }
+    ]
   }
 ];
 

@@ -97,6 +97,31 @@ export const encounters: EncounterData[] = [
     required: true,
     isBoss: true,
     enemies: [{ enemyId: "boss_kagemasa" }]
+  },
+  {
+    id: "enc_shimanami_wind_thief",
+    name: "かぜぬすみ",
+    required: true,
+    enemies: [{ enemyId: "shimanami_wind_thief" }]
+  },
+  {
+    id: "enc_shimanami_tide_crab",
+    name: "しおガニ",
+    required: true,
+    enemies: [{ enemyId: "shimanami_tide_crab" }]
+  },
+  {
+    id: "enc_shimanami_gull",
+    name: "くろほガモメ",
+    required: true,
+    enemies: [{ enemyId: "shimanami_gull" }]
+  },
+  {
+    id: "enc_boss_shimanami_octopus",
+    name: "しまかぜ大だこ",
+    required: true,
+    isBoss: true,
+    enemies: [{ enemyId: "boss_shimanami_octopus" }]
   }
 ];
 

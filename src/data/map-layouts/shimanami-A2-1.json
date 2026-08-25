@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "locationId": "shimanami",
+  "areaId": "A2-1",
+  "name": "来島の橋道",
+  "worldWidth": 1920,
+  "worldHeight": 1080,
+  "backgroundAssetId": "bg_shimanami",
+  "playerStart": { "x": 260, "y": 540 },
+  "cameraBounds": { "id": "camera_shimanami_A2_1", "x": 0, "y": 0, "width": 1920, "height": 1080 },
+  "walkableRects": [
+    { "id": "shimanami_A2_1_bridge_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "来島の橋道" }
+  ],
+  "walkablePolygons": [],
+  "collisionRects": [],
+  "guidePaths": [
+    { "id": "shimanami_A2_1_bridge_path", "label": "橋を渡る道", "points": [{ "x": 260, "y": 540 }, { "x": 720, "y": 540 }, { "x": 1240, "y": 540 }, { "x": 1580, "y": 540 }] }
+  ],
+  "enemySpawns": [
+    { "id": "A2-E01", "x": 920, "y": 540, "label": "かぜぬすみ" }
+  ],
+  "npcPositions": [
+    { "id": "npc_p12_bridge_keeper", "x": 420, "y": 540, "label": "橋道の見張り" }
+  ],
+  "interactablePositions": [
+    { "id": "p12_bridge_discovery", "x": 540, "y": 540, "width": 112, "height": 92, "label": "橋の記憶" },
+    { "id": "p12_bridge_to_watchtower", "x": 1520, "y": 540, "width": 120, "height": 92, "label": "見張り台への道" }
+  ],
+  "eventPositions": [],
+  "markers": [
+    { "id": "shimanami_A2_1_bridge_label", "x": 240, "y": 180, "label": "来島の橋道" }
+  ]
+}
