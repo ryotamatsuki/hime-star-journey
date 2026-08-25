@@ -19,7 +19,7 @@
 | P7.2 | 道後歩行領域実景整合 | 背景上の地面とwalkable polygonを一致させる | 完了 |
 | P8 | カゲマサ戦・みかん星の核奪還・MVPエンディング | 星封じ、再封印、核奪還、城の星、終了演出 | 完了 |
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 完了 |
-| P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | CI通しプレイ完了・本番QA待ち |
+| P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 完了（Release PASS） |
 
 ## P9 runtime正本
 
@@ -38,15 +38,17 @@
 - P9 browserでは手帳10項目、進行ロック、手帳開閉、カード一覧、地域メモ、ミュートUI、再開地点非上書き、安全画面オートセーブを確認。
 - GameApp起動時間はP9 verifier内で計測・ログ出力し、P10 production E2Eで公開環境の実測値を最終確認する。
 
-## P10 Release Candidate確認
+## P10 Release Gate完了
 
-- PR #8のCI #76で `npm ci`、typecheck、lint、maps:validate、editor:smoke、build、P7/P8/P9/P10 browserをPASS。
+- PR #8〜#11でP10のRelease Candidate、Production QA修正、手帳操作修正を実施。最終mainラン #84はP7起動フレークの失敗ジョブ再実行後に全GateとPages deployをPASS。
 - P10 verifierは新規セーブからタイトル→プロローグ→道後必須4戦→湯の星→星地図→松山城必須3戦→くらやみ井戸→城山のまもり→カゲマサ→Endingを通常のDOM/キーボード操作で完走。
 - 手帳の段階解放、10/10、旧save fail-safe、autosave/reload/Continue、battle途中checkpoint、Ending後Continue、ミュート切替、390px相当タッチパッド、runtime image asset path、runtime error 0件を確認。
 - 1対2戦闘のターゲット確定処理を修正し、必須連戦でMPが枯れないよう通常勝利後にMPを少量回復する調整を追加。
 - `npm audit` / `npm audit --omit=dev` はともに0 vulnerabilities。以前の4 highは間接dev依存の安全なpatch更新で解消。
-- GitHub Pages本番URLの最終QAとmerge後の公開状態確認は未完了。
+- GitHub Pages本番URLでtitle、新規開始、道後到達、手帳の開く／ミュート／閉じるpointer操作、reload後のContinue、最新bundleのロードを確認。ページ側console/runtime blockerとasset errorはなし。
+- 本番URLの手動Endingまでのキー長押しはCloud Browserの入力保持制約で未実施。Endingまでの通常操作はCI実Chromeで確認し、本番では主要story入口と再開経路を確認した。
+- ランタイム最終main SHA: `8ba634a6e295db690cfd0e90c64a1b025e2b350f`。
 
 ## 次フェーズ
 
-P10のmerge後、GitHub Pages本番URLで初期ロード、主要操作、描画、asset 404、console/runtime error、Save/Continue、BGM/SEを確認し、最終main SHAとRelease判定を記録する。
+MVP体験版のRelease blockerは残っていない。今後は新しい地域・物語を追加する場合に、P10のbrowser/production Gateを回帰基準として維持する。

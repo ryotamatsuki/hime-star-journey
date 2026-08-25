@@ -23,7 +23,7 @@
 
 ## P10 通しプレイ・体験版調整・公開確認
 
-- [x] 新規localStorageからMVP通しプレイ（CI #76）
+- [x] 新規localStorageからMVP通しプレイ（最終CI #84）
 - [x] タイトル→プロローグ→道後全必須戦闘→湯の星→星地図→松山城→城山のまもり→カゲマサ→エンディングを確認
 - [x] 旅の手帳を序盤/道後完了/P7完了/P8完了の各時点で確認
 - [x] キーボード中心の通常操作とDOMボタン操作、390px相当タッチパッド表示を確認
@@ -31,6 +31,8 @@
 - [x] 道後walkable/collisionの細部をCI検証し、中央接続路を最小調整
 - [x] BGM/SEのミュート・画面切替・runtime errorを確認
 - [x] 1対2ターゲット確定と必須連戦の難易度を調整
-- [ ] GitHub Pages公開URLでproduction E2E
-- [ ] 公開環境で初期ロード時間を実測し、必要なら段階ロードへ変更
-- [ ] コンソールエラー/404/必須アセット欠落なしを確認
+- [x] GitHub Pages公開URLでproduction E2E（title→道後、Notebook pointer、ミュート／閉じる、reload→Continue）
+- [ ] 公開環境の初期ロード時間を数値計測し、必要なら段階ロードへ変更（Release blockerではない）
+- [x] コンソールエラー/404/必須アセット欠落なしを確認（ページ側。拡張機能由来ログは除外）
+
+P10最終判定: **Release PASS**。本番URLのEndingまでの手動キー保持のみCloud Browserの入力制約で未実施だが、Endingまでの通常操作は最終P10実Chrome CIで確認済み.

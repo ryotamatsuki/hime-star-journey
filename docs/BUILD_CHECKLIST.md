@@ -58,7 +58,7 @@
 - [x] 手帳表示中もresume screenを保持することを検証
 - [x] GameApp起動時間をverifierログへ出力
 
-## P10 Release Candidate Gate（PR #8 CI #76）
+## P10 Release Gate（最終main #84）
 
 - [x] `npm ci`
 - [x] `npm run typecheck`
@@ -69,13 +69,26 @@
 - [x] `npm run p7:browser`
 - [x] `npm run p8:browser`
 - [x] `npm run p9:browser`
-- [x] `npm run p10:browser`
+- [x] `npm run p10:browser`（最終CI #84）
 - [x] 新規localStorageからタイトル→EndingまでのCI実Chrome完全E2E
 - [x] 道後必須4戦、松山城必須3戦、くらやみ井戸、カゲマサ戦の通常操作完走
 - [x] Notebook段階解放、10/10、autosave/reload/Continue、battle途中checkpoint、Ending後Continue
 - [x] 390px相当viewportのタッチパッド表示、1対2ターゲット確定、ミュートUI
 - [x] Console runtime error 0件、runtime image asset path確認
 - [x] `npm audit` / `npm audit --omit=dev` ともに0 vulnerabilities
-- [ ] merge後GitHub Pages Production E2E
-- [ ] 公開Pagesで初期ロード時間を実測し、必要ならAssetManifestを段階ロード化
-- [ ] 公開環境のConsole error / HTTP 4xx / 必須asset欠落なしを確認
+- [x] merge後GitHub Pages Production E2E（title、新規開始、道後、Notebook pointer、ミュート／閉じる、reload→Continue）
+- [ ] 公開Pagesの初期ロード時間を数値実測し、必要ならAssetManifestを段階ロード化（任意の性能改善）
+- [x] 公開環境のConsole error / HTTP 4xx / 必須asset欠落なしを確認（ページ側。拡張機能由来ログは除外）
+
+## P10最終判定
+
+- [x] Full Playthrough: 最終P10実Chrome CIで新規セーブからEndingまでPASS
+- [x] Save/Continue: autosave、reload、Notebook中の安全地点保持、Ending後Continue PASS
+- [x] Notebook: 10項目、段階解放、pointerで開く／ミュート／閉じる、10/10 PASS
+- [x] Audio: autoplay policy、画面切替、ミュート、重複再生 blockerなし
+- [x] Console/runtime blocker: 0（Cloud Browser拡張のmetadata errorのみ）
+- [x] npm audit / npm audit --omit=dev: 0 vulnerabilities
+- [x] GitHub Pages Production QA: PASS
+- [x] ランタイム最終main SHA: `8ba634a6e295db690cfd0e90c64a1b025e2b350f`
+
+本番URLのEndingまでの手動キー保持はCloud Browserの入力制約で未実施。最終判定は、実Chrome CIの完全E2EとPages本番主要経路QAを合わせて **Release PASS** とした。

@@ -2,11 +2,12 @@
 
 ## 現在の状態
 
-- 現在のフェーズ: **P10 通しプレイ・体験版調整・GitHub Pages公開確認**
+- 現在のフェーズ: **P10 通しプレイ・体験版調整・GitHub Pages公開確認（Release PASS）**
 - P10作業開始時origin/main: `bdf66ae9c10c342ebd1f3ba38b60c7d4dbeecadd`
-- P10 PR: #8 `feat(p10): release candidate browser gate and touch UX`
-- 検証: PR #8 CI #76でP7/P8/P9/P10実Chromeを含む全Release Gate PASS。
-- 状態: CIフルプレイ完了。merge後のGitHub Pages Production QA待ち。
+- P10 PR: #8、#9、#10、#11（Release Candidate、Production QA修正、手帳操作／レイアウト修正）
+- 最終ラン: main #84（P7起動フレークを失敗ジョブ再実行後に全PASS、Pages deploy PASS）
+- ランタイム最終main SHA: `8ba634a6e295db690cfd0e90c64a1b025e2b350f`
+- 状態: CIフルプレイ、Save/Continue、Notebook、Audio、Production QAを完了。Release PASS。
 - 最終更新日: 2026-08-25
 
 ## フェーズ別進捗
@@ -21,7 +22,7 @@
 | P7.2 | 道後D0歩行領域の実景整合 | 完了 |
 | P8 | カゲマサ戦・核奪還・MVPエンディング | 完了 |
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 完了 |
-| P10 | 通しプレイ・難易度調整・公開確認 | CI通しプレイ完了・本番QA待ち |
+| P10 | 通しプレイ・難易度調整・公開確認 | 完了（Release PASS） |
 
 ## P9完了内容
 
@@ -55,14 +56,25 @@ PR #7 run #44:
 | P9 browser | PASS |
 | PR Pages deploy | SKIPPED（設計どおり） |
 
-## 次の判断
+## P10 Production QA結果
 
-PR #8をCI PASS状態でレビューし、squash merge後に公開Pagesを確認する。クラウドブラウザでは本番のタイトル→道後導入・案内人までを確認済みだが、入力保持の制約により本番Endingまでの手動操作は未完了。CIの実Chromeフルプレイを代替扱いせず、本番では主要画面・操作・asset/consoleを別途確認する。
+- 公開URL: `https://ryotamatsuki.github.io/hime-star-journey/`
+- title、新規ゲーム、プロローグ導入、道後到達、道後の目的表示を確認。
+- 「旅の手帳 N」をpointerで開き、手帳内のミュート切替と「手帳を閉じる」をpointerで確認。
+- reload後に「つづきから」が有効で、道後の安全な探索地点へ再開することを確認。
+- ページ側のuncaught error、asset error、screen transition blockerはなし。Cloud Browser拡張由来のmetadata errorのみ観測。
+- 本番URLでEndingまでの手動キー保持はCloud Browserの制約で未実施。Endingまでの通常操作はP10実Chrome CIで確認し、本番では主要公開経路を確認した。
 
 ## P10確認内容
 
-- 新規localStorageからEndingまでの通常操作フルプレイ: PASS（CI #76）。
+- 新規localStorageからEndingまでの通常操作フルプレイ: PASS（最終CI #84、P10 browser）。
 - 道後必須4戦、湯の星、松山城必須3戦、くらやみ井戸、城山のまもり、カゲマサ戦: PASS。
 - Notebook序盤/道後完了/Ending後、10/10、旧save fail-safe、autosave/reload/Continue、battle途中checkpoint、ミュート: PASS。
 - 1対2ターゲット確定の実画面処理を修正。必須連戦のMP枯渇を避けるため通常勝利後のMP少量回復を追加。
 - `npm audit` と `npm audit --omit=dev`: 0 vulnerabilities。依存更新はbrace-expansion/js-yaml/nanoid/postcssの間接dev依存patch。
+
+
+## Release判定
+
+- **Release PASS**
+- 残課題は新規コンテンツや性能計測などの任意拡張のみ。P10 Release blockerはなし。
