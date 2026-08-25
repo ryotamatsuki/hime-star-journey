@@ -64,9 +64,9 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 
 ### Git / Release前提
 
-- [ ] P12開始時に最新 `origin/main` を取得し、開始SHAを記録
-- [ ] P11 merge後の正本文書とP10 Release Gateを基準として固定
-- [ ] 既存open PR / branchを確認し競合・重複を避ける
+- [x] P12開始時に最新 `origin/main` を取得し、開始SHAを記録
+- [x] P11 merge後の正本文書とP10 Release Gateを基準として固定
+- [x] 既存open PR / branchを確認し競合・重複を避ける
 
 ### Architecture
 
@@ -84,12 +84,12 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 
 ### Shimanami Field
 
-- [ ] 今治港Hubを実装
-- [ ] 4〜5 Subareaを実装
-- [ ] Boss spaceを実装
-- [ ] 橋route / 小舟routeの軽い分岐と再合流を実装
-- [ ] `風よみ`取得前の視認可能なability gateを1〜2か所配置
-- [ ] `風よみ`取得後に既訪地点の意味が変わる再訪を実装
+- [x] 今治港Hubを実装
+- [x] 4〜5 Subareaを実装
+- [x] Boss spaceを実装
+- [x] 橋route / 小舟routeの軽い分岐と再合流を実装
+- [x] `風よみ`取得前の視認可能なability gateを1〜2か所配置
+- [x] `風よみ`取得後に既訪地点の意味が変わる再訪を実装
 - [ ] 帆・風車・旗・霧・風道を使った環境gimmickを実装
 - [ ] 小環境puzzle 2〜4件
 - [ ] 任意event 1〜2件
@@ -109,8 +109,8 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 
 ### Smartphone / UX
 
-- [ ] 横画面joystick移動を実機相当viewportで確認
-- [ ] Interact buttonを導入または既存confirm導線をtouch向けに統合
+- [x] 横画面joystick移動を実機相当viewportで確認
+- [x] Interact buttonを導入または既存confirm導線をtouch向けに統合
 - [ ] Shiro Searchをtouchから1操作で利用可能にする
 - [ ] Battle card UIを最大6枚で操作可能にする
 - [ ] Notebook / 星地図 / Safe Areaとjoystickの干渉を確認
@@ -132,18 +132,18 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 
 ### Regression / Release Gate
 
-- [ ] `npm ci`
-- [ ] typecheck
-- [ ] lint
-- [ ] maps:validate
-- [ ] editor:smoke
-- [ ] build
-- [ ] P7/P8/P9/P10 browser回帰
-- [ ] P12専用browser verifier
-- [ ] P10 Prologue title→Ending回帰を維持
+- [x] `npm ci`
+- [x] typecheck
+- [x] lint
+- [x] maps:validate
+- [x] editor:smoke
+- [x] build
+- [x] P7/P8/P9/P10 browser回帰
+- [x] P12専用browser verifier
+- [x] P10 Prologue title→Ending回帰を維持（P10 browser gate）
 - [ ] P10から引き継いだ公開環境初期ロード時間を定量計測
 - [ ] initial load / Area transition / Subarea transition時間を記録
-- [ ] runtime error / asset 404 / save migration error 0件
+- [x] runtime error / asset 404 / save migration error 0件（CI verifier範囲）
 - [ ] GitHub Pages production QA
 
 ### P12 Go / No-Go
@@ -156,4 +156,6 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 - [ ] `風よみ`取得前後で再訪の意味が変わる
 - [ ] 地域性がfield / battle / storyへ同じruleとして統合される
 - [ ] lazy loadingでP10よりFull Game規模の初期ロードを悪化させない
-- [ ] Prologue回帰を壊さない
+- [x] Prologue回帰を壊さない
+
+P12 Hard Gate判定: **実装／回帰はPASS、探索KPIは条件付きPASS**。Chrome CI #95はcritical pathをPASSしたが、60〜80分の人手通しプレイと探索密度の中央値は未計測であるため、A3以降の量産は追加計測後に判断する。

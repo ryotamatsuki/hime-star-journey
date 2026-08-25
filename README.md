@@ -6,7 +6,7 @@ P1〜P10で松山市内の「道後温泉→松山城→カゲマサ→Ending」
 
 ## 現在のフェーズ
 
-P11「Full Game Design / 本編基盤設計」は設計完了です。次フェーズは **P12「しまなみ Adventure Area Vertical Slice」** です。
+P11「Full Game Design / 本編基盤設計」を土台に、P12「しまなみ Adventure Area Vertical Slice」のruntime実装とChrome/CI回帰を完了しました。P12はHard Gateのうち、実装・操作・回帰をPASSし、実プレイ時間と探索密度の定量値は追加の手動計測が必要な **条件付きPASS** です。
 
 P11では大規模runtime実装を行わず、以下を確定しました。
 
@@ -59,6 +59,18 @@ P12では今治市・上島町の「しまなみ・島風の航路」だけを�
 - P10 Prologue回帰を壊さない。
 
 Hard Gateを満たさない場合、後続Adventure Areaを量産せず規格を修正します。
+
+### P12 Hard Gate判定
+
+GitHub ActionsのChrome CI run #95（2026-08-26 JST）で、次をPASSしました。
+
+- `npm run p7:browser`〜`npm run p12:browser` の全Chromeゲート。
+- Hub→橋道→橋の記憶→必須戦闘→見張り台→`風よみ`→同じ風車の再訪→上島→必須戦闘→風の灯台→Bossのcritical path。
+- 6エリア、橋道／小舟道の分岐、能力取得前後の同一風車、checkpoint/autosave、発見・経過時間telemetry。
+- 390px幅でのtouch移動UIとInteract導線。
+- typecheck、lint、map/editor検証、build、P10 Prologue回帰。
+
+このCI verifierはseed済みcritical pathの機械検証であり、60〜80分の人手通しプレイ、発見間隔中央値20〜45秒、無発見移動60秒以内、checkpoint間隔5〜8分を直接測定しません。したがってP12の判定は **実装／回帰Hard Gate: PASS、探索KPI Hard Gate: 条件付きPASS** とします。A3以降の量産開始は、これらの定量値を人手プレイで再計測してから判断します。
 
 ## P10 runtime baseline
 
@@ -117,6 +129,8 @@ npm run p7:browser
 npm run p8:browser
 npm run p9:browser
 npm run p10:browser
+npm run p11:browser
+npm run p12:browser
 npm audit
 ```
 
@@ -126,6 +140,6 @@ npm audit
 https://ryotamatsuki.github.io/hime-star-journey/
 ```
 
-P10最終CI #84（P7起動フレークの失敗ジョブ再実行後）は `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9/P10実Chrome回帰、Pages deployをすべてPASSしています。GitHub Pages本番QAではtitle、新規開始、道後到達、手帳のpointer操作、ミュート、閉じる、reload後のContinueを確認しました。
+P10最終CI #84（P7起動フレークの失敗ジョブ再実行後）は `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9/P10実Chrome回帰、Pages deployをすべてPASSしています。GitHub Pages本番QAではtitle、新規開始、道後到達、手帳のpointer操作、ミュート、閉じる、reload後のContinueを確認しました。P12 Chrome CI #95ではP7〜P12を全てPASSしています。
 
-P11は設計文書のみを変更し、runtime codeは変更しません。P12実装時もP10 Release GateをPrologue回帰基準として維持します。
+P12ではruntime codeを追加し、P10 Release GateをPrologue回帰基準として維持しました。P12の探索KPIは、手動計測で確定するまで条件付き判定として扱います。

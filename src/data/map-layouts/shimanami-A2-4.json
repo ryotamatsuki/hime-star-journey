@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "locationId": "shimanami",
+  "areaId": "A2-4",
+  "name": "上島の島道",
+  "worldWidth": 1920,
+  "worldHeight": 1080,
+  "backgroundAssetId": "bg_shimanami",
+  "playerStart": { "x": 260, "y": 540 },
+  "cameraBounds": { "id": "camera_shimanami_A2_4", "x": 0, "y": 0, "width": 1920, "height": 1080 },
+  "walkableRects": [
+    { "id": "shimanami_A2_4_kamijima_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "上島の島道" }
+  ],
+  "walkablePolygons": [],
+  "collisionRects": [],
+  "guidePaths": [
+    { "id": "shimanami_A2_4_kamijima_path", "label": "上島を横切る道", "points": [{ "x": 260, "y": 540 }, { "x": 560, "y": 520 }, { "x": 940, "y": 560 }, { "x": 1360, "y": 540 }, { "x": 1600, "y": 540 }] }
+  ],
+  "enemySpawns": [
+    { "id": "A2-E03", "x": 940, "y": 560, "label": "くろほガモメ" }
+  ],
+  "npcPositions": [],
+  "interactablePositions": [
+    { "id": "p12_kamijima_discovery", "x": 560, "y": 520, "width": 112, "height": 92, "label": "上島の記憶" },
+    { "id": "p12_kamijima_to_boss", "x": 1600, "y": 540, "width": 120, "height": 92, "label": "風の灯台への道" }
+  ],
+  "eventPositions": [],
+  "markers": [
+    { "id": "shimanami_A2_4_kamijima_label", "x": 240, "y": 180, "label": "上島の島道" }
+  ]
+}

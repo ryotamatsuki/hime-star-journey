@@ -93,6 +93,43 @@ export const enemyData: Record<string, EnemyData> = {
     defense: 3,
     speed: 6,
     assetId: "boss_kagemasa"
+  },
+  shimanami_wind_thief: {
+    id: "shimanami_wind_thief",
+    name: "かぜぬすみ",
+    maxHp: 24,
+    attack: 5,
+    defense: 1,
+    speed: 10,
+    assetId: "enemy_shimanami_wind_thief"
+  },
+  shimanami_tide_crab: {
+    id: "shimanami_tide_crab",
+    name: "しおガニ",
+    maxHp: 30,
+    attack: 6,
+    defense: 2,
+    speed: 6,
+    assetId: "enemy_shimanami_tide_crab"
+  },
+  shimanami_gull: {
+    id: "shimanami_gull",
+    name: "くろほガモメ",
+    maxHp: 22,
+    attack: 7,
+    defense: 0,
+    speed: 12,
+    assetId: "enemy_shimanami_gull"
+  },
+  boss_shimanami_octopus: {
+    id: "boss_shimanami_octopus",
+    name: "しまかぜ大だこ",
+    actorType: "boss",
+    maxHp: 90,
+    attack: 8,
+    defense: 2,
+    speed: 7,
+    assetId: "boss_shimanami_octopus"
   }
 };
 

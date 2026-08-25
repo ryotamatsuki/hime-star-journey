@@ -186,6 +186,16 @@
 
 **理由**: 完成版本編で新たに必要な探索・地域差・能力・再訪・map分割・mobile UXを、1地域で最も多く検証できるため。
 
+## 2026-08-26 P12 Chrome CI / Hard Gate判定
+
+### DEC-P12-01 P12 vertical sliceは条件付きPASSでmainへ統合する
+
+P12のChrome CI run #95で、P7〜P12の全browser gate、typecheck、lint、map/editor検証、buildをPASSした。P12専用verifierは、6エリアのcritical path、橋道route、必須敵、`風よみ`取得、同じ風車の再訪、Boss、save telemetry、390px touch UI、runtime error 0件を確認した。
+
+この結果から、P12の実装・操作・Prologue回帰Hard GateはPASSと判定する。ただしCI verifierはseed済みcritical pathであり、60〜80分の人手通しプレイ、発見間隔中央値20〜45秒、無発見移動60秒以内、checkpoint/autosave 5〜8分を直接測定しない。したがって探索KPI Hard Gateは条件付きPASSとし、A3以降の量産開始前に人手プレイで定量確認する。
+
+**理由**: 縦切りのruntime統合と既存MVP回帰はmainへ取り込める状態だが、P11で定めた探索密度KPIを未計測のまま量産判断へ進めないため。
+
 ## P11参照文書
 
 - `docs/specs/FULL_GAME_DESIGN.md`

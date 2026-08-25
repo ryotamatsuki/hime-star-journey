@@ -30,6 +30,19 @@
 - 見えた言葉:
 - 次に直すこと:
 
+### Playtest-002
+
+- 日時: 2026-08-26（JST）
+- プレイヤー: Chrome/CI verifier（390px viewport、seed済みP12セーブ）
+- プレイ範囲: 今治港Hub→橋道→橋の記憶→必須戦闘→海城の見張り台→風よみ→同じ風車の再訪→上島→必須戦闘→風の灯台→しまかぜ大だこ
+- 詰まった場所: 初回はHubで航路図と橋道入口の近接判定が重なり、航路図が優先された。ポータル優先の近接順位へ修正後、CI #95で解消。
+- 楽しそうだった場所: 風よみ取得前後で同じ風車のメッセージが変わり、上島への道が開く流れ。
+- 操作で困った点: 390px幅でtouch移動UIとInteract buttonを表示し、critical pathを完走。
+- 戦闘で困った点: P7〜P10回帰を含むChrome verifierでruntime error 0件。
+- 見えた言葉: 「風車は止まっている」→「違う音」、橋道route、風の灯台。
+- 次に直すこと: 60〜80分の人手通しプレイで、発見間隔中央値、無発見移動、checkpoint/autosave間隔を実測する。
+
+判定: **P12実装／回帰Hard Gate PASS、探索KPI Hard Gate 条件付きPASS**（GitHub Actions Chrome CI #95）。
 
 
 

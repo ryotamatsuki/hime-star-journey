@@ -4,6 +4,10 @@ export type DialogueSpeakerId =
   | "dogo_guide"
   | "yumori_grandma"
   | "castle_scout"
+  | "port_master"
+  | "bridge_keeper"
+  | "island_keeper"
+  | "watchkeeper"
   | "system";
 
 export type DialogueLine = {

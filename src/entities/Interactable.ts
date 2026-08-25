@@ -54,6 +54,10 @@ export class Interactable {
       this.drawSteam(ctx, screen.x, screen.y);
     } else if (this.kind === "star_hint") {
       this.drawStarHint(ctx, screen.x, screen.y);
+    } else if (this.kind === "p12_windmill") {
+      this.drawWindmill(ctx, screen.x, screen.y);
+    } else if (this.kind === "p12_portal") {
+      this.drawPortal(ctx, screen.x, screen.y);
     } else {
       this.drawSign(ctx, screen.x, screen.y);
     }
@@ -138,5 +142,47 @@ export class Interactable {
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+  }
+
+  private drawWindmill(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.strokeStyle = "rgba(245, 239, 196, 0.88)";
+    ctx.fillStyle = "rgba(57, 93, 103, 0.94)";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(x, y + 42);
+    ctx.lineTo(x, y - 6);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y - 10, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    for (let index = 0; index < 4; index += 1) {
+      const angle = index * Math.PI / 2 + Math.PI / 4;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 10);
+      ctx.lineTo(x + Math.cos(angle) * 34, y - 10 + Math.sin(angle) * 34);
+      ctx.stroke();
+    }
+  }
+
+  private drawPortal(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.fillStyle = "rgba(38, 111, 132, 0.9)";
+    ctx.strokeStyle = "rgba(255, 235, 158, 0.9)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(x - 34, y - 20, 68, 40, 12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#fff1b2";
+    ctx.beginPath();
+    ctx.moveTo(x - 12, y);
+    ctx.lineTo(x + 10, y - 12);
+    ctx.lineTo(x + 10, y - 4);
+    ctx.lineTo(x + 18, y - 4);
+    ctx.lineTo(x + 18, y + 4);
+    ctx.lineTo(x + 10, y + 4);
+    ctx.lineTo(x + 10, y + 12);
+    ctx.closePath();
+    ctx.fill();
   }
 }

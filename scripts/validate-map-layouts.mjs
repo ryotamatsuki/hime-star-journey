@@ -3,7 +3,16 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const mapIds = ["dogo-D0", "castle-C0"];
+const mapIds = [
+  "dogo-D0",
+  "castle-C0",
+  "shimanami-A2-0",
+  "shimanami-A2-1",
+  "shimanami-A2-2",
+  "shimanami-A2-3",
+  "shimanami-A2-4",
+  "shimanami-A2-5"
+];
 let hasError = false;
 
 for (const mapId of mapIds) {
@@ -138,7 +147,13 @@ function assertRequiredIds(layout, issues) {
   const mapId = `${layout.locationId}-${layout.areaId}`;
   const requiredByMap = {
     "dogo-D0": ["D-E01", "D-E02", "D-E03", "D-E04", "npc_dogo_guide", "npc_yumori_grandma"],
-    "castle-C0": ["C-E01", "C-E02", "C-E03", "C-E04", "npc_castle_scout", "castle_gate_hint", "castle_dark_well", "castle_guard_shrine", "castle_guard_event"]
+    "castle-C0": ["C-E01", "C-E02", "C-E03", "C-E04", "npc_castle_scout", "castle_gate_hint", "castle_dark_well", "castle_guard_shrine", "castle_guard_event"],
+    "shimanami-A2-0": ["npc_p12_port_master", "p12_hub_log", "p12_hub_bridge_route", "p12_hub_boat_route", "p12_hub_windmill"],
+    "shimanami-A2-1": ["A2-E01", "npc_p12_bridge_keeper", "p12_bridge_discovery", "p12_bridge_to_watchtower"],
+    "shimanami-A2-2": ["A2-E02", "npc_p12_island_keeper", "p12_island_discovery", "p12_island_to_watchtower"],
+    "shimanami-A2-3": ["npc_p12_watchkeeper", "p12_wind_memory", "p12_windmill", "p12_watchtower_to_island"],
+    "shimanami-A2-4": ["A2-E03", "p12_kamijima_discovery", "p12_kamijima_to_boss"],
+    "shimanami-A2-5": ["A2-B01", "p12_boss_altar", "p12_boss_to_island"]
   };
   const requiredIds = requiredByMap[mapId] ?? [];
   const positionedObjects = [

@@ -15,6 +15,8 @@
     "p8:browser": "node scripts/verify-p8-browser.mjs",
     "p9:browser": "node scripts/verify-p9-browser.mjs",
     "p10:browser": "node scripts/verify-p10-browser.mjs",
+    "p11:browser": "node scripts/verify-p11-browser.mjs",
+    "p12:browser": "node scripts/verify-p12-browser.mjs",
     "assets:p6:process": "node scripts/process-chroma-assets.mjs",
     "assets:p6:verify": "node scripts/verify-transparent-assets.mjs"
   },

@@ -41,7 +41,8 @@ export const starMapNodes: StarMapNodeData[] = [
     x: 760,
     y: 210,
     status: "locked",
-    description: "海と島をつなぐ星。MVPでは未解放。"
+    requiredFlag: "p12_unlocked",
+    description: "今治港から島々をつなぐ、風よみの星。"
   },
   {
     id: "node_ishizuchi",

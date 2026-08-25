@@ -56,7 +56,9 @@ jobs:
             if curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p7-browser-verifier.html > /dev/null \
               && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p8-browser-verifier.html > /dev/null \
               && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p9-browser-verifier.html > /dev/null \
-              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p10-browser-verifier.html > /dev/null; then
+              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p10-browser-verifier.html > /dev/null \
+              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p11-browser-verifier.html > /dev/null \
+              && curl --fail --silent http://127.0.0.1:5173/hime-star-journey/p12-browser-verifier.html > /dev/null; then
               exit 0
             fi
             sleep 1
@@ -67,7 +69,14 @@ jobs:
       - name: P7 browser regression gate
         env:
           P7_BROWSER_PATH: /usr/bin/google-chrome
-        run: npm run p7:browser
+        run: |
+          for attempt in 1 2 3; do
+            if npm run p7:browser; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
 
       - name: P8 browser regression gate
         env:
@@ -92,6 +101,26 @@ jobs:
         with:
           name: p10-browser-diagnostics
           path: /tmp/p10-browser.log
+          if-no-files-found: warn
+
+      - name: P11 browser design contract gate
+        env:
+          P11_BROWSER_PATH: /usr/bin/google-chrome
+        run: npm run p11:browser
+
+      - name: P12 browser release gate
+        env:
+          P12_BROWSER_PATH: /usr/bin/google-chrome
+        run: |
+          set -o pipefail
+          npm run p12:browser 2>&1 | tee /tmp/p12-browser.log
+
+      - name: Upload P12 browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p12-browser-diagnostics
+          path: /tmp/p12-browser.log
           if-no-files-found: warn
 
       - name: Configure Pages

@@ -15,6 +15,14 @@ import { getEncounterById } from "../data/encounters";
 import { getInteractablesForArea } from "../data/interactables";
 import { dogoArea, getMapArea, type MapAreaData, type WalkablePolygon } from "../data/maps";
 import { getNpcsForArea } from "../data/npcs";
+import {
+  P12_BOSS_ENEMY_ID,
+  completeP12,
+  getP12AreaMeta,
+  markP12Checkpoint,
+  markP12Discovery,
+  p12RequiredEnemiesCleared
+} from "../data/p12";
 import { castleQuest, dogoQuest } from "../data/quests";
 import { expandRect, intersects, type Rect } from "../systems/CollisionSystem";
 import { DialogueSystem } from "../systems/DialogueSystem";
@@ -49,6 +57,9 @@ const YUNO_EVENT_DURATION_MS = 6400;
 const CASTLE_GUARD_EVENT_DURATION_MS = 5200;
 
 function interactionPriority(id: string): number {
+  if (id === "p12_windmill") return 3;
+  if (id.includes("p12_") && id.includes("discovery")) return 2;
+  if (id.includes("p12_") && (id.includes("_route") || id.includes("_to_"))) return 1;
   if (id === "dogo_star_placeholder") return 2;
   if (id === "dogo_steam_spot") return 1;
   return 0;
@@ -80,11 +91,14 @@ export class ExploreScreen implements GameScreen {
   private miniMapElement: HTMLElement | null = null;
   private talkButton: HTMLButtonElement | null = null;
   private pathGuideButton: HTMLButtonElement | null = null;
+  private interactButton: HTMLButtonElement | null = null;
   private dialogueBox: DialogueBox | null = null;
   private objectiveElement: HTMLElement | null = null;
   private mapButton: HTMLButtonElement | null = null;
   private yunoEventMs = 0;
   private castleGuardEventMs = 0;
+  private p12PlaytimeMs = 0;
+  private p12PersistAccumulatorMs = 0;
 
   constructor(private readonly options: ExploreScreenOptions) {}
 
@@ -100,7 +114,11 @@ export class ExploreScreen implements GameScreen {
     this.saveData = this.options.saveManager.save({
       ...nextSave,
       currentScreenId: "explore",
-      currentChapterId: this.area.locationId === "castle" ? "castle_explore" : "dogo_explore",
+      currentChapterId: this.area.locationId === "castle"
+        ? "castle_explore"
+        : this.area.locationId === "shimanami"
+          ? `p12_${this.area.id}`
+          : "dogo_explore",
       currentLocationId: this.area.locationId,
       currentAreaId: this.area.id
     });
@@ -121,6 +139,8 @@ export class ExploreScreen implements GameScreen {
     this.lastEnemyContact = null;
     this.debugOverlayVisible = false;
     this.pathGuideRemainingMs = 0;
+    this.p12PlaytimeMs = this.area.locationId === "shimanami" ? this.saveData.p12SessionElapsedMs ?? 0 : 0;
+    this.p12PersistAccumulatorMs = 0;
     this.message = this.getAreaIntroMessage();
     this.syncQuestProgress();
     this.renderUi();
@@ -139,6 +159,18 @@ export class ExploreScreen implements GameScreen {
     }
 
     this.elapsedTimeMs += deltaTime * 1000;
+
+    if (this.area.locationId === "shimanami") {
+      this.p12PlaytimeMs += deltaTime * 1000;
+      this.p12PersistAccumulatorMs += deltaTime * 1000;
+      if (this.p12PersistAccumulatorMs >= 2000) {
+        this.p12PersistAccumulatorMs = 0;
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          p12SessionElapsedMs: Math.round(this.p12PlaytimeMs)
+        });
+      }
+    }
 
     if (this.yunoEventMs > 0) {
       this.yunoEventMs += deltaTime * 1000;
@@ -197,8 +229,8 @@ export class ExploreScreen implements GameScreen {
       this.options.inputManager,
       this.area.collisionRects,
       this.area.cameraBounds,
-      this.area.locationId === "dogo" ? this.area.walkableRects : undefined,
-      this.area.locationId === "dogo" ? this.area.walkablePolygons ?? [] : undefined
+      this.area.locationId === "dogo" || this.area.locationId === "shimanami" ? this.area.walkableRects : undefined,
+      this.area.locationId === "dogo" || this.area.locationId === "shimanami" ? this.area.walkablePolygons ?? [] : undefined
     );
     this.companion.update(deltaTime, this.player);
 
@@ -220,24 +252,7 @@ export class ExploreScreen implements GameScreen {
     }
 
     if (this.nearbyInteractable && this.options.inputManager.isActionStarted("confirm")) {
-      if (this.area.locationId === "castle") {
-        this.handleCastleInteractable(this.nearbyInteractable.id);
-        this.updateUi();
-        return;
-      }
-
-      if (this.nearbyInteractable.id === "dogo_steam_spot") {
-        this.markQuestHintSeen();
-        this.tryStartDialogue("interactable_steam_hint");
-        this.updateUi();
-        return;
-      }
-
-      if (this.nearbyInteractable.id === "dogo_star_placeholder") {
-        this.tryStartYunoStarEvent();
-      } else {
-        this.nearbyInteractable.interact();
-      }
+      this.interactWithNearbyInteractable();
     }
 
     if (this.shouldStartFirstEnemyHint()) {
@@ -282,6 +297,7 @@ export class ExploreScreen implements GameScreen {
     this.miniMapElement = null;
     this.talkButton = null;
     this.pathGuideButton = null;
+    this.interactButton = null;
     this.dialogueBox?.destroy();
     this.dialogueBox = null;
     this.objectiveElement = null;
@@ -303,6 +319,10 @@ export class ExploreScreen implements GameScreen {
     const image = assetId ? this.options.assetLoader.getImage(assetId) : undefined;
 
     if (!image) {
+      if (this.area.locationId === "shimanami" && assetId === "bg_shimanami") {
+        this.drawShimanamiBackground(ctx, opacity);
+        return;
+      }
       this.drawMissingMapLayer(ctx, assetId, opacity);
       return;
     }
@@ -399,6 +419,93 @@ export class ExploreScreen implements GameScreen {
     ctx.restore();
   }
 
+  private drawShimanamiBackground(ctx: CanvasRenderingContext2D, opacity: number): void {
+    const { canvas } = ctx;
+    ctx.save();
+    ctx.globalAlpha *= opacity;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "#143d5b");
+    gradient.addColorStop(0.58, "#2e8da0");
+    gradient.addColorStop(1, "#d1a760");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.globalAlpha *= 0.28;
+    ctx.strokeStyle = "#bce9e5";
+    ctx.lineWidth = 2;
+    for (let index = 0; index < 8; index += 1) {
+      const y = 54 + index * 88;
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(this.elapsedTimeMs / 900 + index) * 8);
+      ctx.bezierCurveTo(canvas.width * 0.3, y - 14, canvas.width * 0.7, y + 18, canvas.width, y);
+      ctx.stroke();
+    }
+
+    ctx.globalAlpha = 0.92 * opacity;
+    const islands = [
+      { x: 300, y: 260, rx: 230, ry: 98, color: "#4b886e" },
+      { x: 820, y: 760, rx: 320, ry: 110, color: "#5f9b72" },
+      { x: 1450, y: 300, rx: 270, ry: 92, color: "#3e7869" }
+    ];
+    for (const island of islands) {
+      const center = this.camera.worldToScreen({ x: island.x, y: island.y });
+      const scaleX = canvas.width / this.camera.width;
+      const scaleY = canvas.height / this.camera.height;
+      ctx.fillStyle = island.color;
+      ctx.beginPath();
+      ctx.ellipse(center.x, center.y, island.rx * scaleX, island.ry * scaleY, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.globalAlpha = 0.72 * opacity;
+    ctx.strokeStyle = "#e5c27c";
+    ctx.lineWidth = Math.max(6, 12 * (canvas.width / this.camera.width));
+    const route = [
+      { x: 120, y: 760 },
+      { x: 680, y: 680 },
+      { x: 1160, y: 560 },
+      { x: 1780, y: 520 }
+    ];
+    ctx.beginPath();
+    route.forEach((point, index) => {
+      const screen = this.camera.worldToScreen(point);
+      if (index === 0) ctx.moveTo(screen.x, screen.y);
+      else ctx.lineTo(screen.x, screen.y);
+    });
+    ctx.stroke();
+
+    const label = this.area.name;
+    const labelPoint = this.camera.worldToScreen({ x: 160, y: 170 });
+    ctx.globalAlpha = 0.92 * opacity;
+    ctx.fillStyle = "rgba(12, 34, 48, 0.7)";
+    ctx.fillRect(labelPoint.x, labelPoint.y, Math.max(160, label.length * 18), 34);
+    ctx.fillStyle = "#fff4c7";
+    ctx.font = "700 18px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, labelPoint.x + 12, labelPoint.y + 17);
+
+    if (this.area.id === "A2-3" || this.area.id === "A2-5") {
+      const tower = this.camera.worldToScreen({ x: 1110, y: 370 });
+      ctx.fillStyle = "#e5ddbd";
+      ctx.fillRect(tower.x - 18, tower.y - 62, 36, 74);
+      ctx.fillStyle = "#d0704d";
+      ctx.beginPath();
+      ctx.moveTo(tower.x - 28, tower.y - 62);
+      ctx.lineTo(tower.x, tower.y - 94);
+      ctx.lineTo(tower.x + 28, tower.y - 62);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#fff1a5";
+      ctx.beginPath();
+      ctx.arc(tower.x, tower.y - 30, 7 + Math.sin(this.elapsedTimeMs / 260) * 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
   private renderUi(): void {
     this.options.uiRoot.innerHTML = "";
 
@@ -432,6 +539,12 @@ export class ExploreScreen implements GameScreen {
     this.talkButton.textContent = "話す";
     this.talkButton.hidden = true;
     this.talkButton.addEventListener("click", () => this.interactWithNearbyNpc());
+    this.interactButton = document.createElement("button");
+    this.interactButton.className = "menu-button explore-interact-button";
+    this.interactButton.type = "button";
+    this.interactButton.textContent = "調べる";
+    this.interactButton.hidden = true;
+    this.interactButton.addEventListener("click", () => this.interactWithNearbyInteractable());
     this.pathGuideButton = document.createElement("button");
     this.pathGuideButton.className = "menu-button explore-guide-button";
     this.pathGuideButton.type = "button";
@@ -449,6 +562,7 @@ export class ExploreScreen implements GameScreen {
       hints,
       this.nearbyElement,
       this.talkButton,
+      this.interactButton,
       this.pathGuideButton,
       mapButton
     );
@@ -569,6 +683,13 @@ export class ExploreScreen implements GameScreen {
       this.talkButton.textContent = this.nearbyNpc ? `${this.nearbyNpc.name}と話す` : "話す";
     }
 
+    if (this.interactButton) {
+      const canInteract = !this.dialogueSystem.isActive() && this.nearbyNpc === null && this.nearbyInteractable !== null;
+      this.interactButton.hidden = !canInteract;
+      this.interactButton.disabled = !canInteract;
+      this.interactButton.textContent = this.nearbyInteractable ? `${this.nearbyInteractable.label}を調べる` : "調べる";
+    }
+
     this.syncDialogueBox();
     this.updateMiniMap();
   }
@@ -619,9 +740,38 @@ export class ExploreScreen implements GameScreen {
 
   private interactWithNearbyNpc(): void {
     if (!this.nearbyNpc || this.dialogueSystem.isActive()) return;
-    this.markQuestHintSeen();
+    if (this.area.locationId !== "shimanami") this.markQuestHintSeen();
     this.tryStartDialogue(this.nearbyNpc.dialogueId);
     this.updateUi();
+  }
+
+  private interactWithNearbyInteractable(): void {
+    if (!this.nearbyInteractable || this.dialogueSystem.isActive()) return;
+
+    if (this.area.locationId === "castle") {
+      this.handleCastleInteractable(this.nearbyInteractable.id);
+      this.updateUi();
+      return;
+    }
+
+    if (this.area.locationId === "shimanami") {
+      this.handleShimanamiInteractable(this.nearbyInteractable.id);
+      this.updateUi();
+      return;
+    }
+
+    if (this.nearbyInteractable.id === "dogo_steam_spot") {
+      this.markQuestHintSeen();
+      this.tryStartDialogue("interactable_steam_hint");
+      this.updateUi();
+      return;
+    }
+
+    if (this.nearbyInteractable.id === "dogo_star_placeholder") {
+      this.tryStartYunoStarEvent();
+    } else {
+      this.nearbyInteractable.interact();
+    }
   }
 
   private findTouchedEnemy(): EnemySymbol | null {
@@ -951,7 +1101,7 @@ export class ExploreScreen implements GameScreen {
       encounterId: enemy.encounterId,
       returnLocationId: this.area.locationId,
       returnAreaId: this.area.id,
-      isBoss: false,
+      isBoss: encounter?.isBoss === true,
       saveData: this.saveData
     };
 
@@ -959,6 +1109,11 @@ export class ExploreScreen implements GameScreen {
   }
 
   private syncQuestProgress(): void {
+    if (this.area.locationId === "shimanami") {
+      this.syncP12Progress();
+      return;
+    }
+
     if (this.area.locationId === "castle") {
       this.syncCastleQuestProgress();
       return;
@@ -978,6 +1133,40 @@ export class ExploreScreen implements GameScreen {
     }
   }
 
+  private syncP12Progress(): void {
+    if (!this.saveData) return;
+
+    const nextFlags: Record<string, boolean> = {
+      ...this.saveData.flags,
+      p12_unlocked: true,
+      p12_started: true
+    };
+    if (p12RequiredEnemiesCleared(this.saveData)) nextFlags.p12_required_enemies_cleared = true;
+
+    const bossDefeated = this.saveData.defeatedEnemyIds.includes(P12_BOSS_ENEMY_ID)
+      || nextFlags.enemy_defeated_A2_B01 === true
+      || nextFlags["enemy_defeated_A2-B01"] === true;
+    if (bossDefeated && !nextFlags.p12_completed) {
+      const withDiscovery = markP12Discovery(this.saveData, "boss_clear", this.p12PlaytimeMs);
+      const completed = completeP12(withDiscovery);
+      this.saveData = this.options.saveManager.save({
+        ...completed,
+        flags: {
+          ...completed.flags,
+          ...nextFlags,
+          p12_completed: true,
+          star_shimanami_collected: true
+        }
+      });
+      return;
+    }
+
+    const flagsChanged = Object.entries(nextFlags).some(([key, value]) => this.saveData?.flags[key] !== value);
+    if (flagsChanged) {
+      this.saveData = this.options.saveManager.save({ ...this.saveData, flags: nextFlags });
+    }
+  }
+
   private markQuestHintSeen(): void {
     if (this.area.locationId === "castle") {
       this.markCastleHintSeen();
@@ -993,6 +1182,10 @@ export class ExploreScreen implements GameScreen {
   }
 
   private getQuestObjective(): string {
+    if (this.area.locationId === "shimanami") {
+      return this.getP12QuestObjective();
+    }
+
     if (this.area.locationId === "castle") {
       return this.getCastleQuestObjective();
     }
@@ -1006,18 +1199,208 @@ export class ExploreScreen implements GameScreen {
   }
 
   private getAreaIntroMessage(): string {
+    if (this.area.locationId === "shimanami") {
+      const meta = getP12AreaMeta(this.area.id);
+      return `${meta?.name ?? this.area.name}に着いた。${meta?.objective ?? "風の手がかりを探そう"}。`;
+    }
     return this.area.locationId === "castle"
       ? "松山城に着いた。石垣の道に、くろぼしの影が落ちている。"
       : "道後温泉に着いた。湯けむり通りをすすもう。";
   }
 
   private tryStartAreaIntroDialogue(): void {
+    if (this.area.locationId === "shimanami") {
+      this.tryStartDialogue("p12_intro_auto");
+      return;
+    }
+
     if (this.area.locationId === "castle") {
       this.tryStartDialogue("castle_intro_auto");
       return;
     }
 
     this.tryStartDialogue("dogo_intro_auto");
+  }
+
+  private getP12QuestObjective(): string {
+    if (!this.saveData) return "もくてき：しまなみの風の手がかりを探そう";
+    if (this.saveData.flags.p12_completed || this.saveData.flags.star_shimanami_collected) {
+      return "もくてき：しまなみの星を取り戻した。星地図へ戻ろう";
+    }
+
+    switch (this.area.id) {
+      case "A2-0":
+        return "もくてき：橋道か小舟道を選び、風の手がかりを探そう";
+      case "A2-1": {
+        const found = this.saveData.flags.p12_discovery_bridge_memory === true;
+        return found ? "もくてき：見張り台への道を進もう" : "もくてき：橋の記憶を見つけよう";
+      }
+      case "A2-2": {
+        const found = this.saveData.flags.p12_discovery_island_memory === true;
+        return found ? "もくてき：見張り台への坂を進もう" : "もくてき：集落に残る島の記憶を見つけよう";
+      }
+      case "A2-3":
+        if (!this.saveData.flags.p12_wind_ability) return "もくてき：風の星から風よみを受け取ろう";
+        if (!this.saveData.flags.p12_windmill_revisited) return "もくてき：同じ風車をもう一度調べ、変化を確かめよう";
+        return "もくてき：上島の島道へ進もう";
+      case "A2-4": {
+        const required = this.saveData.flags.p12_route_boat ? "A2-E02" : "A2-E01";
+        const remaining = [required, "A2-E03"].filter((id) => !this.saveData?.defeatedEnemyIds.includes(id)).length;
+        return remaining > 0 ? `もくてき：島道の影をしずめよう（あと${remaining}体）` : "もくてき：風の灯台へ向かおう";
+      }
+      case "A2-5":
+        return "もくてき：しまかぜ大だこに風を返し、島の星を取り戻そう";
+      default:
+        return "もくてき：しまなみの風の手がかりを探そう";
+    }
+  }
+
+  private recordP12Discovery(discoveryId: string, message: string): void {
+    if (!this.saveData) return;
+    this.saveData = this.options.saveManager.save(
+      markP12Discovery(
+        { ...this.saveData, p12SessionElapsedMs: Math.round(this.p12PlaytimeMs) },
+        discoveryId,
+        Math.round(this.p12PlaytimeMs)
+      )
+    );
+    this.message = message;
+    this.lastEnemyContact = null;
+  }
+
+  private checkpointP12(checkpointId: string): void {
+    if (!this.saveData) return;
+    this.saveData = this.options.saveManager.save(
+      markP12Checkpoint(
+        { ...this.saveData, p12SessionElapsedMs: Math.round(this.p12PlaytimeMs) },
+        checkpointId,
+        Math.round(this.p12PlaytimeMs)
+      )
+    );
+  }
+
+  private transitionP12(areaId: string): void {
+    if (!this.saveData) return;
+    const nextSave = this.options.saveManager.save({
+      ...this.saveData,
+      currentScreenId: "explore",
+      currentChapterId: `p12_${areaId}`,
+      currentLocationId: "shimanami",
+      currentAreaId: areaId,
+      p12SessionElapsedMs: Math.round(this.p12PlaytimeMs)
+    });
+    this.options.screenManager.change("explore", {
+      saveData: nextSave,
+      locationId: "shimanami",
+      areaId
+    });
+  }
+
+  private handleShimanamiInteractable(interactableId: string): void {
+    if (!this.saveData) return;
+
+    switch (interactableId) {
+      case "p12_hub_log":
+        this.recordP12Discovery("hub_route", "航路図に、橋道と小舟道が同じ見張り台へ集まることが記されている。");
+        return;
+      case "p12_hub_bridge_route":
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          flags: { ...this.saveData.flags, p12_route_bridge: true, p12_started: true }
+        });
+        this.recordP12Discovery("hub_route", "橋道を選んだ。細い鈴の音が、風の記憶へ導いている。");
+        this.checkpointP12("hub");
+        this.transitionP12("A2-1");
+        return;
+      case "p12_hub_boat_route":
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          flags: { ...this.saveData.flags, p12_route_boat: true, p12_started: true }
+        });
+        this.recordP12Discovery("hub_route", "小舟道を選んだ。潮の音が、島の暮らしの記憶へ導いている。");
+        this.checkpointP12("hub");
+        this.transitionP12("A2-2");
+        return;
+      case "p12_hub_windmill":
+        if (!this.saveData.flags.p12_wind_ability) {
+          this.message = "港の風車はまだ止まっている。風よみを得たあとなら、羽根の意味が変わりそうだ。";
+        } else {
+          this.saveData = this.options.saveManager.save({
+            ...this.saveData,
+            flags: { ...this.saveData.flags, p12_windmill_revisited: true }
+          });
+          this.recordP12Discovery("wind_revisit", "同じ風車の羽根が、港から見張り台へ風の道を返してくれた。");
+        }
+        return;
+      case "p12_bridge_discovery":
+        this.recordP12Discovery("bridge_memory", "橋の欄干に残った星形の紐が、昔の風の記憶を見せてくれた。");
+        return;
+      case "p12_bridge_to_watchtower":
+        this.recordP12Discovery("bridge_memory", "橋の記憶を胸に、海城の見張り台へ向かう。");
+        this.checkpointP12("bridge");
+        this.transitionP12("A2-3");
+        return;
+      case "p12_island_discovery":
+        this.recordP12Discovery("island_memory", "集落の石垣に刻まれた潮の星が、島の人々の記憶をつないだ。");
+        return;
+      case "p12_island_to_watchtower":
+        this.recordP12Discovery("island_memory", "島の記憶を胸に、海城の見張り台へ向かう。");
+        this.checkpointP12("island");
+        this.transitionP12("A2-3");
+        return;
+      case "p12_wind_memory":
+        if (this.saveData.flags.p12_wind_ability) {
+          this.message = "風よみの星は、ひめの中で静かに回っている。";
+          return;
+        }
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          flags: { ...this.saveData.flags, p12_started: true, p12_wind_ability: true }
+        });
+        this.recordP12Discovery("wind_ability", "風よみを受け取った。止まった風車の羽根が、遠くでひとつだけ動いた。");
+        this.checkpointP12("watchtower");
+        return;
+      case "p12_windmill":
+        if (!this.saveData.flags.p12_wind_ability) {
+          this.message = "風車は止まっている。先に見張り台の風の星を調べよう。";
+          return;
+        }
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          flags: { ...this.saveData.flags, p12_windmill_revisited: true }
+        });
+        this.recordP12Discovery("wind_revisit", "同じ風車の羽根が、風よみの前とは違う音を奏でた。道がひらく。");
+        return;
+      case "p12_watchtower_to_island":
+        if (!this.saveData.flags.p12_wind_ability || !this.saveData.flags.p12_windmill_revisited) {
+          this.message = "風車の変化を確かめるまで、上島への風の道は見えない。";
+          return;
+        }
+        this.checkpointP12("watchtower_exit");
+        this.transitionP12("A2-4");
+        return;
+      case "p12_kamijima_discovery":
+        this.recordP12Discovery("kamijima_memory", "上島の石に、灯台へ風を返す願いが残っている。");
+        return;
+      case "p12_kamijima_to_boss":
+        if (!p12RequiredEnemiesCleared(this.saveData)) {
+          this.message = "島道の影をまだ感じる。選んだ道の影と、上島の影をしずめよう。";
+          return;
+        }
+        this.checkpointP12("upper_island");
+        this.transitionP12("A2-5");
+        return;
+      case "p12_boss_altar":
+        this.message = this.saveData.flags.p12_completed
+          ? "灯台の祭壇に、しまなみの星が静かに戻っている。"
+          : "祭壇の向こうで、しまかぜ大だこが星の光を抱えている。";
+        return;
+      case "p12_boss_to_island":
+        this.transitionP12("A2-4");
+        return;
+      default:
+        this.nearbyInteractable?.interact();
+    }
   }
 
   private handleCastleInteractable(interactableId: string): void {
