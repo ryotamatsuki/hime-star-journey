@@ -59,6 +59,7 @@ const CASTLE_GUARD_EVENT_DURATION_MS = 5200;
 function interactionPriority(id: string): number {
   if (id === "p12_windmill") return 3;
   if (id.includes("p12_") && id.includes("discovery")) return 2;
+  if (id.includes("p12_") && (id.includes("_route") || id.includes("_to_"))) return 1;
   if (id === "dogo_star_placeholder") return 2;
   if (id === "dogo_steam_spot") return 1;
   return 0;
