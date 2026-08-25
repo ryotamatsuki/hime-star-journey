@@ -303,7 +303,7 @@ async function runFreshPlaythrough(): Promise<void> {
   assert(Boolean(touchControls && getComputedStyle(touchControls).display === "grid"), `狭いviewportでタッチ移動パッドを表示する（${viewport}）`);
   assert(document.querySelectorAll("[data-touch-action]").length === 4, "タッチ移動パッドに4方向の入力を用意する");
   await finishDialogue();
-  await openAndVerifyNotebook("旅の記録 1/10");
+  await openAndVerifyNotebook("旅の記録 4/10");
 
   const guideButton = button("道しるべ");
   if (!guideButton) throw new Error("道しるべ button is missing");
