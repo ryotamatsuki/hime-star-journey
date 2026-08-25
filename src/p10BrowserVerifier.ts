@@ -428,6 +428,7 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
   assert(endingSave?.flags.gameCompleted === true, "エンディング後のクリア状態を保存する");
   await openAndVerifyNotebook("旅の記録 10/10", "星封じと取り戻した光");
 
+  await waitFor(() => Boolean(document.querySelector("[data-notebook-open='true']")), "Ending Notebook reopen button");
   const endingNotebookButton = document.querySelector<HTMLButtonElement>("[data-notebook-open='true']");
   if (!endingNotebookButton) throw new Error("Ending Notebook open button is missing");
   endingNotebookButton.click();
