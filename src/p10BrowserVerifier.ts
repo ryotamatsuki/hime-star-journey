@@ -121,7 +121,7 @@ function playerPosition(): { x: number; y: number } | null {
   return { x: (x / 100) * WORLD_WIDTH, y: (y / 100) * WORLD_HEIGHT };
 }
 
-async function moveTo(target: { x: number; y: number }, label: string, tolerance = 64): Promise<void> {
+async function moveTo(target: { x: number; y: number }, label: string, tolerance = 28): Promise<void> {
   for (let attempt = 0; attempt < 42; attempt += 1) {
     if (isDialogueVisible()) {
       await finishDialogue();
