@@ -58,12 +58,24 @@
 - [x] 手帳表示中もresume screenを保持することを検証
 - [x] GameApp起動時間をverifierログへ出力
 
-## P10 Release前最終Gate
+## P10 Release Candidate Gate（PR #8 CI #76）
 
-- [ ] 新規localStorageからタイトル→Endingまでproduction完全E2E
-- [ ] キーボード中心・マウス/タッチ中心の双方で主要導線を確認
-- [ ] 旅の手帳を序盤/道後完了/P7完了/P8完了の各時点で確認
-- [ ] BGM/SEの音量・切替・長時間再生を実機確認
+- [x] `npm ci`
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run maps:validate`
+- [x] `npm run editor:smoke`
+- [x] `npm run build`
+- [x] `npm run p7:browser`
+- [x] `npm run p8:browser`
+- [x] `npm run p9:browser`
+- [x] `npm run p10:browser`
+- [x] 新規localStorageからタイトル→EndingまでのCI実Chrome完全E2E
+- [x] 道後必須4戦、松山城必須3戦、くらやみ井戸、カゲマサ戦の通常操作完走
+- [x] Notebook段階解放、10/10、autosave/reload/Continue、battle途中checkpoint、Ending後Continue
+- [x] 390px相当viewportのタッチパッド表示、1対2ターゲット確定、ミュートUI
+- [x] Console runtime error 0件、runtime image asset path確認
+- [x] `npm audit` / `npm audit --omit=dev` ともに0 vulnerabilities
+- [ ] merge後GitHub Pages Production E2E
 - [ ] 公開Pagesで初期ロード時間を実測し、必要ならAssetManifestを段階ロード化
-- [ ] Console error / HTTP 4xx / 必須asset欠落なしを確認
-- [ ] `npm audit` が報告している依存パッケージ脆弱性を公開前に分類し、必要な更新を判断する
+- [ ] 公開環境のConsole error / HTTP 4xx / 必須asset欠落なしを確認

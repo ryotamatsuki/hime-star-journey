@@ -2,7 +2,7 @@ import { renderDepthSorted, type Renderable } from "../systems/RenderDepthSystem
 import { AssetLoader } from "../core/AssetLoader";
 import { resolvePublicAssetPath } from "../core/AssetPath";
 import { Camera } from "../core/Camera";
-import { InputManager } from "../core/InputManager";
+import { InputManager, type InputAction } from "../core/InputManager";
 import { SaveManager } from "../core/SaveManager";
 import { ScreenManager } from "../core/ScreenManager";
 import { Companion } from "../entities/Companion";
@@ -47,6 +47,12 @@ const PATH_GUIDE_DURATION_MS = 2800;
 const FIRST_ENEMY_HINT_RADIUS = 132;
 const YUNO_EVENT_DURATION_MS = 6400;
 const CASTLE_GUARD_EVENT_DURATION_MS = 5200;
+
+function interactionPriority(id: string): number {
+  if (id === "dogo_star_placeholder") return 2;
+  if (id === "dogo_steam_spot") return 1;
+  return 0;
+}
 
 export class ExploreScreen implements GameScreen {
   readonly id: ScreenId = "explore";
@@ -457,7 +463,57 @@ export class ExploreScreen implements GameScreen {
     message.append(this.messageElement);
 
     wrapper.append(status, quest, minimap, message);
+    wrapper.append(this.createTouchControls());
     this.options.uiRoot.append(wrapper);
+  }
+
+  private createTouchControls(): HTMLElement {
+    const controls = document.createElement("div");
+    controls.className = "explore-touch-controls";
+    const compactViewport =
+      document.documentElement.clientWidth <= 760 ||
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(hover: none)").matches;
+    if (compactViewport) controls.classList.add("explore-touch-controls--visible");
+    controls.setAttribute("aria-label", "タッチ移動");
+
+    const buttons: Array<{ action: InputAction; label: string; symbol: string }> = [
+      { action: "up", label: "上へ移動", symbol: "▲" },
+      { action: "left", label: "左へ移動", symbol: "◀" },
+      { action: "down", label: "下へ移動", symbol: "▼" },
+      { action: "right", label: "右へ移動", symbol: "▶" }
+    ];
+
+    for (const definition of buttons) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "explore-touch-button";
+      button.dataset.touchAction = definition.action;
+      button.setAttribute("aria-label", definition.label);
+      button.textContent = definition.symbol;
+
+      const release = (event: PointerEvent): void => {
+        if (button.hasPointerCapture(event.pointerId)) button.releasePointerCapture(event.pointerId);
+        this.options.inputManager.setVirtualAction(definition.action, false);
+      };
+
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        this.options.inputManager.setVirtualAction(definition.action, true);
+      });
+      button.addEventListener("pointerup", release);
+      button.addEventListener("pointercancel", release);
+      button.addEventListener("lostpointercapture", () => {
+        this.options.inputManager.setVirtualAction(definition.action, false);
+      });
+      button.addEventListener("click", () => {
+        this.options.inputManager.tapVirtualAction(definition.action);
+      });
+      controls.append(button);
+    }
+
+    return controls;
   }
 
   private updateUi(): void {
@@ -549,11 +605,11 @@ export class ExploreScreen implements GameScreen {
 
   private findNearbyInteractable(): Interactable | null {
     const interactionRect = expandRect(this.player.getCollider(), 42);
-    return (
-      this.interactables.find((interactable) =>
-        intersects(interactionRect, interactable.getInteractionRect())
-      ) ?? null
+    const nearby = this.interactables.filter((interactable) =>
+      intersects(interactionRect, interactable.getInteractionRect())
     );
+    nearby.sort((left, right) => interactionPriority(right.id) - interactionPriority(left.id));
+    return nearby[0] ?? null;
   }
 
   private findNearbyNpc(): NPC | null {

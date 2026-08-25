@@ -52,6 +52,8 @@ export class InputManager {
   private readonly pressedKeys = new Set<string>();
   private readonly downActions = new Set<InputAction>();
   private readonly startedActions = new Set<InputAction>();
+  private readonly virtualActions = new Set<InputAction>();
+  private readonly virtualStartedActions = new Set<InputAction>();
 
   private pointerState: PointerState = {
     x: 0,
@@ -71,11 +73,26 @@ export class InputManager {
   }
 
   isActionDown(action: InputAction): boolean {
-    return this.downActions.has(action);
+    return this.downActions.has(action) || this.virtualActions.has(action);
   }
 
   isActionStarted(action: InputAction): boolean {
-    return this.startedActions.has(action);
+    return this.startedActions.has(action) || this.virtualStartedActions.has(action);
+  }
+
+  setVirtualAction(action: InputAction, isDown: boolean): void {
+    if (isDown) {
+      if (!this.virtualActions.has(action)) this.virtualStartedActions.add(action);
+      this.virtualActions.add(action);
+      return;
+    }
+
+    this.virtualActions.delete(action);
+  }
+
+  tapVirtualAction(action: InputAction, durationMs = 160): void {
+    this.setVirtualAction(action, true);
+    window.setTimeout(() => this.setVirtualAction(action, false), durationMs);
   }
 
   getPointer(): PointerState {
@@ -84,6 +101,7 @@ export class InputManager {
 
   endFrame(): void {
     this.startedActions.clear();
+    this.virtualStartedActions.clear();
     this.pointerState = {
       ...this.pointerState,
       started: false,
@@ -98,6 +116,8 @@ export class InputManager {
     this.canvas.removeEventListener("pointermove", this.handlePointerMove);
     this.canvas.removeEventListener("pointerup", this.handlePointerUp);
     this.canvas.removeEventListener("pointercancel", this.handlePointerCancel);
+    this.virtualActions.clear();
+    this.virtualStartedActions.clear();
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {

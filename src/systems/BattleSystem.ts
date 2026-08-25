@@ -116,16 +116,20 @@ export function applyBattleCard(
 ): BattleActionResult {
   const card = getBattleCard(cardId);
   const actor = getPartyLeader(state);
+  const canApplyFromTargetSelection = state.phase === "targetSelect" && targetInstanceId !== undefined;
+  const validationState = canApplyFromTargetSelection
+    ? { ...state, phase: "playerCommand" as const }
+    : state;
 
   if (!card || !actor) {
     return { state, logs: ["カードを使えません。"] };
   }
 
-  if (!canUseCard(state, card)) {
+  if (!canUseCard(validationState, card)) {
     return { state, logs: [`今は${card.name}を使えません。`] };
   }
 
-  const nextState = cloneBattleState(state);
+  const nextState = cloneBattleState(validationState);
   const nextActor = getPartyLeader(nextState);
 
   if (!nextActor) {
