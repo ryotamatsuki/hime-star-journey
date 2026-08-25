@@ -91,6 +91,8 @@ try {
   const cdp = new Cdp(ws);
   await cdp.send("Runtime.enable");
   await cdp.send("Page.enable");
+  await cdp.send("Emulation.setVisibleSize", { width: 390, height: 844 });
+  await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
   await cdp.send("Emulation.setDeviceMetricsOverride", {
     width: 390,
     height: 844,
