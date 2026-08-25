@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-P9「旅の手帳・BGM/SE・セーブ調整」を実装し、PR Release GateでP7/P8/P9の実Chrome回帰までPASSしています。次はP10「通しプレイ・体験版調整・GitHub Pages公開確認」です。
+P10「通しプレイ・体験版調整・GitHub Pages公開確認」のRelease Candidateを検証中です。CIの実Chrome通しプレイはPASS済みで、merge後にGitHub Pages本番QAを行います。
 
 P9 runtimeの正本:
 
@@ -16,6 +16,7 @@ P9 runtimeの正本:
 - 手帳からBGM/SEをミュートできる。
 - `P9ExperienceController` が安全な画面（explore/starMap/ending）の再開地点だけを2秒間隔でオートセーブ同期する。
 - battle/prologue/notebook/titleはオートセーブcheckpoint書換え対象外。
+- P10では390px相当viewportの4方向タッチパッド、P10実Chromeフルプレイ verifier、1対2ターゲット確定、連戦時のMP回復を追加・調整した。
 
 主な実装状況:
 
@@ -67,6 +68,8 @@ npm run dev
 npm run p7:browser
 npm run p8:browser
 npm run p9:browser
+npm run p10:browser
+npm audit
 ```
 
 公開URL:
@@ -75,4 +78,4 @@ npm run p9:browser
 https://ryotamatsuki.github.io/hime-star-journey/
 ```
 
-P9のPR Release Gateでは `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9実Chrome回帰をすべてPASSしています。
+P10 CI #76では `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9/P10実Chrome回帰をすべてPASSしています。P10 verifierは新規セーブからEndingまで、手帳、autosave/reload/Continue、音量切替、runtime error、runtime image asset pathを確認します。GitHub Pages本番QAはmerge後に実施します。
