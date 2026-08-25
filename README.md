@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-P10「通しプレイ・体験版調整・GitHub Pages公開確認」のRelease Candidateを検証中です。CIの実Chrome通しプレイはPASS済みで、merge後にGitHub Pages本番QAを行います。
+P10「通しプレイ・体験版調整・GitHub Pages公開確認」はRelease PASSです。実Chromeの新規セーブ通しプレイ、P7〜P10回帰、GitHub Pages本番QAを完了しています。
 
 P9 runtimeの正本:
 
@@ -17,6 +17,7 @@ P9 runtimeの正本:
 - `P9ExperienceController` が安全な画面（explore/starMap/ending）の再開地点だけを2秒間隔でオートセーブ同期する。
 - battle/prologue/notebook/titleはオートセーブcheckpoint書換え対象外。
 - P10では390px相当viewportの4方向タッチパッド、P10実Chromeフルプレイ verifier、1対2ターゲット確定、連戦時のMP回復を追加・調整した。
+- 本番QAで発見した手帳ボタン／手帳ヘッダーのpointer操作不具合を修正し、viewport内で開く・ミュート・閉じる操作を確認した。
 
 主な実装状況:
 
@@ -78,4 +79,6 @@ npm audit
 https://ryotamatsuki.github.io/hime-star-journey/
 ```
 
-P10 CI #76では `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9/P10実Chrome回帰をすべてPASSしています。P10 verifierは新規セーブからEndingまで、手帳、autosave/reload/Continue、音量切替、runtime error、runtime image asset pathを確認します。GitHub Pages本番QAはmerge後に実施します。
+P10最終CI #84（P7起動フレークの失敗ジョブ再実行後）は `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9/P10実Chrome回帰、Pages deployをすべてPASSしています。P10 verifierは新規セーブからEndingまで、手帳、autosave/reload/Continue、音量切替、runtime error、runtime image asset pathを確認します。GitHub Pages本番QAではtitle、新規開始、道後到達、手帳のpointer操作、ミュート、閉じる、reload後のContinueを確認しました。
+
+P10のランタイム最終main SHAは `8ba634a6e295db690cfd0e90c64a1b025e2b350f` です（PR #8〜#11、PR #11 merge後のmain）。Cloud Browserのキー長押し制約のため、本番URLではCIと同じEndingまでの手動入力は再現していませんが、CIの実Chromeフルプレイと本番主要操作QAはPASSです。ページ側のconsole/runtime blockerはなく、確認された拡張機能由来ログはRelease判定から除外しています。
