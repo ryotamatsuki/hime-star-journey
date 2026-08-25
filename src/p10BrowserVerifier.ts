@@ -190,8 +190,13 @@ async function fightEnemy(symbolId: string, label: string, boss = false): Promis
 
     const target = document.querySelector<HTMLButtonElement>(".battle-target-button");
     if (target) {
+      target.focus();
       target.click();
       await sleep(180);
+      if (document.querySelector(".battle-target-button")) {
+        await tapKey("Enter", "Enter");
+        await sleep(180);
+      }
       if (document.querySelector(".battle-target-button")) {
         const cancel = button("カード選択へ戻る");
         cancel?.click();
