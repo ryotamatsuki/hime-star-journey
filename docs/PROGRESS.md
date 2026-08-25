@@ -2,14 +2,16 @@
 
 ## 現在の状態
 
-- 現在のフェーズ: **P11 Full Game Design / 本編基盤設計 完了（設計）**
+- 現在のフェーズ: **P12 しまなみ Adventure Area Vertical Slice 実装完了（Chrome CI PASS／Hard Gate条件付きPASS）**
 - P11作業開始時 `origin/main`: `92bad8aa2b2e9c3aab1b9d6c34bb0dd482abb00c`
 - P11作業branch: `docs/p11-full-game-design`
 - P11では大規模runtime実装を行わず、完成版本編の構造・探索・成長・戦闘・物語・愛媛20市町・技術基盤を設計した。
 - P1〜P10で完成したMVPは削除せず、完成版の **Prologue「はじめての星めぐり」** として維持する。
-- 次フェーズ: **P12 しまなみ Adventure Area Vertical Slice**
+- P12 Chrome CI run #95でP7〜P12の全browser gateをPASSした。
+- P12の実装／操作／Prologue回帰Hard GateはPASS。60〜80分の人手通しプレイと探索KPIの定量判定は未計測のため条件付きPASSとした。
+- 次フェーズ: P12の人手KPI計測・production QA。その後にA3以降の量産可否を判断する。
 - P10 runtime Release Gateは引き続きPrologue回帰基準として維持する。
-- 最終更新日: 2026-08-25
+- 最終更新日: 2026-08-26
 
 ## フェーズ別進捗
 
@@ -25,7 +27,7 @@
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 完了 |
 | P10 | 通しプレイ・難易度調整・公開確認 | 完了（Release PASS） |
 | P11 | Full Game Design / 本編基盤設計 | 完了（設計） |
-| P12 | しまなみ Adventure Area Vertical Slice | 次フェーズ |
+| P12 | しまなみ Adventure Area Vertical Slice | 実装完了（Chrome CI PASS／Hard Gate条件付き） |
 | P13〜P17 | Full Game Foundation〜Finale / Release Gate | 未着手 |
 
 ## P10 Release基準
@@ -148,6 +150,12 @@ Hard Gate:
 - P10 Prologue回帰を壊さない。
 
 P12で探索密度・迷子・操作疲労・ロード性能のHard Gateを満たさない場合、A3以降を量産せずAdventure Area規格を修正する。
+
+### P12実装・Chrome CI判定
+
+run #95（2026-08-26 JST）で、`npm run p7:browser`〜`npm run p12:browser`、typecheck、lint、maps/editor検証、buildをPASSした。P12 verifierは、6エリア、橋道route、必須敵、見張り台、`風よみ`、同一風車の再訪、上島、Boss、save telemetry、390px touch UI、runtime error 0件を通しで確認する。
+
+判定は **実装／回帰Hard Gate: PASS**。一方、seed済みcritical pathのCI verifierだけでは、60〜80分の人手プレイ、発見間隔中央値20〜45秒、無発見移動60秒以内、checkpoint/autosave 5〜8分を直接証明できないため、**探索KPI Hard Gate: 条件付きPASS** とする。A3以降の量産は、人手プレイの定量記録後にGo/No-Goを決める。
 
 ## 残課題
 
