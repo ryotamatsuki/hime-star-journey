@@ -82,7 +82,17 @@ jobs:
       - name: P10 browser release gate
         env:
           P10_BROWSER_PATH: /usr/bin/google-chrome
-        run: npm run p10:browser
+        run: |
+          set -o pipefail
+          npm run p10:browser 2>&1 | tee /tmp/p10-browser.log
+
+      - name: Upload P10 browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p10-browser-diagnostics
+          path: /tmp/p10-browser.log
+          if-no-files-found: warn
 
       - name: Configure Pages
         if: github.event_name != 'pull_request'
