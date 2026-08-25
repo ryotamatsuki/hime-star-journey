@@ -427,11 +427,19 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
   const endingSave = manager.load();
   assert(endingSave?.flags.gameCompleted === true, "エンディング後のクリア状態を保存する");
   await openAndVerifyNotebook("旅の記録 10/10", "星封じと取り戻した光");
+
+  const endingNotebookButton = document.querySelector<HTMLButtonElement>("[data-notebook-open='true']");
+  if (!endingNotebookButton) throw new Error("Ending Notebook open button is missing");
+  endingNotebookButton.click();
+  await waitFor(() => Boolean(document.querySelector(".notebook-screen-ui")), "Ending Notebook reopen");
   const mute = button("音を消す");
   if (!mute) throw new Error("Ending Notebook mute button is missing");
   mute.click();
   await waitFor(() => Boolean(button("音を出す")), "mute state");
   await clickButton("音を出す");
+  const endingNotebookClose = button("手帳を閉じる");
+  endingNotebookClose?.click();
+  await waitFor(() => !document.querySelector(".notebook-screen-ui"), "return from Ending Notebook");
   assert(manager.load()?.currentScreenId !== "battle", "戦闘途中をオートセーブ再開地点にしない");
   localStorage.setItem(PHASE_KEY, "endingReload");
   window.location.reload();
