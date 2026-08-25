@@ -48,6 +48,12 @@ const FIRST_ENEMY_HINT_RADIUS = 132;
 const YUNO_EVENT_DURATION_MS = 6400;
 const CASTLE_GUARD_EVENT_DURATION_MS = 5200;
 
+function interactionPriority(id: string): number {
+  if (id === "dogo_star_placeholder") return 2;
+  if (id === "dogo_steam_spot") return 1;
+  return 0;
+}
+
 export class ExploreScreen implements GameScreen {
   readonly id: ScreenId = "explore";
 
@@ -599,11 +605,11 @@ export class ExploreScreen implements GameScreen {
 
   private findNearbyInteractable(): Interactable | null {
     const interactionRect = expandRect(this.player.getCollider(), 42);
-    return (
-      this.interactables.find((interactable) =>
-        intersects(interactionRect, interactable.getInteractionRect())
-      ) ?? null
+    const nearby = this.interactables.filter((interactable) =>
+      intersects(interactionRect, interactable.getInteractionRect())
     );
+    nearby.sort((left, right) => interactionPriority(right.id) - interactionPriority(left.id));
+    return nearby[0] ?? null;
   }
 
   private findNearbyNpc(): NPC | null {
