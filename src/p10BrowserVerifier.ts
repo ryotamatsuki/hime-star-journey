@@ -364,7 +364,7 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
     await moveAlong(route.points, route.label);
     await fightEnemy(route.id, route.label);
   }
-  await moveAlong([{ x: 900, y: 620 }, { x: 1015, y: 520 }], "湯の星");
+  await moveAlong([{ x: 840, y: 700 }, { x: 900, y: 620 }, { x: 960, y: 560 }, { x: 1015, y: 520 }], "湯の星");
   await tapKey("Enter", "Enter");
   await waitFor(() => Boolean(document.querySelector(".star-map-ui")), "星地図", 12000);
   await openAndVerifyNotebook("旅の記録 6/10", "湯の星");
