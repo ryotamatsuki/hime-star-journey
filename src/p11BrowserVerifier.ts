@@ -1,5 +1,6 @@
 import { getMapLayout, mapLayoutRegistry } from "./data/mapLayoutRegistry";
 import { P12_AREA_IDS, P12_REQUIRED_ENEMY_IDS, getP12AreaMeta } from "./data/p12";
+import { resolvePublicAssetPath } from "./core/AssetPath";
 
 const status = document.querySelector<HTMLElement>("#p11-verifier-status");
 const results = document.querySelector<HTMLOListElement>("#p11-verifier-results");
@@ -58,8 +59,8 @@ async function verify(): Promise<void> {
   assert(Object.keys(mapLayoutRegistry).filter((id) => id.startsWith("shimanami-")).length === 6, "しまなみ6エリアをレジストリへ登録する");
 
   const [fullDesign, areaSpec] = await Promise.all([
-    readSpec("../docs/specs/FULL_GAME_DESIGN.md"),
-    readSpec("../docs/specs/ADVENTURE_AREA_SPEC.md")
+    readSpec(resolvePublicAssetPath("/docs/specs/FULL_GAME_DESIGN.md")),
+    readSpec(resolvePublicAssetPath("/docs/specs/ADVENTURE_AREA_SPEC.md"))
   ]);
   assert(fullDesign.includes("P12"), "P11フルゲーム設計書をブラウザから取得できる");
   assert(areaSpec.includes("しまなみ") && areaSpec.includes("風よみ"), "Adventure Area仕様書にしまなみ／風よみの契約がある");
