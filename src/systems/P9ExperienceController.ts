@@ -77,7 +77,8 @@ export class P9ExperienceController {
       color: "#fff8df",
       font: "700 14px sans-serif",
       boxShadow: "0 7px 18px rgba(20,12,18,.3)",
-      cursor: "pointer"
+      cursor: "pointer",
+      pointerEvents: "auto"
     });
     button.addEventListener("click", () => {
       const current = this.screenManager.getCurrentScreenId();
