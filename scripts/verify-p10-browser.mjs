@@ -62,7 +62,7 @@ const profile = await mkdtemp(path.join(tmpdir(), "hime-p10-cdp-"));
 const browser = spawn(browserPath, [
   "--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu",
   "--disable-background-networking", "--no-first-run", "--remote-allow-origins=*",
-  `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "about:blank"
+  "--window-size=390,844", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "about:blank"
 ], { stdio: "ignore" });
 
 try {
@@ -94,8 +94,11 @@ try {
   await cdp.send("Emulation.setDeviceMetricsOverride", {
     width: 390,
     height: 844,
+    screenWidth: 390,
+    screenHeight: 844,
     deviceScaleFactor: 1,
-    mobile: true
+    mobile: true,
+    viewport: { x: 0, y: 0, width: 390, height: 844, scale: 1 }
   });
   await cdp.send("Page.navigate", { url: verifierUrl });
 

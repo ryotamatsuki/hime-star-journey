@@ -298,7 +298,8 @@ async function runFreshPlaythrough(): Promise<void> {
   await waitForExplore("Dogo Onsen");
   assert(manager.load()?.flags.prologue_completed === true, "プロローグ完了フラグを通常操作で保存する");
   const touchControls = document.querySelector<HTMLElement>(".explore-touch-controls");
-  assert(Boolean(touchControls && getComputedStyle(touchControls).display === "grid"), "狭いviewportでタッチ移動パッドを表示する");
+  const viewport = `${window.innerWidth}x${window.innerHeight} / ${document.documentElement.clientWidth}`;
+  assert(Boolean(touchControls && getComputedStyle(touchControls).display === "grid"), `狭いviewportでタッチ移動パッドを表示する（${viewport}）`);
   assert(document.querySelectorAll("[data-touch-action]").length === 4, "タッチ移動パッドに4方向の入力を用意する");
   await finishDialogue();
   await openAndVerifyNotebook("旅の記録 1/10");
