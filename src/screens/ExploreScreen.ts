@@ -464,6 +464,11 @@ export class ExploreScreen implements GameScreen {
   private createTouchControls(): HTMLElement {
     const controls = document.createElement("div");
     controls.className = "explore-touch-controls";
+    const compactViewport =
+      document.documentElement.clientWidth <= 760 ||
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(hover: none)").matches;
+    if (compactViewport) controls.classList.add("explore-touch-controls--visible");
     controls.setAttribute("aria-label", "タッチ移動");
 
     const buttons: Array<{ action: InputAction; label: string; symbol: string }> = [

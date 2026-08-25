@@ -410,6 +410,10 @@ button {
   pointer-events: none;
 }
 
+.explore-touch-controls--visible {
+  display: grid;
+}
+
 .explore-touch-button {
   min-width: 42px;
   min-height: 42px;
