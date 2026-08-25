@@ -749,11 +749,14 @@ export class BattleScreen implements GameScreen {
       currentLocationId: this.battleParams.returnLocationId,
       currentAreaId: this.battleParams.returnAreaId,
       hp: Math.max(1, hime?.hp ?? this.saveData.hp),
-      mp: Math.max(0, hime?.mp ?? this.saveData.mp),
+      mp: Math.min(
+        this.saveData.maxMp,
+        Math.max(0, hime?.mp ?? this.saveData.mp) + 2
+      ),
       defeatedEnemyIds,
       openedPaths,
       flags,
-      lastSynopsis: `${symbol?.label ?? "敵"}をしずめました。`
+      lastSynopsis: `${symbol?.label ?? "敵"}をしずめました。星の力が少し戻りました。`
     });
 
     this.options.screenManager.change("explore", {
