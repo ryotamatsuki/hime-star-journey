@@ -1,3 +1,4 @@
+import "./styles.css";
 import { assetManifest } from "./data/assets";
 import { notebookEntries, getUnlockedNotebookEntries } from "./data/notebook";
 import { AssetPathError } from "./p10BrowserVerifierTypes";
