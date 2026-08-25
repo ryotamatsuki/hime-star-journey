@@ -68,7 +68,8 @@ export class NotebookScreen implements GameScreen {
       padding: "24px",
       overflow: "auto",
       background: "rgba(24, 20, 31, 0.36)",
-      color: "#3e2d23"
+      color: "#3e2d23",
+      pointerEvents: "auto"
     });
 
     const book = document.createElement("section");
