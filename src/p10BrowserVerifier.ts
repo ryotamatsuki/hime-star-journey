@@ -295,7 +295,7 @@ async function runFreshPlaythrough(): Promise<void> {
   for (let index = 0; index < 100 && document.querySelector(".prologue-ui"); index += 1) {
     await clickButton("つぎへ");
   }
-  await waitForExplore("道後温泉");
+  await waitForExplore("Dogo Onsen");
   assert(manager.load()?.flags.prologue_completed === true, "プロローグ完了フラグを通常操作で保存する");
   const touchControls = document.querySelector<HTMLElement>(".explore-touch-controls");
   assert(Boolean(touchControls && getComputedStyle(touchControls).display === "grid"), "狭いviewportでタッチ移動パッドを表示する");
@@ -326,7 +326,7 @@ async function runFreshPlaythrough(): Promise<void> {
 async function runAfterEarlyReload(): Promise<void> {
   await startApp();
   await continueFromTitle("explore");
-  await waitForExplore("道後温泉");
+  await waitForExplore("Dogo Onsen");
   await runRemainderAfterEarlyReload();
 }
 
@@ -351,7 +351,7 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
   for (let index = 0; index < 5 && !bodyText().includes("松山城 / "); index += 1) await tapKey("ArrowRight", "ArrowRight");
   assert(bodyText().includes("松山城 / "), "星地図で松山城を選択できる");
   await tapKey("Enter", "Enter");
-  await waitForExplore("松山城");
+  await waitForExplore("松山城 C0");
   await finishDialogue();
   await moveAlong([{ x: 500, y: 610 }], "松山城の見回り");
   await waitFor(() => visible(document.querySelector<HTMLButtonElement>(".explore-talk-button")), "城山の見回り");
