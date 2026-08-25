@@ -65,6 +65,7 @@ export class NotebookScreen implements GameScreen {
     Object.assign(wrapper.style, {
       position: "absolute",
       inset: "0",
+      alignItems: "flex-start",
       padding: "24px",
       overflow: "auto",
       background: "rgba(24, 20, 31, 0.36)",
