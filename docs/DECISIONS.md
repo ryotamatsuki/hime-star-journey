@@ -1,468 +1,196 @@
 ﻿# DECISIONS
 
-## 2026-08-25 道後D0の歩行判定は背景準拠ポリゴンをruntimeの正とする
+> P0〜P10までのDecision Logは内容を一切変更せず `docs/archive/DECISIONS_PRE_P11.md` に保存した。P11開始時main `92bad8aa2b2e9c3aab1b9d6c34bb0dd482abb00c` 時点の `docs/DECISIONS.md` と同一blobである。P11以降の主要Decisionは本ファイルへ追記する。
 
-生成された道後温泉背景は斜め・曲線の石畳が主体であり、大きな矩形だけで歩行領域を表すと建物・水面・草地との見た目のずれが残る。そのためD0では `walkablePolygons` を歩行領域の正とし、プレイヤーコライダーの四隅と中心が歩行領域内に収まる移動だけを許可する。既存の松山城は矩形collisionを使うため、今回のruntime移動変更はDogoに限定する。
+## 2026-08-25 P11 Full Game Design / 本編基盤設計
 
-配置点と道しるべは背景上の石畳へ補正し、マップ検証では開始コライダー、配置点、道しるべの歩行領域内判定と開始地点からの到達性を確認する。P10ではポリゴン端の操作感と手動通しを追加確認する。
+### DEC-P11-01 MVPをPrologueとして正式に残す
 
-## 2026-06-29 P6.5 マップエディタ
+**既存企画**: P1〜P10で「道後温泉→湯の星→松山城→カゲマサ→みかん星の核奪還→Ending」のMVPが完成している。
 
-### マップ座標はJSONレイアウトを正とする
+**問題点**: 完成版へそのまま接続すると、既存Endingが冒険全体の終了に見え、その後の愛媛全域へのscale-upが弱い。
 
-道後温泉D0と松山城C0の歩行可能領域、衝突領域、敵/NPC/調べる対象/イベント/道しるべ/開始位置は、TypeScript直書きではなく `src/data/map-layouts/*.json` を正とする。ゲームロジック、会話、敵定義、クエスト定義は引き続きTypeScript側に残し、座標・サイズ・経路の調整だけをエディタ対象にする。
+**決定**: MVPは削除せず **Prologue「はじめての星めぐり」** とする。既存Endingは完成版ではChapter Transitionへ接続し、松山市周辺の星地図から愛媛全域へzoom-outする。
 
-### 保存APIはVite開発サーバー専用に限定する
+**理由**: 完成済み体験を壊さず、P10までに学んだ操作・物語を本編のtutorialとして活用できる。小さな世界から大きな愛媛へ広がる感覚も作れる。
 
-ブラウザ上の保存はローカル開発用機能のため、Vite dev middleware の `/__map-editor/*` のみに実装する。production buildではファイル書き込みAPIを持たせず、JSONエクスポート/インポートで確認できる範囲に留める。
+### DEC-P11-02 20市町=20ステージ方式を採用しない
 
-### 不正レイアウトは保存しない
+**既存企画**: 愛媛20市町の土地の星を巡る。
 
-検証エラーがあるレイアウトは、クライアント側の保存ボタンでもdev保存APIでも拒否する。警告は確認対象として表示するが保存禁止にはせず、world範囲外、重複ID、不正矩形、playerStart不正など、ゲーム進行を壊しうる状態を保存エラーにする。
+**問題点**: 1市町1小マップにすると「NPC→必須敵→目的地→イベント→星」を20回反復しやすく、地域差が背景・名物skinに留まる。
 
-### 保存時にエディタ画面を強制リロードしない
+**決定**: 20市町は維持するが、複数市町を地形・水系・産業・文化の連続性で束ねた **8 Adventure Area（A0〜A7、Prologue含む）** を基本単位とする。
 
-Viteのファイル監視が保存直後のプレビュー操作を中断しないよう、dev保存APIでは対象JSONを一時的にwatcherから外して保存する。同一内容の場合は書き込み自体をスキップする。プレビューはiframeのクエリ更新で読み直す。
+- A0 松山・道後: 松山市。
+- A1 ちゅうよの水と器: 伊予市・松前町・砥部町。
+- A2 しまなみ・島風の航路: 今治市・上島町。
+- A3 石鎚・水脈の道: 西条市・東温市・久万高原町。
+- A4 別子・紙の回廊: 新居浜市・四国中央市。
+- A5 肱川・灯りの町: 内子町・大洲市。
+- A6 岬と大地の境目: 八幡浜市・伊方町・西予市。
+- A7 宇和海・森の境: 宇和島市・松野町・鬼北町・愛南町。
 
-### ゲーム確認は通常セーブを汚さない一時セーブで行う
+**理由**: 行政区分ではなく「その土地をどう遊ぶか」でゲームを区切り、20市町を無理なく全て扱うため。
 
-マップエディタからの「ゲームで確認」は `himeDevMap` パラメータと専用キー `__hime_star_map_editor_preview_save__` を使い、通常の `localStorage` セーブを変更しない。P6以前の既存セーブ互換を維持するため、プレビュー用セーブは開発確認専用として分離する。
+### DEC-P11-03 探索密度を面積より優先する
 
-## 2026-06-01
+**既存企画**: MVPは小さなmap中心で、完成版本編のfield規格は未確定。
 
-### ゲームエンジン不使用
+**問題点**: 「本番版は広くする」だけでは、スマホでjoystickを長時間押す空白fieldになりうる。
 
-Unity、Godot、Unreal、Phaser、PixiJS、Kaboom.jsなどのゲームエンジン／ゲームフレームワークは使わない。TypeScript、Vite、Canvas 2D API、DOM UI、CSS、localStorageで実装する。
+**決定**: fieldの主要KPIを意味ある発見までの時間とする。
 
-### MVPの味方はひめ1人
+- メインルートの意味ある発見: 20〜45秒。
+- 通常の無発見歩行: 原則60秒を超えない。
+- 任意脇道の報酬到達: 30〜75秒。
+- 敵視認: 45〜90秒程度。
+- 実際の通常戦: 90〜150秒程度。
+- checkpoint/autosave: 5〜8分程度＋重要イベント後。
+- 1 Subarea: 10〜18分。
+- 1 Adventure Area: 45〜80分中心、最大90分程度。
 
-MVPでは味方はひめ1人。ただし内部データは `partyMembers: BattleActor[]` とし、将来の味方追加に備える。
+**理由**: Pokémon等の大規模open worldを縮小コピーせず、Paper Mario、Mario & Luigi、A Short Hike等の「小さめでも発見が続く」設計を本作の対象年齢・smartphoneへ合わせるため。
 
-### MVP段階から複数敵を実装
+### DEC-P11-04 global field abilityは5つに制限する
 
-敵側はMVPから1体または2体を扱う。1対3以上はMVPでは実装しない。
+**既存企画**: 土地の星20個を集めるが、星取得後のfield gameplayへの影響は限定的。
 
-### 敵シンボルはEncounterDataを参照
+**問題点**: 20個すべてに能力を付けると小学3年生には覚えることが多すぎ、ability selection UIも複雑化する。
 
-敵シンボルは `enemyId` ではなく `encounterId` を持つ。`EncounterData` が1体または2体の敵構成を持つ。
+**決定**: 鍵となる土地の星だけが5つのglobal field abilityを与える。
 
-## 2026-06-02
+1. 湯の星 `あたため`
+2. 風の星 `風よみ`
+3. 山の星 `星みち`
+4. 灯りの星 `ほしあかり`
+5. 海の星 `潮よみ`
 
-### P0ではアプリ本体を実装しない
+能力一覧から毎回選ばせず、星印の対象へ近づいたときのcontext actionとして使う。20の土地の星自体は物語・星地図上の意味を維持する。
 
-P0はリポジトリ初期化、仕様、進捗管理、アセット管理、プロンプト整理のフェーズとする。`package.json`、Vite、TypeScript設定、Canvas実装はP1で追加する。
+**理由**: 星集め、探索、再訪、地域battle ruleを一つの語彙へ統合しながら認知負荷を抑えるため。
 
-### ローカルGit初期化までをP0対象にする
+### DEC-P11-05 再訪は記憶力テストにしない
 
-この作業環境には `.git` がなかったため、ローカルGitリポジトリを `phase0-repository-foundation` ブランチ名で初期化した。GitHubリモート作成、コミット、PR作成は所有者アカウントと公開先判断が必要なため未実行とする。
+**決定**: ability不足で開けなかった場所は発見時に星地図・旅の手帳へ自動記録し、必要能力取得後に再訪iconを点灯する。1 Adventure Areaの既知再訪候補は最大2を目安とし、main story必須の大規模backtrackingにはしない。
 
-### Git safe.directoryを設定する
+**理由**: 「あそこへ戻れば何かある」という探索の期待だけを残し、TUNICや本格Metroidvaniaのような高い記憶要求は避けるため。
 
-ローカルGit初期化後、サンドボックス由来の所有者差分により `git status` がdubious ownershipで停止した。P0検証のため、この作業ディレクトリをGitの `safe.directory` に追加した。
+### DEC-P11-06 完成版のプレイ時間を8〜10時間へ変更する
 
-### MarkdownはUTF-8 BOM付きにする
+**既存企画**: 完成版6〜7時間。
 
-Windows PowerShellの通常 `Get-Content` でも日本語文書を読めるように、Markdown文書はUTF-8 BOM付きで保存する。JSONはパーサ互換性を優先し、BOMなしUTF-8のままにする。
+**問題点**: Adventure Area、脇道、再訪、地域固有battle ruleを追加しながら6〜7時間に固定すると、各地域が短すぎるか、発見密度を落とすことになる。
 
-### 文字化け文書を再作成する
+**決定**: **メイン8〜10時間、寄り道込み12〜15時間** を目標とする。1回15〜30分で中断しやすい構造は維持する。
 
-P0文書群が文字化けしていたため、既存の意図を保ちながらUTF-8の日本語Markdownとして再作成した。
+**理由**: 長時間化そのものを目的にせず、各Adventure Area 45〜80分とSubarea 10〜18分の「遊びの違い」を成立させるため。
 
-### P1基盤ではViteと直接Canvas/DOMだけを使う
+### DEC-P11-07 成長は星Lv・カード・お守りに絞る
 
-ゲームエンジン、ゲームフレームワーク、描画フレームワークは追加しない。P1ではVite、TypeScript、Canvas 2D API、DOM UI、CSS、localStorageだけでタイトル画面と仮プロローグを構成する。
+**決定**:
 
-### npm script検証はWindowsではnpm.cmdを使う
+- 星Lv 1〜5。主要章clearで自動上昇しHP/MPを自動成長。
+- 完成版card所持目安18枚、戦闘時Active Card最大6枚。
+- card強化は原則1段階。
+- お守りはpassive 1枠、全体約6種。
+- Shiroは別level/装備を持たずstory進行でsupport能力が増える。
+- XP grind、複数装備slot、rare tier、craft素材treeは導入しない。
 
-このPowerShell環境では `npm run ...` が `npm.ps1` のExecution Policyで止まる場合がある。プロジェクトのscript自体は通常のnpm scriptとして定義し、検証はWindows互換の `npm.cmd run ...` で行う。
+**理由**: 小学3年生が「何が強くなったか」を説明できる複雑さに留め、探索とcard選択へ注意を集中するため。
 
-### TitleScreenとPrologueScreenだけを登録する
+### DEC-P11-08 地域差は敵HPではなくrule差で出す
 
-P1の対象外である探索、星地図、バトル、手帳、エンディング画面は登録しない。保存された `currentScreenId` が未登録画面を指す場合は、P1では仮の `prologue` へフォールバックする。
+**決定**: 現在のcard式turn battleを維持し、通常敵1〜2体を標準とする。通常戦45〜90秒、boss3〜5分を目標とし、地域ごとに1つの見えるruleを持たせる。複雑な属性相性表は作らず、敵1体につき基本1つの弱点markとする。
 
-### アセット読み込み失敗は描画停止にしない
+**理由**: Areaが変わるたびHPだけが増える単調さを避けつつ、新ruleを同時に複数覚えさせないため。
 
-AssetLoaderは画像読み込みに失敗してもPromise全体をrejectせず、失敗状態として記録する。描画側は `drawImageOrFallback` で代替図形を表示する。
+### DEC-P11-09 くろぼしを「忘れられた影の器」として確定する
 
-### P2では画像生成を優先度Aに集中する
+**既存企画**: くろぼしは全体黒幕候補。詳細未確定。
 
-画像生成機能は利用できた。P2では不足していた優先度Aの `hime_idle`、`shiro_idle`、`boss_kagemasa`、`ui_card_frame` を画像生成し、既存の背景6枚、会話フレーム、手帳フレームと合わせてRuntime Assetとして配置する。優先度Bの敵、カード、星アイコン、仮スプライトシート、エフェクトはP2の範囲では完成品質の生成対象にせず、個別PNGプレースホルダーで準備する。
+**問題点**: 「土地の星を濁らせる悪い魔王」だけでは、本作の `しずめる`、土地の記憶、星守りという主題と分離する。
 
-### キービジュアルはRuntime Assetとして直接使わない
+**決定**: くろぼしは、昔の星守りが、土地へすぐ戻すには重すぎる悲しみ・怖さ・後悔・失われた記憶を一時的に受け止めるために生まれた **影の器** とする。星守りが忘れられ、記憶を戻す役目が途絶えたため濁りを抱え続け、「失うくらいなら、最初から光らせなければいい」と考えるようになった。
 
-`docs/visual-reference/key-visuals/` の8枚は構図、色、UI密度の参照に留める。Runtime Assetは `public/assets/generated/` に別ファイルとして配置し、参照画像は上書きしない。
+みかん星の核を使い20の土地の星を一つの静かな闇へ閉じようとする。Finaleでは消滅させず、星封じを「閉じ込める技」から「濁りをほどいて土地へ返す技」へ反転して、くろぼし自身をしずめる。
 
-### 実画像がない場合はAssetManifest fallbackとCanvas描画で代替する
+**理由**: 最終戦まで `敵をしずめる` を一貫させ、「悲しい記憶も消す必要はない」という結論へつなげるため。
 
-不足・読み込み失敗アセットは、AssetManifestの `fallbackAssetId` で共通プレースホルダーへ戻す。描画箇所では `drawImageOrFallback` とCanvas図形を使い、画像失敗でゲーム進行を止めない。
+### DEC-P11-10 カゲマサは章ボスのままにする
 
-### SpriteAnimatorは秒単位deltaTimeを受け取る
+**決定**: カゲマサは最終ボスへ昇格させない。くろぼしが古い「守る」記憶から形づくった執行役で、「星を止めれば傷つかない」という間違った守り方を実行した存在とする。
 
-GameLoopが秒単位の `deltaTime` を渡すため、SpriteAnimatorも秒単位を受け取り内部でミリ秒へ変換する。clipは1フレームでも動作し、non-loop clipは `nextClipId`、再生時指定、または `defaultClipId` へ戻れる設計にする。
+**理由**: 既存企画の根幹を守りつつ、PrologueのbossをFinaleの主題へ伏線として再利用するため。
 
-### P2では探索・バトル本体に入らない
+### DEC-P11-11 星守りを戦士・王家ではなく世話役として確定する
 
-P2はAssetLoader、AssetManifest、SpriteAnimator、AnimationRegistry、Y座標奥行き描画、楕円影、簡易エフェクト、ScreenShake、TitleScreen背景接続までに限定する。ExploreScreen、BattleScreen、StarMapScreen、NotebookScreen、クエスト本体、敵・カード効果本体はP3以降で実装する。
+**決定**: 星守りは地域を歩き、土地の変化を聞き、人々の話を集め、濁った星をしずめ、記憶を土地へ返していた世話役・道案内役とする。ペンダントは王家の証ではなく星地図を安全に持ち運ぶ古い道具。おばあちゃんは詳細を知らない既存設定を維持する。
 
-### P2の動作検証もnpm.cmdを使う
+ひめは血筋だけで選ばれた勇者ではない。家系とのつながりはペンダントが応じる条件の一部だが、各地で「困っているものを見て、しずめて、話を聞く」選択を続けることで主人公になる。
 
-PowerShellのExecution Policyにより `npm run ...` が止まる可能性があるため、P2検証はP1と同じく `npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、`npm.cmd run dev` で行う。
+**理由**: 既存の「選ばれた勇者にしない」を完成版の設定として成立させるため。
 
-### P3の道後温泉仮マップはTypeScriptデータで実装する
+### DEC-P11-12 シロとくろぼしは善悪の対ではなく役割の対とする
 
-フェーズ3ではタイルマップエディタや外部マップ形式を導入しない。`src/data/maps.ts` に `MapAreaData` と矩形collisionを直接定義し、P3の目的である「歩ける探索画面」の実装速度とレビュー容易性を優先する。
+**決定**:
 
-### P3ではタイルマップエディタを使わない
+- シロ: 人と土地の間を導き、記憶を見つけ、戻す方向を示す働き。
+- くろぼし: すぐには戻せない重い記憶を一時的に受け止める働き。
 
-MVP初期は固定背景と矩形障害物で十分に探索導線を検証できるため、Tiledなどのマップエディタ、タイルマップローダー、専用ランタイムは導入しない。後続で必要になった場合も、まずTypeScriptデータから移行できる構造に留める。
+シロは古代から同じ個体が生き続けた万能案内役ではなく、星地図に受け継がれた白鷺の「導く働き」が、ひめとの接触で再び形を取った守り鳥とする。
 
-### P3では仮BattleScreenを導入する
+**理由**: シロも物語の答えを最初から知る説明装置にせず、ひめと一緒に星守りの役目を思い出す物語にするため。
 
-EnemySymbol接触から戦闘へ入る入口と、勝利後に `defeatedEnemyIds` を保存して探索へ戻る流れを先に確定する。本格BattleSystem、カード効果、HP処理はフェーズ5以降に実装する。
+### DEC-P11-13 Canvas + DOMを維持し、data-driven化で拡張する
 
-### P3の道後探索アセットは既存generatedとpending仮PNGを使う
+**既存構成**: TypeScript + Vite + Canvas 2D + DOM UI + localStorage。`ExploreScreen` は道後／松山城固有分岐を持ち、`AssetLoader.loadManifest()` はmanifest全画像を一括loadする。
 
-`dogo_explore_bg`、`hime_idle`、`shiro_idle`、`ui_dialogue_frame` は既存generatedを使用する。`dogo_oni`、`dogo_lantern`、`dogo_mouse`、`ui_quest_panel_frame` はP2で配置したpending仮PNGを使用する。必要ファイルは全て存在したため、P3では追加画像生成を行わない。
+**決定**: P11ではgame engine移行を行わない。P12以降、必要な順に以下を導入する。
 
-### P3の自動ブラウザ確認はEdge headless/CDPを補助的に使う
+1. `AdventureAreaDefinition` / `SubareaDefinition`。
+2. Quest/Objective Service分離。
+3. Area bundle lazy loading + next Subarea preload。
+4. chunked map。
+5. entity spatial indexing（第一候補はsimple uniform grid）。
+6. map editorへexit/checkpoint/ability gate/secret/landmarkを追加。
+7. SaveData schema versioning/migration。
+8. Area単位audio bundle。
+9. browser verifierのarea critical path化。
 
-BrowserプラグインはP3でもnode_repl kernelが環境エラーで停止したため、Edge headlessとDevTools Protocolで補助確認した。タイトル表示、スクリーンショット取得、localStorageの `dogo/D0/explore` 保存、仮勝利後の `defeatedEnemyIds` 保存、リロード後の「つづきから」有効化を確認した。
+**理由**: 現行architectureを捨てるほどの根拠はない一方、8 Adventure Area規模で現在の一括load・地域hard-codeを続けるのは負債になるため。
 
-### P2方針変更ではTitleScreen用画像生成を必須にする
+### DEC-P11-14 smartphoneは横画面を正式な主プレイ姿勢とする
 
-前回P2では、画像生成できない場合にCanvas/CSS/汎用プレースホルダーで代替して完了扱いにできる余地を残していた。今回のP2方針変更では、TitleScreenで実際に使う `title_bg`、`hime_idle`、`shiro_idle`、`title_menu_frame`、`title_star_particles` を画像生成必須とし、これら5件はプレースホルダー代替だけでは完了扱いにしない。
+**決定**: field/battleは横画面を正式姿勢とする。既存左joystickを維持し、run buttonは追加しない。主Interact約56 CSS px、補助button 48 CSS px以上を設計目標とする。Active Card最大6枚、小さい横画面では3×2配置を優先する。必須drag/long-press/pinch操作は導入しない。
 
-### P2方針変更で生成したTitleScreen用アセットの保存先
+**理由**: 広いfieldを縦画面に圧縮せず、P10のtouch操作資産を生かしながら小学生の誤tapと長距離操作疲労を抑えるため。
 
-生成した必須アセットは `public/assets/generated/backgrounds/title_bg.png`、`public/assets/generated/characters/hime_idle.png`、`public/assets/generated/characters/shiro_idle.png`、`public/assets/generated/ui/title_menu_frame.png`、`public/assets/generated/effects/title_star_particles.png` に配置する。プロンプトは `docs/asset-prompts/runtime-assets/` 配下の対応する `.prompt.md` に保存する。
+### DEC-P11-15 P12は「しまなみ Adventure Area Vertical Slice」とする
 
-### 透過が必要なTitleScreen用アセットはクロマキーから透過PNG化する
+**決定**: P12は今治市・上島町を対象にした **A2 しまなみ・島風の航路** をVertical Sliceとして実装する。
 
-ひめ、シロ、メニュー枠、星粒子は生成画像をそのまま矩形背景付きで使わず、単色クロマキー背景で生成し、ローカルの透過処理でPNG化してRuntime Assetにする。背景は16:9の通常PNGとして生成する。
+検証項目はHub→複数Subarea→再合流、`風よみ`、橋・帆・風車・潮、再訪gate、少数side content、fast travel、lazy asset、SaveData拡張、横画面smartphone、P10回帰。
 
-### SpriteAnimatorはTitleScreenでも1フレームclipを実際に使う
+**Hard Gate**:
 
-TitleScreenの `hime_idle` と `shiro_idle` は完成スプライトシートではなく単体PNGだが、画像の自然サイズから1フレームAnimationSetを作り、SpriteAnimator経由で描画する。呼吸感や浮遊感はCanvas変換と `floatingMotion` を重ねて表現し、後続フェーズのスプライトシート差し替えを妨げない。
+- 60〜80分で土地の星まで通せる。
+- 意味ある発見の中央値20〜45秒、通常の無発見歩行60秒超を原則作らない。
+- 必須戦闘3〜5、全敵symbol 6〜10。
+- 小puzzle 2〜4、任意event 1〜2、再訪gate 1〜2。
+- route分岐後3〜8分以内に手掛かりまたは報酬が返る。
+- checkpoint/autosave 5〜8分以内。
+- `風よみ`取得前後で同じ地点の意味が変わる。
+- smartphone横画面で移動・Interact・Shiro Search・最大6cardを安全に操作できる。
+- P10 Prologue回帰を壊さない。
 
-### キービジュアルは参照に留めRuntime Assetを分離する
+**理由**: 完成版本編で新たに必要な探索・地域差・能力・再訪・map分割・mobile UXを、1地域で最も多く検証できるため。
 
-`docs/visual-reference/key-visuals/` の画像は構図、色、UI密度、キャラクター見え方の参照に留める。Runtime Assetは `public/assets/generated/` に分離し、キービジュアルは上書きしない。
+## P11参照文書
 
-### P2方針変更でも探索・バトル本体には入らない
-
-今回のP2修正対象はTitleScreenの手描き風表示実装、AssetLoader接続、SpriteAnimator/Effects/RenderDepthSystem/ScreenShake等の基盤に限定する。ExploreScreenやBattleScreenの本体はP3/P5以降の範囲であり、既存P3実装は維持するがP2修正で拡張しない。
-
-### P3方針変更では単一背景ではなく2.5D探索マップ構成にする
-
-旧P3の `dogo_explore_bg.png` 1枚背景前提では、ひめが2.5D空間を歩いている構造が弱くなるため、P3方針変更では `dogo_map_base`、`dogo_map_foreground`、`dogo_map_overlay_steam` の3レイヤー構成へ変更する。baseは地形、foregroundはキャラクター手前に重なる軒・枝・橋・湯けむり、overlayはCanvas上で透明度とドリフトを付ける湯けむり/光として扱う。
-
-### P3方針変更でも画像生成を必須にする
-
-道後温泉探索用の必須10アセットは画像生成で作成し、Canvas図形・CSS・単色矩形・汎用プレースホルダーのみでは完了扱いにしない。画像生成できなかった場合はP3未完了として記録する方針だが、今回はすべて生成・配置・HTTP 200確認まで成功した。
-
-### P3生成アセットの保存先
-
-生成した道後温泉探索用Runtime Assetは `public/assets/generated/backgrounds/`、`public/assets/generated/characters/`、`public/assets/generated/enemies/`、`public/assets/generated/ui/` に用途別に保存する。生成プロンプトは `docs/asset-prompts/runtime-assets/` の対応ファイルに保存する。`docs/visual-reference/key-visuals/` は参照資料として保持し、上書きしない。
-
-### hime_walk_sheetの形式
-
-`hime_walk_sheet.png` は4方向x4フレーム相当の単一PNGとして扱う。Player側では画像の `naturalWidth / 4`、`naturalHeight / 4` でセルを切り、row 0をdown、row 1をleft、row 2をright、row 3をupとして描画する。完成品質の細部調整は後続で同じ形式の画像差し替えで対応する。
-
-### shiro_fly_sheetの形式
-
-`shiro_fly_sheet.png` は横4フレーム相当の単一PNGとして扱う。Companion側では `naturalWidth / 4` をセル幅にして、フレーム更新とsin波の浮遊を重ねる。後続で案内状態や演出フレームを追加する場合も、この構成を拡張する。
-
-### カメラ追従の実装方針
-
-`src/core/Camera.ts` を追加し、ワールド座標とスクリーン座標の変換、ひめ中心の追従、マップ端でのクランプを集約する。Canvas表示は1280x720を基本とし、道後温泉マップは1920x1080のworldとして管理する。
-
-### collisionRectsの初期設定方針
-
-P3ではタイルマップやピクセル完全一致の通行判定を導入せず、TypeScriptデータ上の矩形collisionで建物、柵、橋の外側、湯釜、路地通行止め、境界を表現する。衝突はX/Y軸別移動で処理し、壁に引っかかりにくい構造を維持する。
-
-### 敵シンボルの簡易アニメーション方針
-
-EnemySymbolは `encounterId` を持つシンボルとして扱い、敵種ごとに描画オフセットを変える。湯どろぼう鬼は左右wander、あお提灯はblinkとfloating、ゆげネズミはscurry、さびよろいはshakeを使う。接触判定は基準座標のcolliderに残し、アニメーション表示とバトル入口を分離する。
-
-### BattleScreen本体は後続フェーズに回す
-
-P3では敵接触時に `enemySymbolId` / `encounterId` を取得し、既存の仮BattleScreenへ渡せる入口までを対象にする。本格BattleSystem、複数敵バトル処理、カード効果、HP処理はP5以降に実装する。
-
-### TitleScreenからExploreScreenへの遷移方法
-
-フェーズ2のTitleScreenは維持し、「はじめから」で初期セーブを作成してPrologueScreenへ進む。PrologueScreenの「道後温泉へ進む」からExploreScreenへ遷移する。TitleScreenからの直接デバッグボタンは追加しない。
-
-## 2026-06-03
-
-### P4でも画像生成を必須としプレースホルダー代替で完了扱いにしない
-
-StarMapScreenで使用する `star_map_bg`、星アイコン3種、星地図パネル、道後/松山城バッジは画像生成必須とする。Canvas図形、CSS、単色矩形、汎用プレースホルダー、既存pending画像だけではP4完了扱いにしない。
-
-### P4は画像生成不可のため停止する
-
-このセッションでは組み込み `image_gen` ツールが利用可能ツールとして公開されていなかった。`imagegen` CLIフォールバックは存在するが、`OPENAI_API_KEY` が未設定だったため画像生成を実行できない。ユーザー指定の停止条件に従い、StarMapScreen実装、TravelSystem実装、AssetManifest更新、画面遷移更新には進まず、P4未完了として記録する。
-
-### 既存の星地図関連画像はP4必須生成の代替にしない
-
-`public/assets/generated/backgrounds/star_map_bg.png` と星アイコン3種の旧ファイルは存在するが、今回のP4必須画像生成を実行できていないため、P4完了条件の充足には使わない。画像生成機能が復旧したら、P4要件に沿って再生成し、保存プロンプトとHTTP読み込み確認を行う。
-
-### P4再実行では画像生成必須方針を維持して実装へ進む
-
-前回は画像生成不可で停止したが、今回の再実行では組み込み画像生成ツールを利用できた。Canvas図形、CSS、単色矩形、汎用プレースホルダーで代替完了する方針には戻さず、P4必須7アセットを生成した後にStarMapScreen実装へ進む。
-
-### P4生成アセットの保存先
-
-P4必須アセットは用途別に `public/assets/generated/backgrounds/star_map_bg.png`、`public/assets/generated/ui/star_icon_locked.png`、`public/assets/generated/ui/star_icon_unlocked.png`、`public/assets/generated/ui/star_icon_cleared.png`、`public/assets/generated/ui/star_map_panel_frame.png`、`public/assets/generated/ui/location_badge_dogo.png`、`public/assets/generated/ui/location_badge_castle.png` に保存する。生成プロンプトは `docs/asset-prompts/runtime-assets/` 配下に保存する。
-
-### StarMapScreenのノード配置方針
-
-StarMapScreenは1280x720のCanvas座標でノードを配置する。道後温泉を中央左寄り、松山城をその上側、しまなみ方面・石鎚方面・南予方面を未解放の将来エリアとして周辺に置き、生成背景上で視認しやすい余白を優先する。
-
-### 松山城の解放判定
-
-松山城ノードは `flags.location_castle_unlocked === true` または `unlockedLocations.includes("castle")` のどちらかで解放表示にする。道後温泉は初期状態で選択可能、`collectedStars.includes("dogo")` または `flags.star_dogo_collected` でクリア済み表示にする。
-
-### Prologue / Explore / StarMap の遷移方針
-
-P4では案Aを採用し、PrologueScreen後にStarMapScreenへ遷移する。道後温泉ノードを選ぶと既存のExploreScreenへ進む。既存の探索導線を壊さないため、ExploreScreenからはMキーとUIボタンでStarMapScreenへ戻れるようにする。
-
-### 開発用の道後クリア扱いボタン
-
-松山城解放判定をP4単体で確認できるよう、StarMapScreenに `import.meta.env.DEV` 限定の「デバッグ：道後クリア扱い」ボタンを追加する。本番ビルドでは表示されない開発用導線として扱う。
-
-### 松山城探索本体は後続フェーズに回す
-
-P4ではStarMapScreen上の松山城解放表示と選択時メッセージまでを実装し、松山城2.5D探索マップ本体、敵配置、クエスト、カゲマサ戦は後続フェーズに回す。
-
-### P4ブラウザ自動遷移確認はユーザー指示でスキップする
-
-ヘッドレスブラウザでの自動遷移確認は実行途中でユーザーからスキップ指示があったため、P4ではtypecheck、lint、build、ファイル配置確認を優先し、ブラウザ自動確認は後続で再開できる状態として記録する。
-
-### P3.5では常時ラインではなく任意の道しるべ表示にする
-
-道後温泉探索画面は手描き絵本風の2.5Dマップを見せる画面なので、常時太い境界線やナビ線を表示すると世界観と探索感を壊す。通常時は背景の石畳、柵、植え込み、影で自然に歩ける道を示し、プレイヤーが迷ったときだけHキーまたは「道しるべ」ボタンで2〜3秒の控えめな光を出す方針にする。
-
-### P3.5のwalkable領域は矩形から始める
-
-`collisionRects` は通れない場所、`walkableRects` は歩ける場所の見える化として分離する。P3.5では調整速度を優先して矩形で定義するが、`walkablePolygons` 型も用意し、将来の斜め道や曲がった石畳に合わせてpolygon化できるようにする。
-
-### P3.5 debug overlayは開発者用に限定する
-
-Gキーのdebug overlayはcollisionとwalkableを調整するための開発表示であり、本番プレイ用の恒常UIにはしない。画面左上に `DEV DEBUG ONLY` を描き、赤をcollision、緑をwalkableとして明示する。
-
-## 2026-06-05
-
-### P3.5では常時ラインではなく任意の道しるべ表示にする
-
-道後温泉探索画面の通常表示では、手描き絵本風の地図を優先し、歩行可能領域を太いラインや常時塗りで表示しない。プレイヤー向けにはHキーまたは「道しるべ」ボタンで2.8秒だけ淡く光る補助表示を出し、必要な時だけ道幅を理解できるようにする。これにより、探索画面の雰囲気を壊さず、小学3年生でも迷いにくい補助を提供する。
-
-### 開発者用debug overlayはGキーで分離する
-
-collisionRectsとwalkableRectsの調整には常時確認できる可視化が必要だが、これは本番プレイ用UIではない。P3.5ではGキーの開発者用debug overlayとして分離し、赤をcollisionRects、緑をwalkableRects、青を将来のwalkablePolygonsに割り当てる。画面内にも `DEV DEBUG ONLY` を表示し、プレイヤー用の道しるべと役割を明確に分ける。
-
-### walkable領域は矩形から始めpolygonへ拡張できる型にする
-
-現在の道後温泉マップは生成画像ベースで、厳密なタイルやナビメッシュは持たない。P3.5ではレビューしやすい `walkableRects` から始め、将来細かい道の形に合わせられるよう `walkablePolygons` 型も `MapAreaData` に含める。
-
-### P3.5では背景画像を再生成しない
-
-今回の目的は既存 `dogo_map_base.png` 上で歩ける場所を理解しやすくし、当たり判定を調整しやすくすることに限定する。新しい背景画像の全面再生成は対象外とし、collisionRects、walkableRects、debug overlay、道しるべ表示で改善する。
-
-### P4仕上げではP3.5をmain反映済みとして扱う
-
-`main` 上で道後温泉ExploreScreenのGキーdebug overlay、Hキー道しるべ、walkableRects、collisionRects、ひめ歩行、シロ追従、敵シンボル表示が実装済みであることを確認した。今回のP4仕上げでは、これらを再設計せず、StarMapScreen接続とGitHub Pages対応の確認・軽微修正に集中する。
-
-### P4仕上げでは既存生成アセットを再生成しない
-
-P4必須7アセットは `public/assets/generated/` に存在し、AssetManifest登録、StarMapScreen参照、devサーバーHTTP 200、build後のdistコピーを確認できた。今回の目的は接続確認であり、新しい画像生成や全面差し替えは行わない。
-
-### GitHub Pagesのbaseはリポジトリ名に合わせる
-
-GitHub Pagesではリポジトリ配下 `/hime-star-journey/` で配信されるため、`vite.config.ts` の `base` を `/hime-star-journey/` に設定する。ローカルdevも同じbaseで確認し、テストURLは `http://127.0.0.1:<port>/hime-star-journey/` を使う。
-
-### publicアセット参照はBASE_URLで解決する
-
-AssetManifestとCSS由来の `/assets/generated/...` 参照は、GitHub Pagesのサブパス配信で壊れないよう `import.meta.env.BASE_URL` を使って解決する。AssetLoaderには `resolvePublicAssetPath` を通し、DOMパネルの背景画像はCSS変数で解決済みURLを渡す。
-
-### GitHub Pages workflowを追加する
-
-`.github/workflows/deploy.yml` が存在しなかったため、`main` pushと手動実行で `npm ci`、`npm run typecheck`、`npm run lint`、`npm run build`、Pages artifact upload、Pages deployを行うworkflowを追加する。GitHub側ではPagesのSourceをGitHub Actionsに設定する前提とする。
-
-### P4仕上げのブラウザ確認はEdge headless/CDPで行う
-
-Browserプラグインは今回も `windows sandbox failed: spawn setup refresh` で利用できなかったため、専用プロファイルのEdge headlessとDevTools Protocolで確認する。P4仕上げではTitle -> Prologue -> StarMap -> Explore -> H道しるべ -> G debug overlay -> MでStarMap -> 手動セーブ -> つづきからStarMap/Explore再開までを確認し、松山城ロック/解放、道後クリア済み表示も同じ経路で確認する。
-
-### P4.5をP5前に挟む
-
-MVPは会話なしの探索ゲームではないため、複数敵対応BattleScreenへ進む前に、ひめとシロの自動会話、NPC会話、調べる対象の短文会話を扱う基盤をP4.5として実装する。P5以降の戦闘・クエストはこのDialogueSystemとSaveData.flagsを使って接続する。
-
-### DialogueSystemは自動イベント会話とNPC会話の2系統にする
-
-自動導入や初回敵ヒントは `triggerType: "auto"`、町の人物との短い会話は `triggerType: "npc"` として分ける。調べる対象は `triggerType: "interactable"` として同じデータ構造に乗せ、後続でクエスト進行へ接続しやすくする。
-
-### 会話UIは画像生成せずDOM/CSSで実装する
-
-会話枠、話者名、本文、次へボタンは画像ではなくDOM/CSSで実装する。日本語テキストを画像化すると修正性・可読性・アクセシビリティが下がるため、会話本文は必ずHTML上の実テキストとして表示する。
-
-### 会話文の見た目はCSS font-familyで制御する
-
-P4.5では外部フォントファイルを追加しない。会話文には `"Yu Gothic", "Yu Gothic UI", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif` を指定し、読みやすさを優先する。絵本風日本語フォント導入はライセンス確認後の後続判断とする。
-
-### 会話中はプレイヤー移動を停止する
-
-DialogueSystemがactiveの間、ExploreScreenはPlayerの移動更新、敵接触、調べる入力を進めない。会話中でもシロ、敵、NPCの軽いアニメーションとカメラ追従は維持し、会話終了後に探索へ戻す。
-
-### Interactable統合は湯けむりから始める
-
-P4.5では既存Interactableのうち `dogo_steam_spot` を `interactable_steam_hint` としてDialogueSystemに統合した。看板と湯の星の気配は現行の短文message方式を残し、P6道後温泉クエストで必要に応じてDialogueSystemへ移す。
-
-### 初回敵ヒント会話は敵近接時に呼ぶ
-
-`dogo_first_enemy_hint_auto` は初回敵シンボル近接時に発火できる構造としてExploreScreenへ組み込む。発火後は `dialogue_first_enemy_hint_seen` を保存し、繰り返し発火しない。
-
-### NPC近接時のDOM話すボタンを追加する
-
-Enter/Spaceで話す入力は維持するが、ヘッドレス確認とプレイヤーの分かりやすさのため、NPC近接時だけDOMの「話す」ボタンも表示する。これはNPC会話開始の補助UIであり、P4.5以降の大規模機能追加には含めない。
-
-### ポートレートとNPC画像は画像生成必須とする
-
-P4.5では `portrait_hime`、`portrait_shiro`、`npc_dogo_guide`、`npc_yumori_grandma` の4件を画像生成必須とし、Canvas図形や汎用プレースホルダーだけで完了扱いにしない。会話枠画像は不要で、`dialogue_frame` はDOM/CSS実装へ置き換える。
-
-### P4.5ブラウザ確認は一時同一オリジンテストで補助する
-
-Browserプラグインとnode_replは引き続き `windows sandbox failed: spawn setup refresh` で使えなかった。P4.5では一時的な同一オリジンHTMLを使い、Edge headlessで実アプリをiframe操作して、Title -> Prologue -> StarMap -> Explore、初回自動会話、既読flag保存、案内人NPC会話開始を確認した。一時HTMLは確認後に削除した。
-
-## 2026-06-06
-
-### P4.6では既存生成画像を再生成せず透過処理で仕上げる
-
-`star_icon_unlocked.png` と `star_map_panel_frame.png` はP4で生成済みで、絵柄そのものはStarMapScreenの画風に合っていた。今回の問題は緑/マゼンタのクロマキー背景と境界の透過品質に限定されるため、新規画像生成ではなく、元画像をバックアップしたうえでローカルのクロマキー除去、soft matte、despillにより透明PNGへ仕上げる方針にした。
-
-### P4.6ではStarMapScreenの機能追加をしない
-
-今回の目的はP5前の表示品質仕上げであり、星地図ノード、進行判定、遷移、手動セーブなどのP4機能は変更しない。P5 BattleScreen本実装、カード効果、NPC会話追加、松山城探索、道後クエスト完了処理も対象外として維持する。
-
-## 2026-06-07
-
-### P5ではBattleSystemをScreenから分離する
-
-BattleScreenはCanvas描画とDOM UIに集中し、戦闘状態生成、カード効果、敵ターン、勝利/敗北判定は `src/systems/BattleSystem.ts` に分離する。これにより、P6以降のクエスト報酬、P7のカゲマサ戦、P8の手帳連携を追加するときに、画面描画を大きく崩さず戦闘処理だけを拡張できるようにする。
-
-### P5では既存セーブでも道後温泉バトル用スターター4枚を使えるようにする
-
-既存セーブはP1/P3時点の `unlockedCards` を持つ場合があり、カードが2枚だけだとP5の防御・おふだ練習が成立しにくい。P5では `normalizeBattleCardIds()` により、既存セーブでも `みかん星アタック`、`白鷺のおふだ`、`道後の湯しずく`、`湯けむりヴェール` の4枚をBattleScreen上で使えるようにする。`城山のまもり` と `星封じ` は効果本体を実装しつつ、後続フェーズの進行解放に残す。
-
-### P5では敵1体固定のハードコードを避ける
-
-BattleStateは仕様どおり `partyMembers` と `enemies` の配列で管理する。敵1体戦も2体戦も同じ処理で扱い、攻撃カードは敵が複数いる場合だけターゲット選択UIを出す。敵1体だけをしずめた場合も即勝利にせず、`enemies.every(enemy.hp <= 0)` で勝利を判定する。
-
-### P5のブラウザ自動操作確認は環境問題として扱う
-
-BrowserプラグインはP5でも `windows sandbox failed: spawn setup refresh` により接続できなかった。実装検証は `npm.cmd install`、`npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build`、一時devサーバーのHTTP 200で行い、実ブラウザ操作の不足は既存のENV-002に追記する。
-
-### P5.1では探索背景・参照キービジュアルの流用をやめ、戦闘専用背景を使う
-
-既存の `dogo_battle_bg.png` は参照キービジュアルに近く、UI、キャラクター、敵、カードが画像内に含まれていたため、実装用背景としてはBattleScreen上の表示と重複していた。P5.1では背景を再生成し、Runtime Assetは `public/assets/generated/backgrounds/dogo_battle_bg.png` に配置する。参照画像は構図と画風の参考に留め、Runtime Assetとして直接使わない。
-
-### P5.1の背景生成方針
-
-道後温泉通常戦闘の背景は、左下にひめ、右側に敵1〜2体、下部にカードUI、上部中央にメッセージを重ねる前提で生成した。画像内には文字、UI、カード、ひめ、シロ、敵、HPバーを含めない。旧背景は `public/assets/generated/_backup/p5_1/dogo_battle_bg_before_p5_1.png` に退避する。
-
-### P5.1の戦闘画面配置方針
-
-ひめは左下寄り、シロはひめ近く、敵1体は右中央、敵2体は右側で上下にずらして表示する。敵が複数いる場合は番号付きのターゲットマーカーとDOMの対象選択ボタンを併用し、どの敵を選んでいるかを分かりやすくする。カードUIは下部中央に広げ、背景やキャラクターと重なりにくい領域に固定する。
-
-### P5.1ではカード名・説明を画像文字ではなくDOM実テキストで表示する
-
-カード画像はアイコンとして扱い、カード名、説明、MPコストはDOM/CSSで表示する。画像内文字に依存すると読みやすさと修正性が下がるため、BattleScreenのカードUIは実テキストを優先する。
-
-### P5.1ではBattleSystemロジックを大きく変更しない
-
-今回の目的は背景、配置、カードUI、メッセージ、ターゲット選択の視認性改善であるため、P5で実装したカード効果、敵ターン、勝利/敗北、撃破保存の処理は維持した。文字化けしていた戦闘ログ、カード名、敵名などは表示品質に関わるため修正した。
-
-### P5.1では `hime_battle_sheet` ではなく `hime_idle` を継続利用する
-
-既存の `hime_battle_sheet.png` はラフな仮画像で、P5.1の表示品質改善には不向きだった。完成品質のバトルスプライト制作は後続に残し、P5.1では既に手描き品質が高くBattleScreen上でも視認しやすい `hime_idle.png` をひめ表示に使う。
-
-## 2026-06-13
-
-### 旧企画書 v0.7 のストーリーを正本として復元する
-
-現在の企画書はP0再作成時に簡略化され、家族旅行、おばあちゃん、星守りの家系、白鷺のお守り、ペンダント、みかん星の核、シロ、カゲマサ、くろぼしの物語上の役割が弱くなっていた。P6の画像生成とアニメーション付きプロローグに入る前に、旧企画書 v0.7 のストーリーを正本として復元する。
-
-### P6前に動機を補強する
-
-簡略版企画書では、ひめが冒険へ入る理由が「星を集める」寄りで、個人的な動機が弱かった。P6ではプロローグを実装するため、冒険の最初の目的を「おばあちゃんにもらったペンダントの光を取り返すこと」として明確化する。
-
-### おばあちゃんからペンダントを託される導入を正式採用する
-
-ひめは家族旅行で道後温泉へ向かう前に、おばあちゃんから小さなみかん色の星がついたペンダントを受け取る。この導入を正式採用し、ペンダントをひめ個人にとって大切なものとして扱う。
-
-### ペンダントは白鷺のお守りかつ星地図の器とする
-
-ペンダントは、おばあちゃんの家に昔から伝わる白鷺のお守りであり、同時に愛媛各地の「土地の星」を映す星地図の器とする。シロはこのペンダントに宿っていた守り鳥として扱う。
-
-### みかん星の核だけが奪われる設定を正式採用する
-
-P6以降もカードと星地図を使えるよう、カゲマサの手下が奪うのはペンダント全体ではなく、中央の「みかん星の核」とする。外枠と鎖はひめの手元に残り、弱い星地図機能と星のカードは残る。子ども向けの会話では「ペンダントの光を取られちゃった」と表現してよい。
-
-### 星守りの家系設定を正式採用する
-
-ひめの家は、かつて愛媛各地の土地の星を見守った「星守り」の家系につながっている。ただし、現在の家族やおばあちゃんは詳しい役目を知らない。P6では説明過多にせず、ペンダントが代々受け継がれた大切なお守りであることを優先して伝える。
-
-### カゲマサはMVP章ボス、くろぼしは全体黒幕候補とする
-
-カゲマサは松山城編で再封印されるMVP章ボスであり、物語全体の最終黒幕ではない。全体黒幕候補は、空から落ちてきた小さな黒い星「くろぼし」とする。ただし、MVPではくろぼしの正体を完全には明かさず、次の冒険へつながる謎として残す。
-
-### 旧企画書のPhaser記述は採用しない
-
-旧企画書 v0.7 に含まれていた Phaser 3 + TypeScript + Vite の技術記述は、現在のプロジェクト方針と矛盾するため復元しない。引き続き、Unity、Godot、Unreal、Phaser、PixiJS、Kaboom.jsなどのゲームエンジン／ゲームフレームワークは禁止し、TypeScript、Vite、HTML Canvas 2D API、DOM UI、CSS、localStorageで実装する。
-
-## 2026-06-20 P6再開
-
-### 透過処理はNode.js + Sharpで再現可能にする
-
-Python環境は復旧したが、P6画像はリポジトリから同じ結果を再生成できるようSharpを採用する。四隅の中央値でクロマ色を推定し、RGB距離24～112のソフトマット、外周連結領域と500px以上の閉領域除去、緑／マゼンタdespillを行う。クロマ原本は削除しない。
-
-### P6の取得物は完成した一つの「湯の星」とする
-
-「湯の星のかけら」は用いず、みかん星の核、湯の星、城の星を別の対象として扱う。P6では湯の星を取得し、みかん星の核奪還と城の星取得はP8へ残す。
-
-### 星地図は湯の星取得前にロックする
-
-新規ゲームはTitle→Prologue→Dogo Exploreと進み、湯の星取得後だけStarMapを開く。松山城探索本体はP7の範囲とし、P6はノード解放と自然な案内までとする。
-
-### SaveDataは読み込み時にv0.2.0へ正規化する
-
-不足配列・数値・フラグ・クエスト状態を安全に補完し、既存値を優先する。`collectedStars: dogo` と松山城解放情報はP6完了状態へ昇格し、進行済みセーブをプロローグへ巻き戻さない。
-
-## 2026-07-01 P7
-
-### P7完了条件は「城山のまもり取得」とし、城の星取得はP8へ残す
-
-P7では松山城探索の成立、必須戦闘、くらやみ井戸、城山のまもり取得、P8開始条件の保存までを扱う。`collectedStars` へ `castle` を追加せず、みかん星の核奪還、カゲマサ最終戦、城の星取得、MVPエンディングはP8で実装する。
-
-### 城山のまもり取得後はP8開始条件をフラグで表す
-
-城山のまもり取得時に `shiroyama_guard_obtained`、`castle_boss_route_unlocked`、`p8_kagemasa_route_unlocked` を保存する。これはP7完了とP8開始可能状態を表すもので、ゲームクリアや星取得とは別に管理する。
-
-### 松山城C0の配置はJSONレイアウトを正とする
-
-松山城の歩行可能領域、衝突領域、敵、NPC、調べる対象、イベント、道しるべは `src/data/map-layouts/castle-C0.json` を正とする。TypeScript側に座標を重複定義せず、マップエディタで調整できる状態を維持する。
-
-### くらやみ井戸は必須3戦闘後に解放する
-
-P7の導線を明確にするため、C-E01、C-E02、C-E03を必須戦闘とし、3体分の撃破後にC-E04のくらやみ井戸へ挑める。未達時はメッセージで探索を促し、到達不能や無反応に見えないようにする。
-
-### 任意の前景・オーバーレイが未指定なら代替画像を描かない
-
-道後温泉は前景・湯けむりオーバーレイを使うが、松山城C0では背景1枚で探索できる。任意レイヤーが未指定の場合は `missing_map_layer` の代替表示を描かず、必要な背景画像の読み込み失敗時だけ代替図形に任せる。
-
-### P7ブラウザ検証は専用Verifierで再現可能にする
-
-通常のEdge headless/CDPが環境依存で不安定だったため、`p7-browser-verifier.html` と `src/p7BrowserVerifier.ts` を追加し、Chromiumブラウザ実行環境でGameAppの星地図/探索DOM、SaveManager、TravelSystem、BattleSystem、castle-C0 JSONを検証する。検証ページ内ではCanvas描画だけno-op化し、productionゲーム本体の描画処理は変更しない。
-
-
-
-
-
+- `docs/specs/FULL_GAME_DESIGN.md`
+- `docs/specs/ADVENTURE_AREA_SPEC.md`
+- `docs/research/RPG_DESIGN_RESEARCH.md`
+- `docs/research/EHIME_GAME_DESIGN_RESEARCH.md`
+- `docs/ROADMAP.md`
+- `docs/archive/DECISIONS_PRE_P11.md`（P0〜P10 Decision Log）
