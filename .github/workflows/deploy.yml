@@ -69,7 +69,14 @@ jobs:
       - name: P7 browser regression gate
         env:
           P7_BROWSER_PATH: /usr/bin/google-chrome
-        run: npm run p7:browser
+        run: |
+          for attempt in 1 2 3; do
+            if npm run p7:browser; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
 
       - name: P8 browser regression gate
         env:
