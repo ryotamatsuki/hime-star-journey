@@ -267,7 +267,7 @@ async function verify(): Promise<void> {
   await moveTo({ x: 1260, y: 520 }, "風の近道");
   await inspect("風の近道");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_kamijima_shortcut_open === true, "風の近道を開く");
-  await moveTo({ x: 940, y: 560 }, "くろほガモメ", 34, true);
+  await moveTo({ x: 1440, y: 540 }, "くろほガモメ", 34, true);
   await fightEnemy("A2-E03", "くろほガモメ");
   await moveTo({ x: 1600, y: 540 }, "風の灯台への道");
   await inspect("風の灯台への道");
