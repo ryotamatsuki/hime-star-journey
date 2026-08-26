@@ -100,13 +100,21 @@ function playerPosition(): { x: number; y: number } | null {
     : null;
 }
 
-async function moveTo(target: { x: number; y: number }, label: string, tolerance = 34): Promise<void> {
+async function moveTo(
+  target: { x: number; y: number },
+  label: string,
+  tolerance = 34,
+  allowBattle = false
+): Promise<void> {
   for (let attempt = 0; attempt < 48; attempt += 1) {
     if (isDialogueVisible()) {
       await finishDialogue();
       continue;
     }
-    if (document.querySelector(".battle-ui")) return;
+    if (document.querySelector(".battle-ui")) {
+      if (allowBattle) return;
+      throw new Error(`Unexpected battle while moving to ${label}; position=${JSON.stringify(playerPosition())}`);
+    }
     const current = playerPosition();
     if (!current) throw new Error(`Player position unavailable while moving to ${label}`);
     const dx = target.x - current.x;
@@ -240,7 +248,7 @@ async function verify(): Promise<void> {
   await moveTo({ x: 700, y: 520 }, "帆の向き合わせ");
   await inspect("帆の向き合わせ");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_bridge_sail_aligned === true, "橋道の風パズルを保存する");
-  await moveTo({ x: 920, y: 540 }, "かぜぬすみ");
+  await moveTo({ x: 920, y: 540 }, "かぜぬすみ", 34, true);
   await fightEnemy("A2-E01", "かぜぬすみ");
   await moveTo({ x: 1560, y: 540 }, "見張り台への道");
   await inspect("見張り台への道");
@@ -264,12 +272,12 @@ async function verify(): Promise<void> {
 
   await moveTo({ x: 560, y: 520 }, "上島の記憶");
   await inspect("上島の記憶");
-  await moveTo({ x: 940, y: 560 }, "くろほガモメ");
+  await moveTo({ x: 940, y: 560 }, "くろほガモメ", 34, true);
   await fightEnemy("A2-E03", "くろほガモメ");
   await moveTo({ x: 1600, y: 540 }, "風の灯台への道");
   await inspect("風の灯台への道");
   await waitFor(() => bodyText().includes("現在地：風の灯台"), "Boss空間へのエリア遷移");
-  await moveTo({ x: 1030, y: 560 }, "しまかぜ大だこ");
+  await moveTo({ x: 1030, y: 560 }, "しまかぜ大だこ", 34, true);
   await fightEnemy("A2-B01", "しまかぜ大だこ", true);
 
   save = new SaveManager(SAVE_KEY).load();

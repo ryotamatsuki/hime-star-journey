@@ -19,7 +19,7 @@
     { "id": "shimanami_A2_3_watchtower_path", "label": "風を読む台地", "points": [{ "x": 260, "y": 540 }, { "x": 620, "y": 540 }, { "x": 1120, "y": 540 }, { "x": 1600, "y": 540 }] }
   ],
   "enemySpawns": [
-    { "id": "A2-E07", "x": 1420, "y": 560, "label": "しおガニ" }
+    { "id": "A2-E07", "x": 1420, "y": 620, "label": "しおガニ" }
   ],
   "npcPositions": [
     { "id": "npc_p12_watchkeeper", "x": 420, "y": 540, "label": "見張り台の子" }

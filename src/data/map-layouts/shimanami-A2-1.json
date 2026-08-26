@@ -20,7 +20,7 @@
   ],
   "enemySpawns": [
     { "id": "A2-E01", "x": 920, "y": 540, "label": "かぜぬすみ" },
-    { "id": "A2-E05", "x": 1280, "y": 520, "label": "かぜぬすみ" }
+    { "id": "A2-E05", "x": 1280, "y": 620, "label": "かぜぬすみ" }
   ],
   "npcPositions": [
     { "id": "npc_p12_bridge_keeper", "x": 420, "y": 540, "label": "橋道の見張り" }

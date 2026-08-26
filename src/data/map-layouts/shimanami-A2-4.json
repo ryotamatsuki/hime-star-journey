@@ -20,7 +20,7 @@
   ],
   "enemySpawns": [
     { "id": "A2-E03", "x": 940, "y": 560, "label": "くろほガモメ" },
-    { "id": "A2-E08", "x": 720, "y": 520, "label": "かぜぬすみ" }
+    { "id": "A2-E08", "x": 720, "y": 650, "label": "かぜぬすみ" }
   ],
   "npcPositions": [
     { "id": "npc_p12_kamijima_guide", "x": 420, "y": 540, "label": "上島の風守" }
