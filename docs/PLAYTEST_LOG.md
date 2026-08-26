@@ -66,3 +66,13 @@
 
 
 
+\n### Playtest-004 / A2-4導線修正
+
+- 日時: 2026-08-27（JST）
+- 対象: P12.1 branch の Actions #102 failure 後の候補修正
+- 根因: A2-4の必須敵 A2-E03（くろほガモメ）が、上島の記憶から風の近道へ向かう途中（旧座標 940,560）にあり、近道を調べる前に戦闘へ入っていた。
+- 修正: A2-E03を風の近道後の灯台ルート上（1440,540）へ移し、Verifierの戦闘到達座標も同じ実導線へ同期した。
+- 静的検証: A2-0〜A2-5主要オブジェクトの歩行域内、A2-4近道前の敵衝突0件、近道後の意図したA2-E03衝突を確認。typecheck、lint、maps:validate、editor:smoke、build、git diff --checkはPASS。
+- GitHub Chrome CI: 修正commit反映後の再実行待ち。
+- 判定: 手動60〜80分Hard Gate、スマホQA、production QAは未成立。推測でPASSに変更しない。
+
