@@ -172,11 +172,15 @@ P12 Hard Gate判定: **前段実装／回帰はPASS、探索KPIは条件付きPA
 - [x] 風battle rule、風よみ取得直後演出、同じ風車の再訪、風のコンパス報酬
 - [x] 上島の風壁をcollisionへ接続し、風の近道を実際の進行ゲート化
 - [x] Shiro Search、safe-area、手帳／星地図の横画面overflow対策、6-card最小可読性対策
+- [x] 戦闘前の安全復帰位置、勝利時即時保存、battle／Boss／area／checkpoint／autosave／reloadのP12イベントログ
+- [x] route選択を一度きりに固定し、選択routeの必須敵撃破を次エリア遷移条件へ接続
+- [x] A2任意敵をcritical guide pathから退避し、A2-4の近道→必須敵→灯台導線を再配置
+- [x] 会話中のtouch移動UIを抑制し、横画面Battle UIと狭い横画面の6-card fallbackを追加
 - [x] typecheck / lint / maps:validate / editor:smoke / build（P12.1作業ツリー）
 
 ### 証拠待ち／未完了
 
-- [ ] P12.1候補のP7〜P12 Chrome browser verifier（環境にChrome/Chromium実体なし）
+- [ ] P12.1最新候補のP7〜P12 Chrome browser verifier（ローカル環境にChrome/Chromium実体なし、Actions再実行待ち）
 - [ ] GitHub Pagesへ候補をdeployし、initial/Area/Subarea load、404、console error、reload/Continueを計測
 - [ ] 通常操作による60〜80分の人手通しプレイ
 - [ ] discovery interval全件、中央値、最大値、60秒超区間、longest empty walkを実測
@@ -184,4 +188,4 @@ P12 Hard Gate判定: **前段実装／回帰はPASS、探索KPIは条件付きPA
 - [ ] iOS Safari相当／Android Chrome相当の横画面実機相当操作、joystick疲労、safe-area、Boss視認
 - [ ] `風よみ`取得前→直後→再訪→報酬のプレイヤー評価
 
-P12.1暫定判定: **P12 NO-GO / REVISION REQUIRED**。A3量産およびP13移行は、上記証拠を取得し、探索規格の不足を修正してから再判定する。
+P12.1暫定判定: **P12 NO-GO / REVISION REQUIRED**。Actions #100/#102で検出した導線不整合は候補修正済みだが、上記証拠を取得し、探索規格の不足を修正してから再判定する。A3量産およびP13移行は開始しない。

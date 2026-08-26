@@ -431,6 +431,12 @@ button {
   display: grid;
 }
 
+#ui-root[data-dialogue-active="true"] .explore-touch-controls,
+#ui-root[data-dialogue-active="true"] [data-notebook-open="true"] {
+  visibility: hidden;
+  pointer-events: none !important;
+}
+
 .explore-touch-button {
   min-width: 42px;
   min-height: 42px;
@@ -916,12 +922,12 @@ button {
 
   .explore-status-panel {
     top: 10px;
-    left: 10px;
+    left: max(10px, env(safe-area-inset-left));
   }
 
   .explore-quest-panel {
     top: 10px;
-    right: 10px;
+    right: max(10px, env(safe-area-inset-right));
   }
 
   .explore-message {
@@ -1120,6 +1126,164 @@ button {
     width: 16px;
     height: 16px;
     line-height: 16px;
+  }
+}
+
+@media (max-width: 1100px) and (orientation: landscape) {
+  .star-map-panel {
+    left: max(10px, env(safe-area-inset-left));
+    right: auto;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: min(330px, calc(42vw - env(safe-area-inset-left)));
+    min-height: 0;
+    max-height: calc(100% - max(20px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+    padding: 18px 20px 20px;
+  }
+
+  .generated-star-map-panel {
+    padding: 20px 22px 22px;
+  }
+
+  .star-map-panel h2 {
+    font-size: 18px;
+  }
+
+  .star-map-panel h3 {
+    margin-top: 8px;
+    font-size: 15px;
+  }
+
+  .star-map-panel p,
+  .star-map-synopsis,
+  .star-map-description,
+  .star-map-message,
+  .star-map-hints {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .star-map-actions {
+    margin-top: 8px;
+  }
+
+  .star-map-actions .menu-button {
+    min-height: 34px;
+    font-size: 11px;
+  }
+
+  .battle-message-panel {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(10px, env(safe-area-inset-left));
+    width: min(370px, calc(45vw - env(safe-area-inset-left)));
+    min-height: 54px;
+    padding: 8px 12px;
+    transform: none;
+  }
+
+  .battle-message-panel p {
+    margin-bottom: 4px;
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .battle-command-panel {
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: min(700px, calc(100vw - 390px));
+    min-height: 118px;
+    padding: 6px 8px 8px;
+  }
+
+  .battle-status-summary {
+    gap: 8px;
+    margin-bottom: 5px;
+    font-size: 11px;
+  }
+
+  .battle-card-hand {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .battle-card-button {
+    height: 100px;
+    padding: 4px 4px 5px;
+    grid-template-rows: 14px 28px 14px 1fr 14px;
+  }
+
+  .battle-card-button img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .battle-card-name {
+    font-size: 10px;
+  }
+
+  .battle-card-description,
+  .battle-card-cost,
+  .battle-card-number {
+    font-size: 9px;
+  }
+
+  .battle-card-number {
+    top: 2px;
+    left: 3px;
+    width: 15px;
+    height: 15px;
+    line-height: 15px;
+  }
+
+  .dialogue-box {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: calc(100% - max(20px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+    min-height: 112px;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .dialogue-text {
+    font-size: 17px;
+    line-height: 1.35;
+  }
+
+  .dialogue-next {
+    min-height: 36px;
+    margin-top: 6px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 680px) and (orientation: landscape) {
+  .battle-message-panel {
+    width: min(210px, calc(40vw - env(safe-area-inset-left)));
+  }
+
+  .battle-command-panel {
+    width: min(350px, calc(100vw - 220px));
+    min-height: 142px;
+  }
+
+  .battle-card-hand {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .battle-card-button {
+    height: 70px;
+    grid-template-rows: 11px 20px 12px 1fr 11px;
+  }
+
+  .battle-card-button img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .battle-card-name,
+  .battle-card-description,
+  .battle-card-cost,
+  .battle-card-number {
+    font-size: 8px;
   }
 }
 

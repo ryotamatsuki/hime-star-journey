@@ -5,7 +5,7 @@
   "sourceDirectory": "docs/asset-sources/p12.1",
   "runtimeDirectory": "public/assets/generated",
   "assets": [
-    { "id": "bg_shimanami_A2_0_port_hub", "runtime": "backgrounds/shimanami_A2_0_port_hub.png", "source": "p12.1_A2-0_port_hub_source.png", "sha256": "00ebc383f59af7841fc69e137815304e6f41d91a34d5d965b4ccf7a82ec31444", "use": ["A2-0 Explore"] },
+    { "id": "bg_shimanami_A2_0_port_hub", "runtime": "backgrounds/shimanami_A2_0_port_hub.png", "source": "p12.1_A2-0_port_hub_source.png", "sha256": "00ebc383f59af7841fc69e137815304e6f41d91a34d5d965b4ccf7a82ec31444", "use": ["A2-0 Explore", "P12 normal battle"] },
     { "id": "bg_shimanami_A2_1_bridge_route", "runtime": "backgrounds/shimanami_A2_1_bridge_route.png", "source": "p12.1_A2-1_bridge_route_source.png", "sha256": "447e250e9c68d046e416ecf88bf04b167b6d04e4c79d2692865b775f448676aa", "use": ["A2-1 Explore", "P12 normal battle"] },
     { "id": "bg_shimanami_A2_2_island_village", "runtime": "backgrounds/shimanami_A2_2_island_village.png", "source": "p12.1_A2-2_island_village_source.png", "sha256": "c030921ff41de7ae5eb296f6362bd800da2d28e4ae931e304613a4a459d09b09", "use": ["A2-2 Explore", "P12 normal battle"] },
     { "id": "bg_shimanami_A2_3_watchtower", "runtime": "backgrounds/shimanami_A2_3_watchtower.png", "source": "p12.1_A2-3_watchtower_source.png", "sha256": "3a505f276b4fff5a1d5491ef52ddd670df2305c5ac32729165dc3e4f8d988c42", "use": ["A2-3 Explore", "P12 normal battle"] },

@@ -22,7 +22,7 @@
 | P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 完了（Release PASS） |
 | P11 | Full Game Design / 本編基盤設計 | RPG/子どもUX/愛媛20市町調査、Adventure Area、探索・成長・戦闘・物語・技術ロードマップを確定 | 完了（設計） |
 | P12 | しまなみ Adventure Area Vertical Slice | 完成版探索ループ、風よみ、Subarea/chunk、lazy asset、save/fast travel、スマホUXを1地域で実証 | 前段実装完了／KPI条件付き |
-| P12.1 | Shimanami Visual Completion & Manual Hard Gate | 本番画像統合、実runtime整合、60〜80分人手プレイ、探索KPI、スマホ／production QA、Go-No-Go | 実装更新済み／NO-GO・再検証待ち |
+| P12.1 | Shimanami Visual Completion & Manual Hard Gate | 本番画像統合、実runtime整合、60〜80分人手プレイ、探索KPI、スマホ／production QA、Go-No-Go | #100/#102原因修正候補あり／Chrome・manual・production再検証待ち |
 | P13 | Full Game Foundation | P12結果を反映してAdventure Area data model、Quest/Objective Service、Save migration、editor拡張を共通基盤化 | P12.1 FINAL PASSまで着手禁止 |
 | P14 | 東予編 Completion | 石鎚・水脈の道、別子・紙の回廊を完成版品質で実装 | 未着手 |
 | P15 | 中予編 Completion | ちゅうよの水と器を実装し、Prologueから本編へのChapter Transitionを完成 | 未着手 |
@@ -106,8 +106,8 @@ P12で密度・操作・迷子・ロードのHard Gateを満たせない場合�
 
 ## P12.1 現在のGo / No-Go状態
 
-P12.1では、生成画像をA2-0〜A2-5へ統合し、背景とwalkable/collision、風field/battle rule、再訪報酬、Area単位lazy loading、横画面UIの候補修正まで完了した。
+P12.1では、生成画像をA2-0〜A2-5へ統合し、背景とwalkable/collision、風field/battle rule、再訪報酬、Area単位lazy loading、戦闘復帰／保存telemetry、routeゲート、横画面UIの候補修正まで完了した。Actions #100/#102の失敗は、A2-4必須敵と任意敵がcritical guide pathへ重なっていたこと、およびその結果Verifierが想定外戦闘を移動完了と誤認したことに起因する。任意敵退避、A2-4導線再配置、Verifierのfail-closed化を候補へ反映した。
 
-一方、P12.1 branchは未デプロイで、Chrome実体・実機相当操作・60〜80分人手通し・production計測が未完了である。座標ベースのPython監査では、現在のfield導線が短く発見が固まりすぎるリスクも確認された。
+一方、最新候補branchは未デプロイで、Chrome実体・実機相当操作・60〜80分人手通し・production計測が未完了である。座標ベースのPython監査は構造不整合の検出には使ったが、プレイ時間や探索密度の実測の代替ではない。
 
 したがってP12.1の暫定判定は **P12 NO-GO / REVISION REQUIRED**。P13は、候補を公開環境で再検証し、密度・導線・スマホUXを修正してから開始する。

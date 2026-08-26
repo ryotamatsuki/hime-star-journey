@@ -144,4 +144,4 @@ https://ryotamatsuki.github.io/hime-star-journey/
 
 P10最終CI #84（P7起動フレークの失敗ジョブ再実行後）は `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9/P10実Chrome回帰、Pages deployをすべてPASSしています。GitHub Pages本番QAではtitle、新規開始、道後到達、手帳のpointer操作、ミュート、閉じる、reload後のContinueを確認しました。P12 Chrome CI #95ではP7〜P12を全てPASSしています。
 
-P12ではruntime codeを追加し、P10 Release GateをPrologue回帰基準として維持しました。P12の探索KPIは、手動計測で確定するまで条件付き判定として扱います。
+P12ではruntime codeを追加し、P10 Release GateをPrologue回帰基準として維持しました。P12.1ではActions #100/#102で見つかった導線不整合を修正中です。P12.1候補のChrome CI、60〜80分の人手通し、探索KPI、スマホ実操作、production QAが完了するまで、最終判定は **P12 NO-GO / REVISION REQUIRED** とします。

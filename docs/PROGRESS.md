@@ -7,12 +7,12 @@
 - P12.1作業branch: `feature/p12-1-shimanami-final-validation`
 - P11では大規模runtime実装を行わず、完成版本編の構造・探索・成長・戦闘・物語・愛媛20市町・技術基盤を設計した。
 - P1〜P10で完成したMVPは削除せず、完成版の **Prologue「はじめての星めぐり」** として維持する。
-- P12 Chrome CI run #95は、P12.1変更前のmain由来critical pathとして参照する。P12.1作業環境ではChrome実体がなく、同コマンドを再実行できなかった。
+- P12 Chrome CI run #95は、P12.1変更前のmain由来critical pathとして参照する。P12.1ではActions #100/#102の失敗原因を切り分け、候補修正を追加したが、作業環境にはChrome実体がなく、最新候補をローカル再実行できない。
 - P12.1で本番背景6枚、敵3種、Boss、NPC、Area単位lazy asset loading、walkable/collision、風battle rule、風のコンパス報酬、上島の風壁ゲート、スマホsafe-area修正を実装した。
 - 60〜80分人手通し、discovery中央値、60秒超区間、checkpoint/autosave、production branch QA、iOS/Android実操作は未完了。したがって最終判定は **P12 NO-GO / REVISION REQUIRED** とし、P13を開始しない。
-- 次の必須作業: PR CI（Chrome/Pages）再実行、公開候補で通常プレイ、3役以上の手動ログ統合、KPI計算、必要なマップ密度修正。
+- 次の必須作業: 最新候補のP7〜P12 Chrome CI再実行、公開候補で通常プレイ、3役以上の手動ログ統合、KPI計算、必要なマップ密度修正。
 - P10 runtime Release Gateは引き続きPrologue回帰基準として維持する。
-- 最終更新日: 2026-08-26
+- 最終更新日: 2026-08-27
 
 ## P12.1 現時点の実装・判定
 
@@ -23,12 +23,15 @@
 - 風車、帆パズル、景勝点、星のかけら、上島の風守、風の近道をruntimeへ統合した。
 - `風よみ`取得後の風道・風車変化、風battle rule、風のコンパス報酬、上島の物理的な風壁ゲートを追加した。
 - A2のwalkable polygonとcollisionRectsを画像構図に合わせ、Pythonのオブジェクト中心サンプルは6/6 Areaで歩行域内、guide path全点も0件の歩行域外へ修正した。
+- `maps:validate`へA2全域の開始地点、敵コライダー、主要object中心、guide pathのプレイヤーコライダー監査を追加した。
 - core assetとP12 Area assetを分離し、P12入場時は現在Areaに必要な背景・敵・NPCだけを遅延ロードする形へ変更した。
 - 390px横画面のsafe-area、手帳幅、星地図の縦はみ出し、Battle 6-cardの最小可読性を修正した。
+- 戦闘前の安全な復帰位置、勝利時即時保存、route選択／必須敵の進行ゲート、P12 area／battle／Boss／autosave／checkpoint／reloadイベントログを追加した。
+- A2-0〜A2-4の任意敵をcritical guide pathから退避し、A2-4は風の近道→A2-E03→風の灯台の順になるよう調整した。
 
 ### 未成立のHard Gate
 
-- 実ブラウザChrome/Chromiumが実行環境にないため、P12.1候補のP7〜P12 browser verifierは未再実行。
+- 実ブラウザChrome/Chromiumが実行環境にないため、P12.1最新候補のP7〜P12 browser verifierは未再実行。Actions #102はA2-4の任意／必須敵導線不整合で失敗した。
 - GitHub Pages公開URLはP12.1 branch未デプロイのため、production候補の画像・ロード・404・consoleを未確認。
 - 3役のsub-agent監査は実施したが、実人間の60〜80分通しプレイではない。探索時間・discovery中央値・longest empty walk・battle/Boss時間は未計測。
 - iOS Safari相当／Android Chrome相当の実操作、safe-area、joystick疲労、BossとUIの重なりは未計測。

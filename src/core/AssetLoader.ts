@@ -117,6 +117,35 @@ export class AssetLoader {
     this.drawFallback(ctx, x, y, width, height, label);
   }
 
+  drawImageContain(
+    ctx: CanvasRenderingContext2D,
+    assetId: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    label = assetId
+  ): void {
+    const image = this.getImage(assetId);
+
+    if (!image || image.naturalWidth <= 0 || image.naturalHeight <= 0) {
+      this.drawFallback(ctx, x, y, width, height, label);
+      return;
+    }
+
+    const sourceAspect = image.naturalWidth / image.naturalHeight;
+    const boxAspect = width / height;
+    const drawWidth = sourceAspect > boxAspect ? width : height * sourceAspect;
+    const drawHeight = sourceAspect > boxAspect ? width / sourceAspect : height;
+    ctx.drawImage(
+      image,
+      x + (width - drawWidth) / 2,
+      y + height - drawHeight,
+      drawWidth,
+      drawHeight
+    );
+  }
+
   private loadImage(definition: ImageAssetDefinition): Promise<void> {
     const image = new Image();
     const resolvedSrc = resolvePublicAssetPath(definition.src);

@@ -1,5 +1,28 @@
 import type { ScreenId } from "./game";
 
+export type P12TelemetryEventType =
+  | "area_enter"
+  | "area_exit"
+  | "discovery"
+  | "route_choice"
+  | "reward"
+  | "checkpoint"
+  | "save_write"
+  | "reload"
+  | "battle_start"
+  | "battle_end"
+  | "boss_start"
+  | "boss_end";
+
+export type P12TelemetryEvent = {
+  type: P12TelemetryEventType;
+  id: string;
+  areaId: string;
+  elapsedMs: number;
+  durationMs?: number;
+  outcome?: "victory" | "defeat";
+};
+
 export type SaveData = {
   version: string;
   currentChapterId: string;
@@ -55,4 +78,13 @@ export type SaveData = {
   p12AreaEnterElapsedMs?: number[];
   p12BattleDurationsMs?: number[];
   p12BattleKinds?: Array<"normal" | "boss">;
+  /** Last safe field position for Continue and battle recovery. */
+  playerPosition?: {
+    x: number;
+    y: number;
+  };
+  /** Whether the star map was opened from an active exploration screen. */
+  starMapReturnScreenId?: "explore" | "title";
+  /** Append-only P12 event evidence used to reconcile manual KPI logs. */
+  p12EventLog?: P12TelemetryEvent[];
 };

@@ -22,7 +22,7 @@ import {
 } from "../systems/BattleSystem";
 import type { BattleActor, BattleCardData, BattleStartParams, BattleState, CardId } from "../types/battle";
 import type { GameScreen, ScreenId } from "../types/game";
-import type { SaveData } from "../types/save";
+import type { P12TelemetryEvent, SaveData } from "../types/save";
 
 type BattleScreenOptions = {
   uiRoot: HTMLElement;
@@ -74,6 +74,8 @@ export class BattleScreen implements GameScreen {
   private elapsedMs = 0;
   private enemyTurnDelayMs = 0;
   private visualEffect: BattleVisualEffect | null = null;
+  private victorySaveData: SaveData | null = null;
+  private defeatSaveData: SaveData | null = null;
   private canvasWidth = BASE_WIDTH;
   private canvasHeight = BASE_HEIGHT;
   private readonly screenShake = new ScreenShake();
@@ -89,10 +91,13 @@ export class BattleScreen implements GameScreen {
           encounterId: typedParams.encounterId,
           returnLocationId: typedParams.returnLocationId,
           returnAreaId: typedParams.returnAreaId,
-          isBoss: typedParams.isBoss
+          isBoss: typedParams.isBoss,
+          returnPlayerPosition: typedParams.returnPlayerPosition
         }
       : null;
     this.elapsedMs = 0;
+    this.victorySaveData = null;
+    this.defeatSaveData = null;
 
     const encounter = this.battleParams ? getEncounterById(this.battleParams.encounterId) : undefined;
     if (!this.saveData || !this.battleParams || !encounter) {
@@ -283,15 +288,27 @@ export class BattleScreen implements GameScreen {
         ? Math.sin(this.elapsedMs / 420 + layout.x * 0.01) * this.toScreenHeight(4)
         : Math.sin(this.elapsedMs / 760) * this.toScreenHeight(3);
 
-    this.options.assetLoader.drawImageOrFallback(
-      ctx,
-      actor.assetId ?? actor.characterId,
-      x,
-      y + floatOffset,
-      width,
-      height,
-      actor.name
-    );
+    if (isEnemy) {
+      this.options.assetLoader.drawImageContain(
+        ctx,
+        actor.assetId ?? actor.characterId,
+        x,
+        y + floatOffset,
+        width,
+        height,
+        actor.name
+      );
+    } else {
+      this.options.assetLoader.drawImageOrFallback(
+        ctx,
+        actor.assetId ?? actor.characterId,
+        x,
+        y + floatOffset,
+        width,
+        height,
+        actor.name
+      );
+    }
     ctx.restore();
 
     if (isEnemy && this.battleState?.phase === "targetSelect" && !isDefeated) {
@@ -701,6 +718,7 @@ export class BattleScreen implements GameScreen {
     if (isBattleVictory(this.battleState)) {
       this.battleState = { ...this.battleState, phase: "victory" };
       this.messages = [...this.messages, "敵はすべてしずまりました。"];
+      this.saveVictoryResult();
     } else if (this.battleState.phase === "enemyAction") {
       this.enemyTurnDelayMs = 720;
     }
@@ -746,10 +764,23 @@ export class BattleScreen implements GameScreen {
   }
 
   private completeVictory(): void {
-    if (!this.saveData || !this.battleParams || !this.battleState) {
+    const nextSave = this.saveVictoryResult();
+    if (!nextSave || !this.battleParams) {
       this.returnToExploreAfterDefeat();
       return;
     }
+
+    this.options.screenManager.change("explore", {
+      saveData: nextSave,
+      locationId: this.battleParams.returnLocationId,
+      areaId: this.battleParams.returnAreaId,
+      playerPosition: this.battleParams.returnPlayerPosition
+    });
+  }
+
+  private saveVictoryResult(): SaveData | null {
+    if (this.victorySaveData) return this.victorySaveData;
+    if (!this.saveData || !this.battleParams || !this.battleState) return null;
 
     const hime = getPartyLeader(this.battleState);
     const symbol = getEnemySymbolById(this.battleParams.enemySymbolId);
@@ -765,7 +796,9 @@ export class BattleScreen implements GameScreen {
         ? [...this.saveData.openedPaths, symbol.openedPathFlag]
         : this.saveData.openedPaths;
 
-    const nextSave = this.options.saveManager.save({
+    const isP12Battle = this.battleParams.returnLocationId === "shimanami";
+    const battleElapsedMs = Math.round(this.elapsedMs);
+    const nextSave = this.options.saveManager.save(this.appendP12Event({
       ...this.saveData,
       currentScreenId: "explore",
       currentLocationId: this.battleParams.returnLocationId,
@@ -777,24 +810,42 @@ export class BattleScreen implements GameScreen {
       ),
       defeatedEnemyIds,
       openedPaths,
-      p12BattleDurationsMs: this.battleParams.returnLocationId === "shimanami"
-        ? [...(this.saveData.p12BattleDurationsMs ?? []), Math.round(this.elapsedMs)]
+      playerPosition: this.battleParams.returnPlayerPosition,
+      p12SessionElapsedMs: isP12Battle
+        ? Math.max(0, Math.round(this.saveData.p12SessionElapsedMs ?? 0) + battleElapsedMs)
+        : this.saveData.p12SessionElapsedMs,
+      p12BattleDurationsMs: isP12Battle
+        ? [...(this.saveData.p12BattleDurationsMs ?? []), battleElapsedMs]
         : this.saveData.p12BattleDurationsMs,
-      p12BattleKinds: this.battleParams.returnLocationId === "shimanami"
+      p12BattleKinds: isP12Battle
         ? [...(this.saveData.p12BattleKinds ?? []), this.battleParams.isBoss ? "boss" : "normal"]
         : this.saveData.p12BattleKinds,
       flags,
       lastSynopsis: `${symbol?.label ?? "敵"}をしずめました。星の力が少し戻りました。`
-    });
-
-    this.options.screenManager.change("explore", {
-      saveData: nextSave,
-      locationId: this.battleParams.returnLocationId,
-      areaId: this.battleParams.returnAreaId
-    });
+    }, {
+      type: this.battleParams.isBoss ? "boss_end" : "battle_end",
+      id: this.battleParams.enemySymbolId,
+      areaId: this.battleParams.returnAreaId,
+      elapsedMs: Math.max(0, Math.round(this.saveData.p12SessionElapsedMs ?? 0) + (isP12Battle ? battleElapsedMs : 0)),
+      durationMs: battleElapsedMs,
+      outcome: "victory"
+    }));
+    this.saveData = nextSave;
+    this.victorySaveData = nextSave;
+    return nextSave;
   }
 
   private returnToExploreAfterDefeat(): void {
+    const savedDefeat = this.saveDefeatResult();
+    if (savedDefeat && this.battleParams) {
+      this.options.screenManager.change("explore", {
+        saveData: savedDefeat,
+        locationId: this.battleParams.returnLocationId,
+        areaId: this.battleParams.returnAreaId
+      });
+      return;
+    }
+
     const saveData = this.saveData ?? this.options.saveManager.createInitialSaveData();
     const returnLocationId = this.battleParams?.returnLocationId ?? saveData.currentLocationId ?? "dogo";
     const returnAreaId = this.battleParams?.returnAreaId ?? saveData.currentAreaId ?? "D0";
@@ -814,6 +865,45 @@ export class BattleScreen implements GameScreen {
       locationId: returnLocationId,
       areaId: returnAreaId
     });
+  }
+
+  private saveDefeatResult(): SaveData | null {
+    if (this.defeatSaveData) return this.defeatSaveData;
+    if (!this.saveData || !this.battleParams) return null;
+
+    const isP12Battle = this.battleParams.returnLocationId === "shimanami";
+    const battleElapsedMs = Math.round(this.elapsedMs);
+    const nextSave = this.options.saveManager.save(this.appendP12Event({
+      ...this.saveData,
+      currentScreenId: "explore",
+      currentLocationId: this.battleParams.returnLocationId,
+      currentAreaId: this.battleParams.returnAreaId,
+      playerPosition: undefined,
+      hp: this.saveData.maxHp,
+      mp: Math.max(this.saveData.mp, Math.min(this.saveData.maxMp, 4)),
+      p12SessionElapsedMs: isP12Battle
+        ? Math.max(0, Math.round(this.saveData.p12SessionElapsedMs ?? 0) + battleElapsedMs)
+        : this.saveData.p12SessionElapsedMs,
+      lastSynopsis: "ひめは探索地点へ戻りました。"
+    }, {
+      type: this.battleParams.isBoss ? "boss_end" : "battle_end",
+      id: this.battleParams.enemySymbolId,
+      areaId: this.battleParams.returnAreaId,
+      elapsedMs: Math.max(0, Math.round(this.saveData.p12SessionElapsedMs ?? 0) + (isP12Battle ? battleElapsedMs : 0)),
+      durationMs: battleElapsedMs,
+      outcome: "defeat"
+    }));
+    this.saveData = nextSave;
+    this.defeatSaveData = nextSave;
+    return nextSave;
+  }
+
+  private appendP12Event(save: SaveData, event: P12TelemetryEvent): SaveData {
+    if (this.battleParams?.returnLocationId !== "shimanami") return save;
+    return {
+      ...save,
+      p12EventLog: [...(save.p12EventLog ?? []), event]
+    };
   }
 
   private startVisualEffect(effect?: { kind: BattleVisualEffect["kind"]; sourceInstanceId: string; targetInstanceId: string }): void {

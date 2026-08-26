@@ -6,29 +6,30 @@
   "worldWidth": 1920,
   "worldHeight": 1080,
   "backgroundAssetId": "bg_shimanami_A2_3_watchtower",
-  "playerStart": { "x": 260, "y": 540 },
+  "playerStart": { "x": 260, "y": 850 },
   "cameraBounds": { "id": "camera_shimanami_A2_3", "x": 0, "y": 0, "width": 1920, "height": 1080 },
   "walkableRects": [],
   "walkablePolygons": [
-    { "id": "shimanami_A2_3_watchtower_platform", "points": [{ "x": 120, "y": 430 }, { "x": 680, "y": 430 }, { "x": 680, "y": 350 }, { "x": 1220, "y": 350 }, { "x": 1220, "y": 450 }, { "x": 1700, "y": 450 }, { "x": 1700, "y": 680 }, { "x": 1220, "y": 680 }, { "x": 1220, "y": 720 }, { "x": 680, "y": 720 }, { "x": 680, "y": 650 }, { "x": 120, "y": 650 }] }
+    { "id": "shimanami_A2_3_watchtower_terrace", "points": [{ "x": 120, "y": 700 }, { "x": 480, "y": 680 }, { "x": 820, "y": 680 }, { "x": 1180, "y": 680 }, { "x": 1500, "y": 700 }, { "x": 1700, "y": 760 }, { "x": 1700, "y": 1000 }, { "x": 1450, "y": 1040 }, { "x": 420, "y": 1040 }, { "x": 220, "y": 960 }, { "x": 120, "y": 860 }] },
+    { "id": "shimanami_A2_3_watchtower_stairs", "points": [{ "x": 1040, "y": 500 }, { "x": 1480, "y": 500 }, { "x": 1600, "y": 700 }, { "x": 1400, "y": 760 }, { "x": 1180, "y": 720 }, { "x": 1040, "y": 680 }] }
   ],
   "collisionRects": [
-    { "id": "shimanami_A2_3_watchtower_base", "x": 820, "y": 230, "width": 240, "height": 150, "label": "見張り台の基部" }
+    { "id": "shimanami_A2_3_watchtower_base", "x": 1230, "y": 180, "width": 260, "height": 260, "label": "見張り台の基部" }
   ],
   "guidePaths": [
-    { "id": "shimanami_A2_3_watchtower_path", "label": "風を読む台地", "points": [{ "x": 260, "y": 540 }, { "x": 620, "y": 540 }, { "x": 1120, "y": 540 }, { "x": 1600, "y": 540 }] }
+    { "id": "shimanami_A2_3_watchtower_path", "label": "風を読む台地", "points": [{ "x": 260, "y": 850 }, { "x": 520, "y": 850 }, { "x": 900, "y": 850 }, { "x": 1280, "y": 720 }, { "x": 1540, "y": 680 }] }
   ],
   "enemySpawns": [
-    { "id": "A2-E07", "x": 1420, "y": 620, "label": "しおガニ" }
+    { "id": "A2-E07", "x": 1000, "y": 960, "label": "しおガニ" }
   ],
   "npcPositions": [
-    { "id": "npc_p12_watchkeeper", "x": 420, "y": 540, "label": "見張り台の子" }
+    { "id": "npc_p12_watchkeeper", "x": 420, "y": 850, "label": "見張り台の子" }
   ],
   "interactablePositions": [
-    { "id": "p12_wind_memory", "x": 620, "y": 540, "width": 112, "height": 96, "label": "風よみの星" },
-    { "id": "p12_windmill", "x": 1120, "y": 540, "width": 112, "height": 116, "label": "見張り台の風車" },
-    { "id": "p12_watchtower_scenic", "x": 1340, "y": 520, "width": 112, "height": 92, "label": "海城の景勝点" },
-    { "id": "p12_watchtower_to_island", "x": 1600, "y": 540, "width": 120, "height": 92, "label": "上島への道" }
+    { "id": "p12_wind_memory", "x": 360, "y": 780, "width": 112, "height": 96, "label": "風よみの星" },
+    { "id": "p12_windmill", "x": 1420, "y": 620, "width": 112, "height": 116, "label": "見張り台の風車" },
+    { "id": "p12_watchtower_scenic", "x": 1180, "y": 620, "width": 112, "height": 92, "label": "海城の景勝点" },
+    { "id": "p12_watchtower_to_island", "x": 1510, "y": 620, "width": 120, "height": 92, "label": "上島への道" }
   ],
   "eventPositions": [],
   "markers": [

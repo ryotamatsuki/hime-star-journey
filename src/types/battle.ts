@@ -102,4 +102,9 @@ export type BattleStartParams = {
   returnLocationId: string;
   returnAreaId: string;
   isBoss: boolean;
+  /** Safe exploration position captured before the encounter starts. */
+  returnPlayerPosition?: {
+    x: number;
+    y: number;
+  };
 };

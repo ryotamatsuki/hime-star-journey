@@ -217,3 +217,19 @@ walkable polygon、collisionRects、guide pathは画像上の道へ合わせ、`
 
 **開始SHA**: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`
 **Branch**: `feature/p12-1-shimanami-final-validation`
+
+### DEC-P12.1-02 背景の地面をwalkableの正本にする
+
+P12.1の本番背景を座標グリッドと重ねて確認した結果、旧geometryには海面・空・建物を歩行可能として扱う箇所があった。A2-0〜A2-5の `playerStart`、walkable polygon、guide path、collision rectangle、敵・NPC・interactableの主要位置を、背景上の港の舗装、橋道、集落の石道、見張り台のテラス、上島の島道、灯台広場へ再配置する。
+
+上島では、任意敵をguide pathから外し、`風の近道`を開く前だけ風壁collisionを残す。必須敵とportalは、選択route・必要flag・必須敵撃破の順序をruntimeで強制する。
+
+**理由**: static schema validationだけでは、見た目の地面と実際の歩行領域のずれを検出できないため。背景とgeometryの対応を、P12.1のvisual completionの必須条件とする。
+
+### DEC-P12.1-03 戦闘復帰と検証telemetryを実プレイに近づける
+
+戦闘開始時に安全な復帰位置を保存し、勝利結果は勝利入力直後に保存する。P12 telemetryにはarea enter/exit、発見、route choice、checkpoint、save、reload、battle start/end、Boss start/endを記録する。browser verifierは想定外のbattleを移動完了と扱わず、必要なbattle・Boss・autosaveイベントをfail-closedで確認する。
+
+ただしbrowser verifierは通常操作の代替ではなく、keyboard eventとDOM buttonを使う契約検証である。60〜80分の人手通し、実機smartphone、production load/performanceは別Hard Gateとして残す。
+
+**現時点の判定**: geometry/runtime修正候補を追加した段階であり、Chrome CI再実行と人手Hard Gateが未完了のため、正式判定は引き続き **P12 NO-GO / REVISION REQUIRED** とする。

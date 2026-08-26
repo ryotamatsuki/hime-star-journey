@@ -1,5 +1,5 @@
 import type { ScreenId } from "../types/game";
-import type { SaveData } from "../types/save";
+import type { P12TelemetryEvent, P12TelemetryEventType, SaveData } from "../types/save";
 
 export const SAVE_KEY = "hime_star_journey_mvp_save_v1";
 const SAVE_VERSION = "0.3.0";
@@ -36,6 +36,40 @@ const nonNegativeNumberArray = (value: unknown): number[] =>
     : [];
 const screenId = (value: unknown, fallback: ScreenId): ScreenId =>
   typeof value === "string" && VALID_SCREEN_IDS.has(value as ScreenId) ? value as ScreenId : fallback;
+const P12_EVENT_TYPES = new Set<P12TelemetryEventType>([
+  "area_enter", "area_exit", "discovery", "route_choice", "reward", "checkpoint",
+  "save_write", "reload", "battle_start", "battle_end", "boss_start", "boss_end"
+]);
+
+const p12EventLog = (value: unknown): P12TelemetryEvent[] => {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+    const source = item as Record<string, unknown>;
+    const type = source.type;
+    const id = source.id;
+    const areaId = source.areaId;
+    const elapsedMs = source.elapsedMs;
+    if (
+      typeof type !== "string" || !P12_EVENT_TYPES.has(type as P12TelemetryEventType)
+      || typeof id !== "string" || id.length === 0
+      || typeof areaId !== "string" || areaId.length === 0
+      || typeof elapsedMs !== "number" || !Number.isFinite(elapsedMs) || elapsedMs < 0
+    ) return [];
+    const durationMs = source.durationMs;
+    const outcome = source.outcome;
+    return [{
+      type: type as P12TelemetryEventType,
+      id,
+      areaId,
+      elapsedMs,
+      ...(typeof durationMs === "number" && Number.isFinite(durationMs) && durationMs >= 0
+        ? { durationMs }
+        : {}),
+      ...(outcome === "victory" || outcome === "defeat" ? { outcome } : {})
+    }];
+  });
+};
 
 export class SaveManager {
   constructor(private readonly saveKey: string = SAVE_KEY) {}
@@ -219,6 +253,13 @@ export class SaveManager {
     const hp = clamp(Math.floor(finiteNumber(source.hp, initial.hp)), 0, maxHp);
     const mp = clamp(Math.floor(finiteNumber(source.mp, initial.mp)), 0, maxMp);
     const sourceLocationId = finiteString(source.currentLocationId, initial.currentLocationId);
+    const sourcePlayerPosition = source.playerPosition;
+    const playerPosition = sourcePlayerPosition
+      && typeof sourcePlayerPosition === "object"
+      && Number.isFinite(sourcePlayerPosition.x)
+      && Number.isFinite(sourcePlayerPosition.y)
+      ? { x: sourcePlayerPosition.x, y: sourcePlayerPosition.y }
+      : undefined;
     return {
       ...initial,
       ...source,
@@ -265,7 +306,12 @@ export class SaveManager {
       p12AreaIds: stringArray(source.p12AreaIds),
       p12AreaEnterElapsedMs: nonNegativeNumberArray(source.p12AreaEnterElapsedMs),
       p12BattleDurationsMs: nonNegativeNumberArray(source.p12BattleDurationsMs),
-      p12BattleKinds: source.p12BattleKinds?.filter((kind): kind is "normal" | "boss" => kind === "normal" || kind === "boss") ?? []
+      p12BattleKinds: source.p12BattleKinds?.filter((kind): kind is "normal" | "boss" => kind === "normal" || kind === "boss") ?? [],
+      playerPosition,
+      starMapReturnScreenId: source.starMapReturnScreenId === "explore" || source.starMapReturnScreenId === "title"
+        ? source.starMapReturnScreenId
+        : undefined,
+      p12EventLog: p12EventLog(source.p12EventLog)
     };
   }
 }

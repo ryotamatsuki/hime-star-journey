@@ -133,6 +133,7 @@ async function inspect(label: string): Promise<void> {
 
 async function fightEnemy(symbolId: string, label: string, boss = false): Promise<void> {
   await waitFor(() => Boolean(document.querySelector(".battle-ui")), `${label} battle screen`);
+  assert(new SaveManager(SAVE_KEY).load()?.currentScreenId === "battle", `${label}開始時に戦闘再開地点を保存する`);
   assert(bodyText().includes("カードを選んで"), `${label}にカード選択UIを表示する`);
   assert(bodyText().includes("風："), `${label}にしまなみの風ruleを表示する`);
   let sealUses = 0;
@@ -181,6 +182,10 @@ async function fightEnemy(symbolId: string, label: string, boss = false): Promis
   await waitFor(() => Boolean(document.querySelector(".explore-ui")), `${label} battle return`, 14000);
   const save = new SaveManager(SAVE_KEY).load();
   assert(save?.defeatedEnemyIds.includes(symbolId), `${label}の勝利結果をセーブする`);
+  if (symbolId === "A2-E03") {
+    const returned = playerPosition();
+    assert(Boolean(returned && returned.x > 1300), "上島の必須敵戦後に戦闘地点付近へ安全復帰する");
+  }
 }
 
 function p12Fixture(manager: SaveManager): SaveData {
@@ -229,50 +234,51 @@ async function verify(): Promise<void> {
   assert(Boolean(button("シロ検索")), "探索UIにシロ検索を表示する");
   await finishDialogue();
 
-  await moveTo({ x: 760, y: 800 }, "橋道の入口");
+  await moveTo({ x: 1140, y: 766 }, "橋道の入口");
   await inspect("橋道の入口");
   await waitFor(() => bodyText().includes("現在地：来島の橋道"), "橋道へのエリア遷移");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_route_bridge === true, "Hubで橋道ルートを選択して保存する");
 
-  await moveTo({ x: 570, y: 540 }, "橋の記憶");
+  await moveTo({ x: 576, y: 806 }, "橋の記憶");
   await inspect("橋の記憶");
   assert(bodyText().includes("橋の欄干") || new SaveManager(SAVE_KEY).load()?.flags.p12_discovery_bridge_memory === true, "橋の記憶を発見する");
-  await moveTo({ x: 700, y: 520 }, "帆の向き合わせ");
+  await moveTo({ x: 816, y: 696 }, "帆の向き合わせ");
   await inspect("帆の向き合わせ");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_bridge_sail_aligned === true, "橋道の風パズルを保存する");
-  await moveTo({ x: 920, y: 540 }, "かぜぬすみ", 34, true);
+  await moveTo({ x: 1050, y: 600 }, "かぜぬすみ", 34, true);
   await fightEnemy("A2-E01", "かぜぬすみ");
-  await moveTo({ x: 1560, y: 540 }, "見張り台への道");
+  await moveTo({ x: 1300, y: 600 }, "橋道の出口へ戻る");
+  await moveTo({ x: 1640, y: 666 }, "見張り台への道");
   await inspect("見張り台への道");
   await waitFor(() => bodyText().includes("現在地：海城の見張り台"), "見張り台へのエリア遷移");
 
-  await moveTo({ x: 1120, y: 540 }, "風よみ前の風車");
+  await moveTo({ x: 1476, y: 678 }, "風よみ前の風車");
   await inspect("見張り台の風車");
   assert(bodyText().includes("風車は止まっている"), "風よみ前の風車が停止していることを確認する");
-  await moveTo({ x: 620, y: 540 }, "風よみの星");
+  await moveTo({ x: 416, y: 828 }, "風よみの星");
   await inspect("風よみの星");
   let save = new SaveManager(SAVE_KEY).load();
   assert(save?.flags.p12_wind_ability === true, "風よみの取得をセーブする");
-  await moveTo({ x: 1120, y: 540 }, "風よみ後の同じ風車");
+  await moveTo({ x: 1476, y: 678 }, "風よみ後の同じ風車");
   await inspect("見張り台の風車");
   save = new SaveManager(SAVE_KEY).load();
   assert(save?.flags.p12_windmill_revisited === true, "風よみ後に同じ風車を再訪する");
   assert(bodyText().includes("違う音"), "同じ風車の反応が風よみ前後で変化する");
-  await moveTo({ x: 1600, y: 540 }, "上島への道");
+  await moveTo({ x: 1570, y: 666 }, "上島への道");
   await inspect("上島への道");
   await waitFor(() => bodyText().includes("現在地：上島の島道"), "上島へのエリア遷移");
 
-  await moveTo({ x: 560, y: 520 }, "上島の記憶");
+  await moveTo({ x: 820, y: 820 }, "上島の記憶");
   await inspect("上島の記憶");
-  await moveTo({ x: 1260, y: 520 }, "風の近道");
+  await moveTo({ x: 1230, y: 820 }, "風の近道");
   await inspect("風の近道");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_kamijima_shortcut_open === true, "風の近道を開く");
-  await moveTo({ x: 1440, y: 540 }, "くろほガモメ", 34, true);
+  await moveTo({ x: 1500, y: 850 }, "くろほガモメ", 34, true);
   await fightEnemy("A2-E03", "くろほガモメ");
-  await moveTo({ x: 1600, y: 540 }, "風の灯台への道");
+  await moveTo({ x: 1690, y: 850 }, "風の灯台への道");
   await inspect("風の灯台への道");
   await waitFor(() => bodyText().includes("現在地：風の灯台"), "Boss空間へのエリア遷移");
-  await moveTo({ x: 1030, y: 560 }, "しまかぜ大だこ", 34, true);
+  await moveTo({ x: 1050, y: 820 }, "しまかぜ大だこ", 34, true);
   await fightEnemy("A2-B01", "しまかぜ大だこ", true);
 
   save = new SaveManager(SAVE_KEY).load();
@@ -283,6 +289,11 @@ async function verify(): Promise<void> {
   assert(p12DiscoveryCount(save as SaveData) >= 5, "P12の意味ある発見を5件以上記録する");
   assert((save?.p12CheckpointIds ?? []).length >= 3, "Hub／分岐／見張り台／上島のチェックポイントを記録する");
   assert((save?.p12DiscoveryIntervalsMs ?? []).every((interval) => interval >= 0), "発見間隔メトリクスを非負で保存する");
+  assert((save?.p12EventLog ?? []).some((event) => event.type === "battle_start" && event.id === "A2-E01"), "P12通常戦の開始イベントを記録する");
+  assert((save?.p12EventLog ?? []).some((event) => event.type === "battle_end" && event.id === "A2-E03" && event.outcome === "victory"), "P12通常戦の終了イベントを記録する");
+  assert((save?.p12EventLog ?? []).some((event) => event.type === "boss_start" && event.id === "A2-B01"), "P12 Boss開始イベントを記録する");
+  assert((save?.p12EventLog ?? []).some((event) => event.type === "boss_end" && event.id === "A2-B01" && event.outcome === "victory"), "P12 Boss終了イベントを記録する");
+  assert((save?.p12EventLog ?? []).some((event) => event.type === "save_write" && event.id === "autosave"), "P12 autosaveイベントを記録する");
   assert(runtimeErrors.length === 0, `P12通しプレイ中のランタイムエラーがない（${runtimeErrors.join(" / ")}）`);
 }
 

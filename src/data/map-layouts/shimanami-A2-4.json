@@ -6,29 +6,30 @@
   "worldWidth": 1920,
   "worldHeight": 1080,
   "backgroundAssetId": "bg_shimanami_A2_4_kamijima_path",
-  "playerStart": { "x": 260, "y": 540 },
+  "playerStart": { "x": 700, "y": 1000 },
   "cameraBounds": { "id": "camera_shimanami_A2_4", "x": 0, "y": 0, "width": 1920, "height": 1080 },
   "walkableRects": [],
   "walkablePolygons": [
-    { "id": "shimanami_A2_4_kamijima_road", "points": [{ "x": 120, "y": 430 }, { "x": 600, "y": 420 }, { "x": 900, "y": 450 }, { "x": 1250, "y": 450 }, { "x": 1700, "y": 430 }, { "x": 1700, "y": 680 }, { "x": 1250, "y": 700 }, { "x": 900, "y": 720 }, { "x": 600, "y": 690 }, { "x": 120, "y": 680 }] }
+    { "id": "shimanami_A2_4_kamijima_road", "points": [{ "x": 500, "y": 1080 }, { "x": 930, "y": 1080 }, { "x": 930, "y": 940 }, { "x": 1000, "y": 820 }, { "x": 1040, "y": 700 }, { "x": 1100, "y": 580 }, { "x": 1040, "y": 500 }, { "x": 900, "y": 560 }, { "x": 820, "y": 700 }, { "x": 760, "y": 850 }, { "x": 450, "y": 980 }] },
+    { "id": "shimanami_A2_4_kamijima_branch", "points": [{ "x": 900, "y": 800 }, { "x": 1180, "y": 760 }, { "x": 1440, "y": 760 }, { "x": 1740, "y": 800 }, { "x": 1780, "y": 940 }, { "x": 1500, "y": 980 }, { "x": 1240, "y": 940 }, { "x": 1000, "y": 930 }] }
   ],
   "collisionRects": [
-    { "id": "shimanami_A2_4_citrus_grove", "x": 870, "y": 160, "width": 280, "height": 160, "label": "柑橘畑" }
+    { "id": "shimanami_A2_4_citrus_grove", "x": 120, "y": 80, "width": 420, "height": 250, "label": "柑橘畑" }
   ],
   "guidePaths": [
-    { "id": "shimanami_A2_4_kamijima_path", "label": "上島を横切る道", "points": [{ "x": 260, "y": 540 }, { "x": 560, "y": 520 }, { "x": 940, "y": 560 }, { "x": 1360, "y": 540 }, { "x": 1600, "y": 540 }] }
+    { "id": "shimanami_A2_4_kamijima_path", "label": "上島を横切る道", "points": [{ "x": 700, "y": 1000 }, { "x": 820, "y": 850 }, { "x": 900, "y": 700 }, { "x": 950, "y": 850 }, { "x": 1230, "y": 800 }, { "x": 1500, "y": 850 }, { "x": 1690, "y": 850 }] }
   ],
   "enemySpawns": [
-    { "id": "A2-E03", "x": 1440, "y": 540, "label": "くろほガモメ" },
-    { "id": "A2-E08", "x": 720, "y": 650, "label": "かぜぬすみ" }
+    { "id": "A2-E03", "x": 1500, "y": 850, "label": "くろほガモメ" },
+    { "id": "A2-E08", "x": 700, "y": 920, "label": "かぜぬすみ" }
   ],
   "npcPositions": [
-    { "id": "npc_p12_kamijima_guide", "x": 420, "y": 540, "label": "上島の風守" }
+    { "id": "npc_p12_kamijima_guide", "x": 760, "y": 900, "label": "上島の風守" }
   ],
   "interactablePositions": [
-    { "id": "p12_kamijima_discovery", "x": 560, "y": 520, "width": 112, "height": 92, "label": "上島の記憶" },
-    { "id": "p12_kamijima_shortcut", "x": 1260, "y": 520, "width": 112, "height": 92, "label": "風の近道" },
-    { "id": "p12_kamijima_to_boss", "x": 1600, "y": 540, "width": 120, "height": 92, "label": "風の灯台への道" }
+    { "id": "p12_kamijima_discovery", "x": 760, "y": 780, "width": 112, "height": 92, "label": "上島の記憶" },
+    { "id": "p12_kamijima_shortcut", "x": 1170, "y": 760, "width": 112, "height": 92, "label": "風の近道" },
+    { "id": "p12_kamijima_to_boss", "x": 1630, "y": 800, "width": 120, "height": 92, "label": "風の灯台への道" }
   ],
   "eventPositions": [],
   "markers": [

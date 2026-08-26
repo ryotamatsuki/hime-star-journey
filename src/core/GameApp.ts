@@ -67,6 +67,7 @@ export class GameApp {
   async start(): Promise<void> {
     await this.assetLoader.loadManifest(coreAssetManifest);
     this.registerScreens();
+    this.recordP12ReloadIfNeeded();
     this.screenManager.change(this.options.initialScreenId ?? "title", this.options.initialParams);
     this.p9ExperienceController.start();
     this.gameLoop.start();
@@ -151,5 +152,26 @@ export class GameApp {
         assetLoader: this.assetLoader
       })
     );
+  }
+
+  private recordP12ReloadIfNeeded(): void {
+    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    if (navigation?.type !== "reload") return;
+
+    const save = this.saveManager.load();
+    if (!save || save.currentLocationId !== "shimanami") return;
+
+    this.saveManager.save({
+      ...save,
+      p12EventLog: [
+        ...(save.p12EventLog ?? []),
+        {
+          type: "reload",
+          id: "page_reload",
+          areaId: save.currentAreaId,
+          elapsedMs: Math.max(0, Math.round(save.p12SessionElapsedMs ?? 0))
+        }
+      ]
+    });
   }
 }

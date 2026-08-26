@@ -173,7 +173,11 @@ export class NotebookScreen implements GameScreen {
     panel.append(synopsis);
 
     const region = document.createElement("p");
-    const regionName = this.saveData.currentLocationId === "castle" ? "松山城" : "道後温泉";
+    const regionName = this.saveData.currentLocationId === "castle"
+      ? "松山城"
+      : this.saveData.currentLocationId === "shimanami"
+        ? "しまなみ"
+        : "道後温泉";
     region.textContent = `地域メモ: ${regionName} / ${this.saveData.currentAreaId}`;
     panel.append(region);
 

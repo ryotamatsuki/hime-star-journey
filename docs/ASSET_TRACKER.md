@@ -20,6 +20,19 @@ P4.5では会話枠・話者名・本文・次へボタンは画像生成せず�
 
 P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画像生成し直した。旧画像は参照キービジュアルに近く、UI・キャラクター・敵・カードを含んでいたため、`public/assets/generated/_backup/p5_1/dogo_battle_bg_before_p5_1.png` に退避した。新しい背景はBattleScreenで使用済み。
 
+## P12.1 しまなみ本番ビジュアル
+
+P12.1ではA2-0〜A2-5の本番背景6枚、しまなみ地域敵3種、Boss、NPCを `docs/asset-prompts/p12.1/manifest.json` とsource/provenance/SHA256付きで管理し、runtimeのArea単位lazy loadingへ接続した。画像単体の品質・寸法・SHA・404は候補版として確認済みだが、Chrome CI、実画面walkable/collision、60〜80分人手プレイ、smartphone、production QAが終わるまで最終完了扱いにしない。
+
+| ID群 | 用途 | 状態 | 接続先 / 備考 |
+|---|---|---|---|
+| `bg_shimanami_A2_0_port_hub` ～ `bg_shimanami_A2_5_wind_lighthouse` | しまなみA2背景6枚 | generated / connected / candidate-reviewed | ExploreScreen、しまなみBattleScreen。manifestのsource/runtime/SHA一致を確認。 |
+| `enemy_shimanami_wind_thief`, `enemy_shimanami_tide_crab`, `enemy_shimanami_gull` | 地域敵3種 | processed-transparent / connected / candidate-reviewed | Field enemy symbol、通常Battle。縦横比を保持して描画。 |
+| `boss_shimanami_octopus` | しまかぜ大だこ | processed-transparent / connected / candidate-reviewed | A2-5 field、Boss battle。Battle表示はcontain描画。 |
+| `npc_shimanami_keeper` | しまなみ案内NPC | processed-transparent / connected / candidate-reviewed | A2 NPC。現状は同一assetを各Subareaで使用。 |
+
+最終 visual pass、asset 404、console/runtime error、production loadはP12.1 Hard Gateの残件とする。
+
 ## P6 プロローグ・湯の星
 
 | ファイル群 | 用途 | 状態 | 接続先 |
@@ -132,5 +145,4 @@ P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画�
 ## 参照画像
 
 主要ビジュアル8枚は `docs/visual-reference/key-visuals/` に整理済み。これらは構図、色、UI密度の参照であり、Runtime Assetとして直接使用しない。P2方針変更後も上書きしていない。
-
 

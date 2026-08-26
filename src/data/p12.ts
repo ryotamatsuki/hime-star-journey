@@ -91,7 +91,10 @@ export function getP12AreaMeta(areaId: string): P12AreaMeta | undefined {
 
 export function p12RequiredEnemiesCleared(save: SaveData): boolean {
   const routeEnemyId = save.flags.p12_route_boat ? "A2-E02" : "A2-E01";
-  return [routeEnemyId, "A2-E03"].every((id) => save.defeatedEnemyIds.includes(id));
+  const defeated = (enemyId: string): boolean => save.defeatedEnemyIds.includes(enemyId)
+    || save.flags[`enemy_defeated_${enemyId}`] === true
+    || save.flags[`enemy_defeated_${enemyId.replace("-", "_")}`] === true;
+  return [routeEnemyId, "A2-E03"].every(defeated);
 }
 
 export function p12DiscoveryCount(save: SaveData): number {

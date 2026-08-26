@@ -25,6 +25,7 @@ type StarMapScreenOptions = {
 
 type StarMapScreenParams = {
   saveData?: SaveData;
+  returnScreenId?: "explore" | "title";
 };
 
 const NODE_RADIUS = 38;
@@ -43,6 +44,7 @@ export class StarMapScreen implements GameScreen {
   private selectedDescriptionElement: HTMLElement | null = null;
   private messageElement: HTMLElement | null = null;
   private saveButton: HTMLButtonElement | null = null;
+  private returnScreenId: "explore" | "title" = "title";
 
   constructor(private readonly options: StarMapScreenOptions) {}
 
@@ -56,6 +58,9 @@ export class StarMapScreen implements GameScreen {
       currentScreenId: "starMap",
       currentChapterId: "star_map"
     });
+    this.returnScreenId = typedParams?.returnScreenId
+      ?? nextSave.starMapReturnScreenId
+      ?? "title";
     this.elapsedTimeMs = 0;
     this.selectedNodeId = this.pickInitialNodeId();
     this.hoveredNodeId = null;
@@ -72,7 +77,7 @@ export class StarMapScreen implements GameScreen {
     this.elapsedTimeMs += deltaTime * 1000;
 
     if (this.options.inputManager.isActionStarted("cancel")) {
-      this.options.screenManager.change("title");
+      this.returnFromStarMap();
       return;
     }
 
@@ -167,8 +172,8 @@ export class StarMapScreen implements GameScreen {
     const backButton = document.createElement("button");
     backButton.className = "menu-button secondary-button";
     backButton.type = "button";
-    backButton.textContent = "タイトルへ戻る";
-    backButton.addEventListener("click", () => this.options.screenManager.change("title"));
+    backButton.textContent = this.returnScreenId === "explore" ? "探索へ戻る" : "タイトルへ戻る";
+    backButton.addEventListener("click", () => this.returnFromStarMap());
 
     actions.append(this.saveButton, backButton);
 
@@ -258,7 +263,9 @@ export class StarMapScreen implements GameScreen {
       ...this.saveData,
       currentScreenId: destination.screenId,
       currentLocationId: destination.locationId,
-      currentAreaId: destination.areaId
+      currentAreaId: destination.areaId,
+      playerPosition: undefined,
+      starMapReturnScreenId: undefined
     });
 
     this.options.screenManager.change(destination.screenId, {
@@ -279,6 +286,30 @@ export class StarMapScreen implements GameScreen {
     });
     this.message = "星地図の状態を保存しました。";
     this.updateUi();
+  }
+
+  private returnFromStarMap(): void {
+    if (!this.saveData || this.returnScreenId !== "explore") {
+      this.options.screenManager.change("title");
+      return;
+    }
+
+    const nextSave = this.options.saveManager.save({
+      ...this.saveData,
+      currentScreenId: "explore",
+      currentChapterId: this.saveData.currentLocationId === "shimanami"
+        ? `p12_${this.saveData.currentAreaId}`
+        : this.saveData.currentLocationId === "castle"
+          ? "castle_explore"
+          : "dogo_explore",
+      starMapReturnScreenId: undefined
+    });
+    this.options.screenManager.change("explore", {
+      saveData: nextSave,
+      locationId: nextSave.currentLocationId,
+      areaId: nextSave.currentAreaId,
+      playerPosition: nextSave.playerPosition
+    });
   }
 
   private drawCastleUnlockEffect(ctx: CanvasRenderingContext2D): void {

@@ -66,6 +66,7 @@ function validate(layout) {
     if ((pathData.points ?? []).length < 2) issues.push({ severity: "warning", message: `${pathData.id} は経路点が少なすぎます。` });
   }
   if (mapId === "dogo-D0") validateDogoWalkability(layout, issues);
+  if (layout.locationId === "shimanami") validateShimanamiWalkability(layout, issues);
   return issues.length > 0 ? issues : [{ severity: "ok", message: "マップレイアウト検証OK" }];
 }
 
@@ -93,6 +94,88 @@ function validateDogoWalkability(layout, issues) {
   };
   if (!isWalkableRect(playerCollider, layout)) {
     issues.push({ severity: "error", message: "Dogoのプレイヤー開始コライダーが歩行ポリゴン内に収まりません。" });
+  }
+}
+
+function validateShimanamiWalkability(layout, issues) {
+  const playerCollider = {
+    x: layout.playerStart.x - 21,
+    y: layout.playerStart.y - 18,
+    width: 42,
+    height: 28
+  };
+  if (!isWalkableRect(playerCollider, layout)) {
+    issues.push({ severity: "error", message: `${layout.areaId}のプレイヤー開始コライダーが歩行ポリゴン内に収まりません。` });
+  }
+
+  const enemyColliderOffsets = {
+    "A2-E01": { x: -26, y: -30, width: 52, height: 38 },
+    "A2-E02": { x: -28, y: -25, width: 56, height: 36 },
+    "A2-E03": { x: -24, y: -28, width: 48, height: 36 },
+    "A2-E04": { x: -28, y: -25, width: 56, height: 36 },
+    "A2-E05": { x: -26, y: -30, width: 52, height: 38 },
+    "A2-E06": { x: -24, y: -28, width: 48, height: 36 },
+    "A2-E07": { x: -28, y: -25, width: 56, height: 36 },
+    "A2-E08": { x: -26, y: -30, width: 52, height: 38 },
+    "A2-B01": { x: -38, y: -40, width: 76, height: 54 }
+  };
+
+  for (const enemy of layout.enemySpawns ?? []) {
+    const offset = enemyColliderOffsets[enemy.id];
+    if (!offset) continue;
+    const collider = {
+      x: enemy.x + offset.x,
+      y: enemy.y + offset.y,
+      width: offset.width,
+      height: offset.height
+    };
+    if (!isWalkableRect(collider, layout)) {
+      issues.push({ severity: "error", message: `${enemy.id}の敵コライダーが歩行ポリゴン内に収まりません。` });
+    }
+    if ((layout.collisionRects ?? []).some((rect) => intersects(collider, rect))) {
+      issues.push({ severity: "error", message: `${enemy.id}の敵コライダーが固定collisionと重なっています。` });
+    }
+  }
+
+  for (const object of [
+    ...(layout.npcPositions ?? []),
+    ...(layout.eventPositions ?? [])
+  ]) {
+    if (!isWalkable(object, layout)) {
+      issues.push({ severity: "error", message: `${object.id}の中心が歩行ポリゴン外です。` });
+    }
+  }
+  for (const object of layout.interactablePositions ?? []) {
+    const center = {
+      x: object.x + object.width / 2,
+      y: object.y + object.height / 2
+    };
+    if (!isWalkable(center, layout)) {
+      issues.push({ severity: "error", message: `${object.id}の中心が歩行ポリゴン外です。` });
+    }
+  }
+
+  for (const pathData of layout.guidePaths ?? []) {
+    for (let index = 1; index < pathData.points.length; index += 1) {
+      const from = pathData.points[index - 1];
+      const to = pathData.points[index];
+      const distance = Math.hypot(to.x - from.x, to.y - from.y);
+      const samples = Math.max(1, Math.ceil(distance / 16));
+      for (let sample = 0; sample <= samples; sample += 1) {
+        const progress = sample / samples;
+        const x = from.x + (to.x - from.x) * progress;
+        const y = from.y + (to.y - from.y) * progress;
+        const collider = { x: x - 21, y: y - 18, width: 42, height: 28 };
+        if (!isWalkableRect(collider, layout)) {
+          issues.push({ severity: "error", message: `${pathData.id}のguide path上にプレイヤーが通れない点があります。` });
+          break;
+        }
+        if ((layout.collisionRects ?? []).some((rect) => intersects(collider, rect))) {
+          issues.push({ severity: "error", message: `${pathData.id}が固定collisionを横切っています。` });
+          break;
+        }
+      }
+    }
   }
 }
 
@@ -141,6 +224,13 @@ function pointOnSegment(point, start, end) {
     && point.x <= Math.max(start.x, end.x) + 0.001
     && point.y >= Math.min(start.y, end.y) - 0.001
     && point.y <= Math.max(start.y, end.y) + 0.001;
+}
+
+function intersects(a, b) {
+  return a.x < b.x + b.width
+    && a.x + a.width > b.x
+    && a.y < b.y + b.height
+    && a.y + a.height > b.y;
 }
 
 function assertRequiredIds(layout, issues) {

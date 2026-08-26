@@ -64,15 +64,24 @@
 
 
 
-
-
-\n### Playtest-004 / A2-4導線修正
+### Playtest-004 / A2-4導線修正
 
 - 日時: 2026-08-27（JST）
 - 対象: P12.1 branch の Actions #102 failure 後の候補修正
 - 根因: A2-4の必須敵 A2-E03（くろほガモメ）が、上島の記憶から風の近道へ向かう途中（旧座標 940,560）にあり、近道を調べる前に戦闘へ入っていた。
-- 修正: A2-E03を風の近道後の灯台ルート上（1440,540）へ移し、Verifierの戦闘到達座標も同じ実導線へ同期した。
+- 修正: A2-E03を風の近道後の灯台ルート上へ移し、Verifierの戦闘到達座標も同期した。中間候補 `(1525,560)` の後、背景上の実道とA2全域geometryを再監査し、現行候補を `(1500,850)` へ更新した。
 - 静的検証: A2-0〜A2-5主要オブジェクトの歩行域内、A2-4近道前の敵衝突0件、近道後の意図したA2-E03衝突を確認。typecheck、lint、maps:validate、editor:smoke、build、git diff --checkはPASS。
 - GitHub Chrome CI: 修正commit反映後の再実行待ち。
 - 判定: 手動60〜80分Hard Gate、スマホQA、production QAは未成立。推測でPASSに変更しない。
 
+### Playtest-005 / P12.1候補のruntime・導線・保存ハードニング
+
+- 日時: 2026-08-27（JST）
+- 対象: `feature/p12-1-shimanami-final-validation` の #102 failure 後の候補実装
+- 根因整理: A2-4の必須敵 A2-E03 が風の近道へ向かうcritical path上に残り、Verifierが想定外戦闘を移動完了と誤認していた。さらに、A2-0〜A2-4の任意敵にも同型の導線衝突リスクがあった。
+- 修正: 任意敵をcritical pathから外し、A2-4の風壁を通過後にA2-E03→灯台の順で進める座標へ再配置した。橋道／小舟道のroute選択を一度きりにし、見張り台への遷移には選択routeの必須敵撃破を要求する。
+- 保存／telemetry: 戦闘開始時に安全な復帰位置と `battle_start`／`boss_start` を保存し、勝利時に即時保存する。area exit、autosave、checkpoint、battle duration、Boss duration、reloadをイベントログで照合できる形へ拡張した。
+- Smartphone候補修正: 会話中の移動UIを隠し、safe-areaを反映。横画面のBattle message／6-card UIを再配置し、狭い横画面では3列へフォールバックする。
+- 検証状態: Pythonによるwalkable／collision／interactable監査と、A2全域の開始地点・敵コライダー・guide pathを含む `maps:validate`、typecheck、lint、editor:smoke、buildはPASS。候補branchのChrome CI、通常操作60〜80分、人手KPI、iOS/Android相当操作、production QAは未完了。
+
+判定: **P12 NO-GO / REVISION REQUIRED**。候補実装は更新したが、ブラウザCIと人手Hard Gateの証拠がないため、merge・P13移行は保留する。
