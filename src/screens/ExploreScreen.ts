@@ -65,6 +65,7 @@ const P12_KAMIJIMA_WIND_BARRIER: Rect = {
 
 function interactionPriority(id: string): number {
   if (id === "p12_windmill") return 3;
+  if (id === "p12_bridge_wind_puzzle") return 3;
   if (id.includes("p12_") && (id.includes("puzzle") || id.includes("reward") || id.includes("scenic") || id.includes("shortcut"))) return 2;
   if (id.includes("p12_") && id.includes("discovery")) return 2;
   if (id.includes("p12_") && (id.includes("_route") || id.includes("_to_"))) return 1;
