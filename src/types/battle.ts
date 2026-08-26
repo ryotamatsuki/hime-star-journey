@@ -53,6 +53,9 @@ export type BattleState = {
   turnCount: number;
   phase: BattlePhase;
   isBossBattle: boolean;
+  /** P12 uses one simple regional rule: charge a tailwind, then release it. */
+  windRule?: boolean;
+  windCharge?: number;
   sealGauge?: {
     targetInstanceId: string;
     value: number;

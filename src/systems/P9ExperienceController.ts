@@ -124,7 +124,7 @@ export class P9ExperienceController {
       display: "grid",
       placeItems: "center",
       position: "fixed",
-      left: "16px",
+      left: "max(16px, env(safe-area-inset-left, 0px))",
       right: "auto",
       bottom: "calc(82px + env(safe-area-inset-bottom, 0px))",
       width: "138px",

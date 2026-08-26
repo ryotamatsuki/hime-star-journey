@@ -92,6 +92,7 @@ export class BattleScreen implements GameScreen {
           isBoss: typedParams.isBoss
         }
       : null;
+    this.elapsedMs = 0;
 
     const encounter = this.battleParams ? getEncounterById(this.battleParams.encounterId) : undefined;
     if (!this.saveData || !this.battleParams || !encounter) {
@@ -101,11 +102,14 @@ export class BattleScreen implements GameScreen {
       return;
     }
 
-    this.battleState = createBattleState(encounter, this.saveData);
+    const isShimanamiBattle = this.battleParams.returnLocationId === "shimanami";
+    this.battleState = createBattleState(encounter, this.saveData, { windRule: isShimanamiBattle });
     this.selectedCardId = null;
     this.enemyTurnDelayMs = 0;
     this.visualEffect = null;
-    this.messages = [`${encounter.name}があらわれた。`, "カードを選んで、敵をしずめよう。"];
+    this.messages = [`${encounter.name}があらわれた。`, isShimanamiBattle
+      ? "カードを選んで、地域ruleの追い風をため、次の一撃で解放しよう。"
+      : "カードを選んで、敵をしずめよう。"];
     this.renderUi();
   }
 
@@ -186,7 +190,11 @@ export class BattleScreen implements GameScreen {
   private renderBackground(ctx: CanvasRenderingContext2D, width: number, height: number): void {
     const backgroundAssetId =
       this.battleParams?.returnLocationId === "shimanami"
-        ? "bg_shimanami"
+        ? this.battleParams.returnAreaId === "A2-5"
+          ? "bg_shimanami_A2_5_wind_lighthouse"
+          : this.battleParams.returnAreaId === "A2-3"
+          ? "bg_shimanami_A2_3_watchtower"
+          : "bg_shimanami_A2_1_bridge_route"
         : this.battleParams?.returnLocationId === "castle" || this.battleParams?.isBoss
         ? "bg_castle_battle"
         : "bg_dogo_battle";
@@ -531,6 +539,14 @@ export class BattleScreen implements GameScreen {
     enemy.textContent = `敵 ${aliveEnemyCount}`;
 
     summary.append(hp, mp, enemy);
+    if (this.battleState?.windRule) {
+      const wind = document.createElement("span");
+      wind.className = "battle-wind-status";
+      wind.textContent = this.battleState.windCharge
+        ? "風：ため中 → 次で解放"
+        : "風：白鷺札でためる";
+      summary.append(wind);
+    }
     return summary;
   }
 
@@ -757,6 +773,12 @@ export class BattleScreen implements GameScreen {
       ),
       defeatedEnemyIds,
       openedPaths,
+      p12BattleDurationsMs: this.battleParams.returnLocationId === "shimanami"
+        ? [...(this.saveData.p12BattleDurationsMs ?? []), Math.round(this.elapsedMs)]
+        : this.saveData.p12BattleDurationsMs,
+      p12BattleKinds: this.battleParams.returnLocationId === "shimanami"
+        ? [...(this.saveData.p12BattleKinds ?? []), this.battleParams.isBoss ? "boss" : "normal"]
+        : this.saveData.p12BattleKinds,
       flags,
       lastSynopsis: `${symbol?.label ?? "敵"}をしずめました。星の力が少し戻りました。`
     });

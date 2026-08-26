@@ -49,4 +49,10 @@ export type SaveData = {
   p12DiscoveryIntervalsMs?: number[];
   p12CheckpointElapsedMs?: number;
   p12CheckpointIds?: string[];
+  p12CheckpointElapsedMsList?: number[];
+  p12CheckpointIntervalsMs?: number[];
+  p12AreaIds?: string[];
+  p12AreaEnterElapsedMs?: number[];
+  p12BattleDurationsMs?: number[];
+  p12BattleKinds?: Array<"normal" | "boss">;
 };

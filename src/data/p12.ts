@@ -63,11 +63,17 @@ export const P12_BOSS_ENEMY_ID = "A2-B01" as const;
 
 export const P12_DISCOVERY_IDS = [
   "hub_route",
+  "hub_scenic",
   "bridge_memory",
+  "bridge_wind_puzzle",
   "island_memory",
+  "island_star_reward",
   "wind_ability",
   "wind_revisit",
+  "wind_revisit_reward",
   "kamijima_memory",
+  "kamijima_shortcut",
+  "watchtower_scenic",
   "boss_clear"
 ] as const;
 
@@ -113,11 +119,17 @@ export function markP12Discovery(save: SaveData, discoveryId: string, elapsedMs:
 
 export function markP12Checkpoint(save: SaveData, checkpointId: string, elapsedMs: number): SaveData {
   const ids = Array.from(new Set(save.p12CheckpointIds ?? []));
-  if (ids.includes(checkpointId)) return save;
+  const previous = save.p12CheckpointElapsedMs ?? 0;
+  const checkpointTimes = [...(save.p12CheckpointElapsedMsList ?? []), elapsedMs];
+  const intervals = previous > 0
+    ? [...(save.p12CheckpointIntervalsMs ?? []), Math.max(0, elapsedMs - previous)]
+    : save.p12CheckpointIntervalsMs ?? [];
   return {
     ...save,
-    p12CheckpointIds: [...ids, checkpointId],
+    p12CheckpointIds: ids.includes(checkpointId) ? ids : [...ids, checkpointId],
     p12CheckpointElapsedMs: elapsedMs,
+    p12CheckpointElapsedMsList: checkpointTimes,
+    p12CheckpointIntervalsMs: intervals,
     flags: {
       ...save.flags,
       [`p12_checkpoint_${checkpointId}`]: true

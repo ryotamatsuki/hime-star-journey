@@ -5,14 +5,16 @@
   "name": "風の灯台",
   "worldWidth": 1920,
   "worldHeight": 1080,
-  "backgroundAssetId": "bg_shimanami",
+  "backgroundAssetId": "bg_shimanami_A2_5_wind_lighthouse",
   "playerStart": { "x": 260, "y": 540 },
   "cameraBounds": { "id": "camera_shimanami_A2_5", "x": 0, "y": 0, "width": 1920, "height": 1080 },
-  "walkableRects": [
-    { "id": "shimanami_A2_5_lighthouse_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "風の灯台" }
+  "walkableRects": [],
+  "walkablePolygons": [
+    { "id": "shimanami_A2_5_lighthouse_arena", "points": [{ "x": 120, "y": 430 }, { "x": 480, "y": 430 }, { "x": 480, "y": 350 }, { "x": 1320, "y": 350 }, { "x": 1320, "y": 430 }, { "x": 1700, "y": 430 }, { "x": 1700, "y": 700 }, { "x": 1320, "y": 700 }, { "x": 1320, "y": 780 }, { "x": 480, "y": 780 }, { "x": 480, "y": 700 }, { "x": 120, "y": 700 }] }
   ],
-  "walkablePolygons": [],
-  "collisionRects": [],
+  "collisionRects": [
+    { "id": "shimanami_A2_5_lighthouse_body", "x": 820, "y": 150, "width": 280, "height": 180, "label": "風の灯台" }
+  ],
   "guidePaths": [
     { "id": "shimanami_A2_5_boss_path", "label": "灯台への一本道", "points": [{ "x": 260, "y": 540 }, { "x": 600, "y": 540 }, { "x": 1030, "y": 560 }, { "x": 1500, "y": 540 }] }
   ],

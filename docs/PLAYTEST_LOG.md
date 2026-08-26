@@ -44,6 +44,23 @@
 
 判定: **P12実装／回帰Hard Gate PASS、探索KPI Hard Gate 条件付きPASS**（GitHub Actions Chrome CI #95）。
 
+### Playtest-003
+
+- 日時: 2026-08-26（JST）
+- 対象: `feature/p12-1-shimanami-final-validation` のP12.1候補
+- 開始時main SHA: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`
+- プレイ範囲: A2 runtime、生成画像、walkable/collision、風field/battle rule、スマホDOM/CSS、production接続可否
+- 多人数再現: 6つの独立role audit（実装監査3、初心者／iOS・Android／battle体験監査3）。ネットワーク協力プレイではなく、初心者・寄り道重視・critical path・iOS・Android・battleの観点を分離した代理評価。
+- 結果: 本番背景6枚、敵3種、Boss、NPCの11 assetはmanifest・source/runtime・SHAが一致。A2-0〜A2-5の主要オブジェクト中心はPython計算で6/6 Areaがwalkable内。guide pathの歩行域外点は修正後0件。
+- 実装確認: Area単位asset lazy loading、風rule、風よみ取得直後の風道、風車再訪、風のコンパス報酬、上島風壁ゲート、Shiro Search、横画面safe-area候補修正。
+- 詰まった場所: ローカルChrome実体がなくP7〜P12 verifierを候補branchで実行できない。Cloud Browserからlocalhostはブロックされた。公開URLはP12.1未デプロイの旧mainであるため、候補画像・候補loadのproduction確認は未成立。
+- 楽しそうだった場所: 風ruleの「白鷺札で追い風をため、次の一撃で解放」、同じ風車の再訪で風のコンパスを得る流れ、灯台Bossの風を閉じ込めるゲージ。
+- 操作で困った点: iOS/Android相当の実操作は未実施。静的監査ではjoystick safe-area、手帳幅、星地図の390px高、6-card説明文の可読性にリスクが出たため修正したが、再実機確認は未完。
+- 探索で困った点: Pythonの座標下限監査ではフィールド移動が短く、meaningful discoveryが数秒間隔に固まりやすい。60〜80分を支える密度の人手証拠はない。
+- 計測値: A2総時間、Subarea時間、discovery interval、中央値、最大値、60秒超区間、longest empty walk、分岐→報酬、checkpoint/autosave、通常戦、Boss、iOS/Android、候補production loadは **未計測**。推測値をHard Gateには使わない。
+- 静的／build結果: `npm ci`、typecheck、lint、maps:validate、editor:smoke、buildはPASS。P12.1候補のbrowser verifierはChrome環境不足でBLOCKED。
+
+判定: **P12 NO-GO / REVISION REQUIRED**。画像・runtime統合は次候補まで進んだが、手動Hard Gateとproduction QAを閉じていない。P13へ進まない。
 
 
 

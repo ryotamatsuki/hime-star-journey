@@ -55,7 +55,7 @@ const npcDefinitions: NpcDefinition[] = [
     name: "港の船大工",
     locationId: "shimanami",
     areaId: "A2-0",
-    assetId: "npc_dogo_guide",
+    assetId: "npc_shimanami_keeper",
     dialogueId: "npc_p12_port_master",
     interactionRadius: 96,
     direction: "down",
@@ -66,7 +66,7 @@ const npcDefinitions: NpcDefinition[] = [
     name: "橋道の見張り",
     locationId: "shimanami",
     areaId: "A2-1",
-    assetId: "npc_dogo_guide",
+    assetId: "npc_shimanami_keeper",
     dialogueId: "npc_p12_bridge_keeper",
     interactionRadius: 88,
     direction: "right",
@@ -77,7 +77,7 @@ const npcDefinitions: NpcDefinition[] = [
     name: "島の船守",
     locationId: "shimanami",
     areaId: "A2-2",
-    assetId: "npc_yumori_grandma",
+    assetId: "npc_shimanami_keeper",
     dialogueId: "npc_p12_island_keeper",
     interactionRadius: 88,
     direction: "right",
@@ -88,11 +88,22 @@ const npcDefinitions: NpcDefinition[] = [
     name: "見張り台の子",
     locationId: "shimanami",
     areaId: "A2-3",
-    assetId: "npc_dogo_guide",
+    assetId: "npc_shimanami_keeper",
     dialogueId: "npc_p12_watchkeeper",
     interactionRadius: 88,
     direction: "down",
     animationType: "float"
+  },
+  {
+    id: "npc_p12_kamijima_guide",
+    name: "上島の風守",
+    locationId: "shimanami",
+    areaId: "A2-4",
+    assetId: "npc_shimanami_keeper",
+    dialogueId: "npc_p12_kamijima_guide",
+    interactionRadius: 88,
+    direction: "right",
+    animationType: "idle"
   }
 ];
 

@@ -5,24 +5,29 @@
   "name": "海城の見張り台",
   "worldWidth": 1920,
   "worldHeight": 1080,
-  "backgroundAssetId": "bg_shimanami",
+  "backgroundAssetId": "bg_shimanami_A2_3_watchtower",
   "playerStart": { "x": 260, "y": 540 },
   "cameraBounds": { "id": "camera_shimanami_A2_3", "x": 0, "y": 0, "width": 1920, "height": 1080 },
-  "walkableRects": [
-    { "id": "shimanami_A2_3_watchtower_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "海城の見張り台" }
+  "walkableRects": [],
+  "walkablePolygons": [
+    { "id": "shimanami_A2_3_watchtower_platform", "points": [{ "x": 120, "y": 430 }, { "x": 680, "y": 430 }, { "x": 680, "y": 350 }, { "x": 1220, "y": 350 }, { "x": 1220, "y": 450 }, { "x": 1700, "y": 450 }, { "x": 1700, "y": 680 }, { "x": 1220, "y": 680 }, { "x": 1220, "y": 720 }, { "x": 680, "y": 720 }, { "x": 680, "y": 650 }, { "x": 120, "y": 650 }] }
   ],
-  "walkablePolygons": [],
-  "collisionRects": [],
+  "collisionRects": [
+    { "id": "shimanami_A2_3_watchtower_base", "x": 820, "y": 230, "width": 240, "height": 150, "label": "見張り台の基部" }
+  ],
   "guidePaths": [
     { "id": "shimanami_A2_3_watchtower_path", "label": "風を読む台地", "points": [{ "x": 260, "y": 540 }, { "x": 620, "y": 540 }, { "x": 1120, "y": 540 }, { "x": 1600, "y": 540 }] }
   ],
-  "enemySpawns": [],
+  "enemySpawns": [
+    { "id": "A2-E07", "x": 1420, "y": 560, "label": "しおガニ" }
+  ],
   "npcPositions": [
     { "id": "npc_p12_watchkeeper", "x": 420, "y": 540, "label": "見張り台の子" }
   ],
   "interactablePositions": [
     { "id": "p12_wind_memory", "x": 620, "y": 540, "width": 112, "height": 96, "label": "風よみの星" },
     { "id": "p12_windmill", "x": 1120, "y": 540, "width": 112, "height": 116, "label": "見張り台の風車" },
+    { "id": "p12_watchtower_scenic", "x": 1340, "y": 520, "width": 112, "height": 92, "label": "海城の景勝点" },
     { "id": "p12_watchtower_to_island", "x": 1600, "y": 540, "width": 120, "height": 92, "label": "上島への道" }
   ],
   "eventPositions": [],

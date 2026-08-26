@@ -1,0 +1,20 @@
+{
+  "phase": "P12.1",
+  "generatedAt": "2026-08-26",
+  "branch": "feature/p12-1-shimanami-final-validation",
+  "sourceDirectory": "docs/asset-sources/p12.1",
+  "runtimeDirectory": "public/assets/generated",
+  "assets": [
+    { "id": "bg_shimanami_A2_0_port_hub", "runtime": "backgrounds/shimanami_A2_0_port_hub.png", "source": "p12.1_A2-0_port_hub_source.png", "use": ["A2-0 Explore"] },
+    { "id": "bg_shimanami_A2_1_bridge_route", "runtime": "backgrounds/shimanami_A2_1_bridge_route.png", "source": "p12.1_A2-1_bridge_route_source.png", "use": ["A2-1 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_2_island_village", "runtime": "backgrounds/shimanami_A2_2_island_village.png", "source": "p12.1_A2-2_island_village_source.png", "use": ["A2-2 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_3_watchtower", "runtime": "backgrounds/shimanami_A2_3_watchtower.png", "source": "p12.1_A2-3_watchtower_source.png", "use": ["A2-3 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_4_kamijima_path", "runtime": "backgrounds/shimanami_A2_4_kamijima_path.png", "source": "p12.1_A2-4_kamijima_source.png", "use": ["A2-4 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_5_wind_lighthouse", "runtime": "backgrounds/shimanami_A2_5_wind_lighthouse.png", "source": "p12.1_A2-5_lighthouse_source.png", "use": ["A2-5 Explore", "Boss battle"] },
+    { "id": "enemy_shimanami_wind_thief", "runtime": "enemies/shimanami_wind_thief.png", "source": "p12.1_enemy_wind_thief_source.png", "use": ["A2-E01", "A2-E05", "A2-E08"] },
+    { "id": "enemy_shimanami_tide_crab", "runtime": "enemies/shimanami_tide_crab.png", "source": "p12.1_enemy_tide_crab_source.png", "use": ["A2-E02", "A2-E04", "A2-E07"] },
+    { "id": "enemy_shimanami_gull", "runtime": "enemies/shimanami_gull.png", "source": "p12.1_enemy_gull_source.png", "use": ["A2-E03", "A2-E06"] },
+    { "id": "boss_shimanami_octopus", "runtime": "bosses/shimanami_wind_octopus.png", "source": "p12.1_boss_wind_octopus_source.png", "use": ["A2-B01", "A2-5 battle"] },
+    { "id": "npc_shimanami_keeper", "runtime": "characters/shimanami_keeper.png", "source": "p12.1_npc_keeper_source.png", "use": ["A2-4 NPC"] }
+  ]
+}

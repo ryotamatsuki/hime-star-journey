@@ -19,7 +19,18 @@ export class AssetLoader {
   }
 
   async loadImages(definitions: ImageAssetDefinition[]): Promise<void> {
-    await Promise.all(definitions.map((definition) => this.loadImage(definition)));
+    const pendingDefinitions = definitions.filter((definition) => {
+      const loaded = this.assets.get(definition.id);
+      return !loaded || loaded.status === "failed";
+    });
+    await Promise.all(pendingDefinitions.map((definition) => this.loadImage(definition)));
+  }
+
+  async loadAreaAssets(definitions: ImageAssetDefinition[]): Promise<void> {
+    const knownImages = new Map(this.manifest.images.map((definition) => [definition.id, definition]));
+    definitions.forEach((definition) => knownImages.set(definition.id, definition));
+    this.manifest = { ...this.manifest, images: [...knownImages.values()] };
+    await this.loadImages(definitions);
   }
 
   getManifest(): AssetManifest {

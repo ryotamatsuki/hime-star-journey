@@ -1,4 +1,4 @@
-import { assetManifest } from "../data/assets";
+import { coreAssetManifest } from "../data/assets";
 import { BattleScreen } from "../screens/BattleScreen";
 import { EndingScreen } from "../screens/EndingScreen";
 import { ExploreScreen } from "../screens/ExploreScreen";
@@ -65,7 +65,7 @@ export class GameApp {
   }
 
   async start(): Promise<void> {
-    await this.assetLoader.loadManifest(assetManifest);
+    await this.assetLoader.loadManifest(coreAssetManifest);
     this.registerScreens();
     this.screenManager.change(this.options.initialScreenId ?? "title", this.options.initialParams);
     this.p9ExperienceController.start();

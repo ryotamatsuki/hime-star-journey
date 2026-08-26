@@ -341,9 +341,98 @@ const imageAssets: ImageAssetDefinition[] = [
     id: "fx_seal_light",
     src: "/assets/generated/effects/fx_seal_light.png",
     description: "Future seal light effect"
+  },
+  {
+    id: "bg_shimanami_A2_0_port_hub",
+    src: "/assets/generated/backgrounds/shimanami_A2_0_port_hub.png",
+    required: true,
+    description: "P12.1 production Imabari Port Hub background"
+  },
+  {
+    id: "bg_shimanami_A2_1_bridge_route",
+    src: "/assets/generated/backgrounds/shimanami_A2_1_bridge_route.png",
+    required: true,
+    description: "P12.1 production Kurushima bridge route background"
+  },
+  {
+    id: "bg_shimanami_A2_2_island_village",
+    src: "/assets/generated/backgrounds/shimanami_A2_2_island_village.png",
+    required: true,
+    description: "P12.1 production Setouchi island village background"
+  },
+  {
+    id: "bg_shimanami_A2_3_watchtower",
+    src: "/assets/generated/backgrounds/shimanami_A2_3_watchtower.png",
+    required: true,
+    description: "P12.1 production Murakami sea watchtower background"
+  },
+  {
+    id: "bg_shimanami_A2_4_kamijima_path",
+    src: "/assets/generated/backgrounds/shimanami_A2_4_kamijima_path.png",
+    required: true,
+    description: "P12.1 production Kamijima island path background"
+  },
+  {
+    id: "bg_shimanami_A2_5_wind_lighthouse",
+    src: "/assets/generated/backgrounds/shimanami_A2_5_wind_lighthouse.png",
+    required: true,
+    description: "P12.1 production wind lighthouse boss-space background"
+  },
+  {
+    id: "enemy_shimanami_wind_thief",
+    src: "/assets/generated/enemies/shimanami_wind_thief.png",
+    required: true,
+    description: "P12.1 generated regional enemy: wind thief"
+  },
+  {
+    id: "enemy_shimanami_tide_crab",
+    src: "/assets/generated/enemies/shimanami_tide_crab.png",
+    required: true,
+    description: "P12.1 generated regional enemy: tide crab"
+  },
+  {
+    id: "enemy_shimanami_gull",
+    src: "/assets/generated/enemies/shimanami_gull.png",
+    required: true,
+    description: "P12.1 generated regional enemy: black-wing gull"
+  },
+  {
+    id: "boss_shimanami_octopus",
+    src: "/assets/generated/bosses/shimanami_wind_octopus.png",
+    required: true,
+    description: "P12.1 generated regional boss: wind octopus"
+  },
+  {
+    id: "npc_shimanami_keeper",
+    src: "/assets/generated/characters/shimanami_keeper.png",
+    required: true,
+    description: "P12.1 generated regional NPC: ship keeper"
   }
 ];
 
+const p12AssetIds = new Set([
+  "bg_shimanami_A2_0_port_hub",
+  "bg_shimanami_A2_1_bridge_route",
+  "bg_shimanami_A2_2_island_village",
+  "bg_shimanami_A2_3_watchtower",
+  "bg_shimanami_A2_4_kamijima_path",
+  "bg_shimanami_A2_5_wind_lighthouse",
+  "enemy_shimanami_wind_thief",
+  "enemy_shimanami_tide_crab",
+  "enemy_shimanami_gull",
+  "boss_shimanami_octopus",
+  "npc_shimanami_keeper"
+]);
+
+export const p12AssetManifest: AssetManifest = {
+  images: imageAssets.filter((asset) => p12AssetIds.has(asset.id))
+};
+
+export const coreAssetManifest: AssetManifest = {
+  images: imageAssets.filter((asset) => !p12AssetIds.has(asset.id))
+};
+
+/** Full manifest retained for tooling and asset audits; the app loads area assets lazily. */
 export const assetManifest: AssetManifest = {
   images: imageAssets
 };

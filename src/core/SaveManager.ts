@@ -94,7 +94,9 @@ export class SaveManager {
         p12_started: false,
         p12_completed: false,
         p12_wind_ability: false,
-        p12_windmill_revisited: false
+        p12_windmill_revisited: false,
+        p12_windmill_rewarded: false,
+        p12_kamijima_shortcut_open: false
       },
       dogoQuestStatus: "notStarted",
       castleQuestStatus: "notStarted",
@@ -105,7 +107,13 @@ export class SaveManager {
       p12DiscoveryIds: [],
       p12DiscoveryIntervalsMs: [],
       p12CheckpointElapsedMs: 0,
-      p12CheckpointIds: []
+      p12CheckpointIds: [],
+      p12CheckpointElapsedMsList: [],
+      p12CheckpointIntervalsMs: [],
+      p12AreaIds: [],
+      p12AreaEnterElapsedMs: [],
+      p12BattleDurationsMs: [],
+      p12BattleKinds: []
     };
   }
 
@@ -251,7 +259,13 @@ export class SaveManager {
       p12DiscoveryIds: Array.from(new Set(stringArray(source.p12DiscoveryIds))),
       p12DiscoveryIntervalsMs: nonNegativeNumberArray(source.p12DiscoveryIntervalsMs),
       p12CheckpointElapsedMs: Math.max(0, finiteNumber(source.p12CheckpointElapsedMs, initial.p12CheckpointElapsedMs ?? 0)),
-      p12CheckpointIds: Array.from(new Set(stringArray(source.p12CheckpointIds)))
+      p12CheckpointIds: Array.from(new Set(stringArray(source.p12CheckpointIds))),
+      p12CheckpointElapsedMsList: nonNegativeNumberArray(source.p12CheckpointElapsedMsList),
+      p12CheckpointIntervalsMs: nonNegativeNumberArray(source.p12CheckpointIntervalsMs),
+      p12AreaIds: stringArray(source.p12AreaIds),
+      p12AreaEnterElapsedMs: nonNegativeNumberArray(source.p12AreaEnterElapsedMs),
+      p12BattleDurationsMs: nonNegativeNumberArray(source.p12BattleDurationsMs),
+      p12BattleKinds: source.p12BattleKinds?.filter((kind): kind is "normal" | "boss" => kind === "normal" || kind === "boss") ?? []
     };
   }
 }

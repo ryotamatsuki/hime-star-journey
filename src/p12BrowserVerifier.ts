@@ -134,6 +134,7 @@ async function inspect(label: string): Promise<void> {
 async function fightEnemy(symbolId: string, label: string, boss = false): Promise<void> {
   await waitFor(() => Boolean(document.querySelector(".battle-ui")), `${label} battle screen`);
   assert(bodyText().includes("カードを選んで"), `${label}にカード選択UIを表示する`);
+  assert(bodyText().includes("風："), `${label}にしまなみの風ruleを表示する`);
   let sealUses = 0;
 
   for (let turn = 0; turn < 80; turn += 1) {
@@ -225,6 +226,7 @@ async function verify(): Promise<void> {
   await waitFor(() => Boolean(document.querySelector(".explore-ui")), "今治港Hub探索画面");
   await waitFor(() => bodyText().includes("現在地：今治港Hub"), "Hubの現在地表示");
   assert(Boolean(document.querySelector(".explore-touch-controls--visible")), "390px幅でタッチ移動UIを表示する");
+  assert(Boolean(button("シロ検索")), "探索UIにシロ検索を表示する");
   await finishDialogue();
 
   await moveTo({ x: 760, y: 800 }, "橋道の入口");
@@ -235,6 +237,9 @@ async function verify(): Promise<void> {
   await moveTo({ x: 570, y: 540 }, "橋の記憶");
   await inspect("橋の記憶");
   assert(bodyText().includes("橋の欄干") || new SaveManager(SAVE_KEY).load()?.flags.p12_discovery_bridge_memory === true, "橋の記憶を発見する");
+  await moveTo({ x: 700, y: 520 }, "帆の向き合わせ");
+  await inspect("帆の向き合わせ");
+  assert(new SaveManager(SAVE_KEY).load()?.flags.p12_bridge_sail_aligned === true, "橋道の風パズルを保存する");
   await moveTo({ x: 920, y: 540 }, "かぜぬすみ");
   await fightEnemy("A2-E01", "かぜぬすみ");
   await moveTo({ x: 1560, y: 540 }, "見張り台への道");

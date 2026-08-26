@@ -204,3 +204,16 @@ P12のChrome CI run #95で、P7〜P12の全browser gate、typecheck、lint、map
 - `docs/research/EHIME_GAME_DESIGN_RESEARCH.md`
 - `docs/ROADMAP.md`
 - `docs/archive/DECISIONS_PRE_P11.md`（P0〜P10 Decision Log）
+
+## 2026-08-26 P12.1 Shimanami Visual Completion & Manual Hard Gate
+
+### DEC-P12.1-01 本番画像統合とHard Gate未成立を明示する
+
+P12.1では、procedural fallbackを主要なA2背景から外し、A2-0〜A2-5の本番背景、地域敵、Boss、NPCをsource/runtime/provenance/SHA付きで管理する。Areaへ入った時点で、そのAreaに必要な背景・敵・NPCだけを遅延ロードする。
+
+walkable polygon、collisionRects、guide pathは画像上の道へ合わせ、`風よみ`取得後の風車変化・風battle rule・風のコンパス報酬・上島の風壁ゲートをruntimeへ接続する。横画面ではsafe-area、手帳、星地図、6-card可読性の候補修正を入れる。
+
+ただし、CI verifier・静的監査・sub-agent監査は人手60〜80分通しプレイの代替ではない。P12.1 branchは未デプロイで、production load、iOS/Android相当操作、探索KPI、通常戦／Boss時間も未計測である。したがって現時点の正式判定は **P12 NO-GO / REVISION REQUIRED** とし、P13の基盤共通化・A3以降の量産・main mergeを保留する。
+
+**開始SHA**: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`
+**Branch**: `feature/p12-1-shimanami-final-validation`

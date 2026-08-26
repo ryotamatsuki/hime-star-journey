@@ -5,25 +5,29 @@
   "name": "島の坂道・集落",
   "worldWidth": 1920,
   "worldHeight": 1080,
-  "backgroundAssetId": "bg_shimanami",
+  "backgroundAssetId": "bg_shimanami_A2_2_island_village",
   "playerStart": { "x": 260, "y": 540 },
   "cameraBounds": { "id": "camera_shimanami_A2_2", "x": 0, "y": 0, "width": 1920, "height": 1080 },
-  "walkableRects": [
-    { "id": "shimanami_A2_2_village_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "島の坂道" }
+  "walkableRects": [],
+  "walkablePolygons": [
+    { "id": "shimanami_A2_2_village_walk_polygon", "points": [{ "x": 120, "y": 430 }, { "x": 500, "y": 470 }, { "x": 780, "y": 520 }, { "x": 1100, "y": 450 }, { "x": 1400, "y": 430 }, { "x": 1700, "y": 450 }, { "x": 1700, "y": 680 }, { "x": 1400, "y": 700 }, { "x": 1100, "y": 730 }, { "x": 780, "y": 690 }, { "x": 500, "y": 660 }, { "x": 120, "y": 650 }] }
   ],
-  "walkablePolygons": [],
-  "collisionRects": [],
+  "collisionRects": [
+    { "id": "shimanami_A2_2_village_house", "x": 820, "y": 150, "width": 260, "height": 180, "label": "集落の家" }
+  ],
   "guidePaths": [
     { "id": "shimanami_A2_2_village_path", "label": "集落を抜ける坂道", "points": [{ "x": 260, "y": 540 }, { "x": 700, "y": 620 }, { "x": 1140, "y": 500 }, { "x": 1580, "y": 540 }] }
   ],
   "enemySpawns": [
-    { "id": "A2-E02", "x": 930, "y": 600, "label": "しおガニ" }
+    { "id": "A2-E02", "x": 930, "y": 600, "label": "しおガニ" },
+    { "id": "A2-E06", "x": 1220, "y": 580, "label": "くろほガモメ" }
   ],
   "npcPositions": [
     { "id": "npc_p12_island_keeper", "x": 420, "y": 580, "label": "島の船守" }
   ],
   "interactablePositions": [
     { "id": "p12_island_discovery", "x": 540, "y": 580, "width": 112, "height": 92, "label": "島の記憶" },
+    { "id": "p12_island_star_reward", "x": 1220, "y": 620, "width": 112, "height": 92, "label": "星のかけら" },
     { "id": "p12_island_to_watchtower", "x": 1520, "y": 540, "width": 120, "height": 92, "label": "見張り台への坂" }
   ],
   "eventPositions": [],

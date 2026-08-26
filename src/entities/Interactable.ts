@@ -16,6 +16,7 @@ export class Interactable {
   readonly kind: InteractableData["kind"];
   readonly requiredFlags?: string[];
   readonly message: string;
+  private windAwake = false;
 
   constructor(
     data: InteractableData,
@@ -38,6 +39,10 @@ export class Interactable {
     this.onInteract(this);
   }
 
+  setWindAwake(value: boolean): void {
+    this.windAwake = value;
+  }
+
   render(ctx: CanvasRenderingContext2D, isNearby: boolean, camera?: Camera): void {
     const centerWorldX = this.x + this.width / 2;
     const centerWorldY = this.y + this.height / 2;
@@ -58,6 +63,14 @@ export class Interactable {
       this.drawWindmill(ctx, screen.x, screen.y);
     } else if (this.kind === "p12_portal") {
       this.drawPortal(ctx, screen.x, screen.y);
+    } else if (this.kind === "p12_puzzle") {
+      this.drawPuzzle(ctx, screen.x, screen.y);
+    } else if (this.kind === "p12_reward") {
+      this.drawReward(ctx, screen.x, screen.y);
+    } else if (this.kind === "p12_scenic") {
+      this.drawScenic(ctx, screen.x, screen.y);
+    } else if (this.kind === "p12_shortcut") {
+      this.drawShortcut(ctx, screen.x, screen.y);
     } else {
       this.drawSign(ctx, screen.x, screen.y);
     }
@@ -145,7 +158,7 @@ export class Interactable {
   }
 
   private drawWindmill(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-    ctx.strokeStyle = "rgba(245, 239, 196, 0.88)";
+    ctx.strokeStyle = this.windAwake ? "rgba(255, 248, 164, 0.98)" : "rgba(245, 239, 196, 0.88)";
     ctx.fillStyle = "rgba(57, 93, 103, 0.94)";
     ctx.lineWidth = 5;
     ctx.beginPath();
@@ -157,7 +170,7 @@ export class Interactable {
     ctx.fill();
     ctx.stroke();
     for (let index = 0; index < 4; index += 1) {
-      const angle = index * Math.PI / 2 + Math.PI / 4;
+      const angle = index * Math.PI / 2 + Math.PI / 4 + (this.windAwake ? 0.22 : 0);
       ctx.beginPath();
       ctx.moveTo(x, y - 10);
       ctx.lineTo(x + Math.cos(angle) * 34, y - 10 + Math.sin(angle) * 34);
@@ -184,5 +197,78 @@ export class Interactable {
     ctx.lineTo(x + 10, y + 12);
     ctx.closePath();
     ctx.fill();
+  }
+
+  private drawPuzzle(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 246, 194, 0.95)";
+    ctx.fillStyle = "rgba(58, 127, 143, 0.92)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x - 34, y + 20);
+    ctx.lineTo(x - 34, y - 22);
+    ctx.lineTo(x + 34, y - 22);
+    ctx.lineTo(x + 34, y + 20);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 24, y - 8);
+    ctx.lineTo(x, y - 20);
+    ctx.lineTo(x + 24, y - 8);
+    ctx.lineTo(x, y + 4);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  private drawReward(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.save();
+    ctx.fillStyle = "rgba(255, 222, 104, 0.96)";
+    ctx.shadowColor = "rgba(255, 226, 120, 0.78)";
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.arc(x, y - 4, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#fff7c1";
+    ctx.beginPath();
+    ctx.arc(x - 6, y - 10, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  private drawScenic(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 248, 212, 0.92)";
+    ctx.fillStyle = "rgba(47, 118, 135, 0.82)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x - 36, y + 24);
+    ctx.lineTo(x - 24, y - 28);
+    ctx.lineTo(x + 24, y - 28);
+    ctx.lineTo(x + 36, y + 24);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 18, y - 4);
+    ctx.lineTo(x, y - 18);
+    ctx.lineTo(x + 18, y - 4);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  private drawShortcut(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 239, 142, 0.95)";
+    ctx.lineWidth = 5;
+    ctx.setLineDash([8, 7]);
+    ctx.beginPath();
+    ctx.moveTo(x - 36, y + 18);
+    ctx.bezierCurveTo(x - 8, y - 28, x + 10, y + 28, x + 36, y - 18);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
   }
 }

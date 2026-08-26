@@ -21,8 +21,9 @@
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 手帳、進行メモ、オートセーブ、音まわりの最小整理 | 完了 |
 | P10 | 通しプレイ・体験版調整・GitHub Pages公開確認 | 新規セーブMVP通し、難易度・操作感、公開URL、Release確認 | 完了（Release PASS） |
 | P11 | Full Game Design / 本編基盤設計 | RPG/子どもUX/愛媛20市町調査、Adventure Area、探索・成長・戦闘・物語・技術ロードマップを確定 | 完了（設計） |
-| P12 | しまなみ Adventure Area Vertical Slice | 完成版探索ループ、風よみ、Subarea/chunk、lazy asset、save/fast travel、スマホUXを1地域で実証 | 次フェーズ |
-| P13 | Full Game Foundation | P12結果を反映してAdventure Area data model、Quest/Objective Service、Save migration、editor拡張を共通基盤化 | 未着手 |
+| P12 | しまなみ Adventure Area Vertical Slice | 完成版探索ループ、風よみ、Subarea/chunk、lazy asset、save/fast travel、スマホUXを1地域で実証 | 前段実装完了／KPI条件付き |
+| P12.1 | Shimanami Visual Completion & Manual Hard Gate | 本番画像統合、実runtime整合、60〜80分人手プレイ、探索KPI、スマホ／production QA、Go-No-Go | 実装更新済み／NO-GO・再検証待ち |
+| P13 | Full Game Foundation | P12結果を反映してAdventure Area data model、Quest/Objective Service、Save migration、editor拡張を共通基盤化 | P12.1 FINAL PASSまで着手禁止 |
 | P14 | 東予編 Completion | 石鎚・水脈の道、別子・紙の回廊を完成版品質で実装 | 未着手 |
 | P15 | 中予編 Completion | ちゅうよの水と器を実装し、Prologueから本編へのChapter Transitionを完成 | 未着手 |
 | P16 | 南予編 Completion | 肱川・灯り、岬と大地、宇和海・森の境を完成版品質で実装 | 未着手 |
@@ -102,3 +103,11 @@
 - P10のタイトル→Prologue→Ending回帰を壊さない。
 
 P12で密度・操作・迷子・ロードのHard Gateを満たせない場合、A3以降を量産せず、Adventure Area規格そのものを修正する。
+
+## P12.1 現在のGo / No-Go状態
+
+P12.1では、生成画像をA2-0〜A2-5へ統合し、背景とwalkable/collision、風field/battle rule、再訪報酬、Area単位lazy loading、横画面UIの候補修正まで完了した。
+
+一方、P12.1 branchは未デプロイで、Chrome実体・実機相当操作・60〜80分人手通し・production計測が未完了である。座標ベースのPython監査では、現在のfield導線が短く発見が固まりすぎるリスクも確認された。
+
+したがってP12.1の暫定判定は **P12 NO-GO / REVISION REQUIRED**。P13は、候補を公開環境で再検証し、密度・導線・スマホUXを修正してから開始する。

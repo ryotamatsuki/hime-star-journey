@@ -2,16 +2,39 @@
 
 ## 現在の状態
 
-- 現在のフェーズ: **P12 しまなみ Adventure Area Vertical Slice 実装完了（Chrome CI PASS／Hard Gate条件付きPASS）**
-- P11作業開始時 `origin/main`: `92bad8aa2b2e9c3aab1b9d6c34bb0dd482abb00c`
-- P11作業branch: `docs/p11-full-game-design`
+- 現在のフェーズ: **P12.1 Shimanami Visual Completion & Manual Hard Gate（実装更新済み／最終判定未成立）**
+- P12.1作業開始時 `origin/main`: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`
+- P12.1作業branch: `feature/p12-1-shimanami-final-validation`
 - P11では大規模runtime実装を行わず、完成版本編の構造・探索・成長・戦闘・物語・愛媛20市町・技術基盤を設計した。
 - P1〜P10で完成したMVPは削除せず、完成版の **Prologue「はじめての星めぐり」** として維持する。
-- P12 Chrome CI run #95でP7〜P12の全browser gateをPASSした。
-- P12の実装／操作／Prologue回帰Hard GateはPASS。60〜80分の人手通しプレイと探索KPIの定量判定は未計測のため条件付きPASSとした。
-- 次フェーズ: P12の人手KPI計測・production QA。その後にA3以降の量産可否を判断する。
+- P12 Chrome CI run #95は、P12.1変更前のmain由来critical pathとして参照する。P12.1作業環境ではChrome実体がなく、同コマンドを再実行できなかった。
+- P12.1で本番背景6枚、敵3種、Boss、NPC、Area単位lazy asset loading、walkable/collision、風battle rule、風のコンパス報酬、上島の風壁ゲート、スマホsafe-area修正を実装した。
+- 60〜80分人手通し、discovery中央値、60秒超区間、checkpoint/autosave、production branch QA、iOS/Android実操作は未完了。したがって最終判定は **P12 NO-GO / REVISION REQUIRED** とし、P13を開始しない。
+- 次の必須作業: PR CI（Chrome/Pages）再実行、公開候補で通常プレイ、3役以上の手動ログ統合、KPI計算、必要なマップ密度修正。
 - P10 runtime Release Gateは引き続きPrologue回帰基準として維持する。
 - 最終更新日: 2026-08-26
+
+## P12.1 現時点の実装・判定
+
+### 完了した実装
+
+- A2-0〜A2-5を固有の本番背景へ接続し、主要画面の旧 `bg_shimanami` procedural fallback依存を外した。
+- `docs/asset-prompts/p12.1/manifest.json` と `docs/asset-sources/p12.1/` に、生成prompt・source・runtime・SHA・使用場所を記録した。
+- 風車、帆パズル、景勝点、星のかけら、上島の風守、風の近道をruntimeへ統合した。
+- `風よみ`取得後の風道・風車変化、風battle rule、風のコンパス報酬、上島の物理的な風壁ゲートを追加した。
+- A2のwalkable polygonとcollisionRectsを画像構図に合わせ、Pythonのオブジェクト中心サンプルは6/6 Areaで歩行域内、guide path全点も0件の歩行域外へ修正した。
+- core assetとP12 Area assetを分離し、P12入場時は現在Areaに必要な背景・敵・NPCだけを遅延ロードする形へ変更した。
+- 390px横画面のsafe-area、手帳幅、星地図の縦はみ出し、Battle 6-cardの最小可読性を修正した。
+
+### 未成立のHard Gate
+
+- 実ブラウザChrome/Chromiumが実行環境にないため、P12.1候補のP7〜P12 browser verifierは未再実行。
+- GitHub Pages公開URLはP12.1 branch未デプロイのため、production候補の画像・ロード・404・consoleを未確認。
+- 3役のsub-agent監査は実施したが、実人間の60〜80分通しプレイではない。探索時間・discovery中央値・longest empty walk・battle/Boss時間は未計測。
+- iOS Safari相当／Android Chrome相当の実操作、safe-area、joystick疲労、BossとUIの重なりは未計測。
+- 座標下限のPython分析では、フィールド移動が短く発見が数秒間隔へ集中するリスクが判明した。60〜80分を満たす証拠には使えない。
+
+結論: **P12 NO-GO / REVISION REQUIRED**。画像とruntimeの次候補は作れたが、探索規格の実証とproduction evidenceがないため、P13へ進まない。
 
 ## フェーズ別進捗
 
@@ -27,7 +50,8 @@
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 完了 |
 | P10 | 通しプレイ・難易度調整・公開確認 | 完了（Release PASS） |
 | P11 | Full Game Design / 本編基盤設計 | 完了（設計） |
-| P12 | しまなみ Adventure Area Vertical Slice | 実装完了（Chrome CI PASS／Hard Gate条件付き） |
+| P12 | しまなみ Adventure Area Vertical Slice | 前段実装は完了（Chrome CI #95／探索KPI条件付き） |
+| P12.1 | Shimanami Visual Completion & Manual Hard Gate | 画像・runtime修正済み／manual・production gate未完、NO-GO保留 |
 | P13〜P17 | Full Game Foundation〜Finale / Release Gate | 未着手 |
 
 ## P10 Release基準

@@ -5,23 +5,29 @@
   "name": "上島の島道",
   "worldWidth": 1920,
   "worldHeight": 1080,
-  "backgroundAssetId": "bg_shimanami",
+  "backgroundAssetId": "bg_shimanami_A2_4_kamijima_path",
   "playerStart": { "x": 260, "y": 540 },
   "cameraBounds": { "id": "camera_shimanami_A2_4", "x": 0, "y": 0, "width": 1920, "height": 1080 },
-  "walkableRects": [
-    { "id": "shimanami_A2_4_kamijima_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "上島の島道" }
+  "walkableRects": [],
+  "walkablePolygons": [
+    { "id": "shimanami_A2_4_kamijima_road", "points": [{ "x": 120, "y": 430 }, { "x": 600, "y": 420 }, { "x": 900, "y": 450 }, { "x": 1250, "y": 450 }, { "x": 1700, "y": 430 }, { "x": 1700, "y": 680 }, { "x": 1250, "y": 700 }, { "x": 900, "y": 720 }, { "x": 600, "y": 690 }, { "x": 120, "y": 680 }] }
   ],
-  "walkablePolygons": [],
-  "collisionRects": [],
+  "collisionRects": [
+    { "id": "shimanami_A2_4_citrus_grove", "x": 870, "y": 160, "width": 280, "height": 160, "label": "柑橘畑" }
+  ],
   "guidePaths": [
     { "id": "shimanami_A2_4_kamijima_path", "label": "上島を横切る道", "points": [{ "x": 260, "y": 540 }, { "x": 560, "y": 520 }, { "x": 940, "y": 560 }, { "x": 1360, "y": 540 }, { "x": 1600, "y": 540 }] }
   ],
   "enemySpawns": [
-    { "id": "A2-E03", "x": 940, "y": 560, "label": "くろほガモメ" }
+    { "id": "A2-E03", "x": 940, "y": 560, "label": "くろほガモメ" },
+    { "id": "A2-E08", "x": 720, "y": 520, "label": "かぜぬすみ" }
   ],
-  "npcPositions": [],
+  "npcPositions": [
+    { "id": "npc_p12_kamijima_guide", "x": 420, "y": 540, "label": "上島の風守" }
+  ],
   "interactablePositions": [
     { "id": "p12_kamijima_discovery", "x": 560, "y": 520, "width": 112, "height": 92, "label": "上島の記憶" },
+    { "id": "p12_kamijima_shortcut", "x": 1260, "y": 520, "width": 112, "height": 92, "label": "風の近道" },
     { "id": "p12_kamijima_to_boss", "x": 1600, "y": 540, "width": 120, "height": 92, "label": "風の灯台への道" }
   ],
   "eventPositions": [],

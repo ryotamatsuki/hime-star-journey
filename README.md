@@ -6,7 +6,7 @@ P1〜P10で松山市内の「道後温泉→松山城→カゲマサ→Ending」
 
 ## 現在のフェーズ
 
-P11「Full Game Design / 本編基盤設計」を土台に、P12「しまなみ Adventure Area Vertical Slice」のruntime実装とChrome/CI回帰を完了しました。P12はHard Gateのうち、実装・操作・回帰をPASSし、実プレイ時間と探索密度の定量値は追加の手動計測が必要な **条件付きPASS** です。
+P11「Full Game Design / 本編基盤設計」を土台に、P12.1「Shimanami Visual Completion & Manual Hard Gate」を専用branchで進行中です。しまなみ本番背景6枚、敵3種、Boss、NPC、Area単位asset loading、walkable/collision整合、風rule、再訪報酬、スマホUI修正まで実装しました。ただし60〜80分の人手通しプレイ、production QA、実機相当のiOS/Android確認、探索KPIの実測が未完了のため、P12 Final Gateは **NO-GO / REVISION REQUIRED** としています。
 
 P11では大規模runtime実装を行わず、以下を確定しました。
 
@@ -60,7 +60,7 @@ P12では今治市・上島町の「しまなみ・島風の航路」だけを�
 
 Hard Gateを満たさない場合、後続Adventure Areaを量産せず規格を修正します。
 
-### P12 Hard Gate判定
+### P12 Hard Gate判定（P12.1暫定）
 
 GitHub ActionsのChrome CI run #95（2026-08-26 JST）で、次をPASSしました。
 
@@ -70,7 +70,9 @@ GitHub ActionsのChrome CI run #95（2026-08-26 JST）で、次をPASSしまし�
 - 390px幅でのtouch移動UIとInteract導線。
 - typecheck、lint、map/editor検証、build、P10 Prologue回帰。
 
-このCI verifierはseed済みcritical pathの機械検証であり、60〜80分の人手通しプレイ、発見間隔中央値20〜45秒、無発見移動60秒以内、checkpoint間隔5〜8分を直接測定しません。したがってP12の判定は **実装／回帰Hard Gate: PASS、探索KPI Hard Gate: 条件付きPASS** とします。A3以降の量産開始は、これらの定量値を人手プレイで再計測してから判断します。
+このCI verifierはseed済みcritical pathの機械検証であり、60〜80分の人手通しプレイ、発見間隔中央値20〜45秒、無発見移動60秒以内、checkpoint間隔5〜8分を直接測定しません。P12.1でコードと本番画像は更新しましたが、現時点の判定は **実装／回帰は候補PASS、探索・スマホ・production Hard Gateは未成立** です。A3以降の量産とP13移行は、実測完了まで禁止します。
+
+P12.1開始時の最新 `origin/main` は `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`、作業branchは `feature/p12-1-shimanami-final-validation` です。生成物のprovenanceは `docs/asset-prompts/p12.1/` に保存しています。
 
 ## P10 runtime baseline
 
