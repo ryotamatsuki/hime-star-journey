@@ -188,13 +188,17 @@ export class BattleScreen implements GameScreen {
   }
 
   private renderBackground(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+    const shimanamiBattleBackgrounds: Record<string, string> = {
+      "A2-0": "bg_shimanami_A2_0_port_hub",
+      "A2-1": "bg_shimanami_A2_1_bridge_route",
+      "A2-2": "bg_shimanami_A2_2_island_village",
+      "A2-3": "bg_shimanami_A2_3_watchtower",
+      "A2-4": "bg_shimanami_A2_4_kamijima_path",
+      "A2-5": "bg_shimanami_A2_5_wind_lighthouse"
+    };
     const backgroundAssetId =
       this.battleParams?.returnLocationId === "shimanami"
-        ? this.battleParams.returnAreaId === "A2-5"
-          ? "bg_shimanami_A2_5_wind_lighthouse"
-          : this.battleParams.returnAreaId === "A2-3"
-          ? "bg_shimanami_A2_3_watchtower"
-          : "bg_shimanami_A2_1_bridge_route"
+        ? shimanamiBattleBackgrounds[this.battleParams.returnAreaId ?? ""] ?? "bg_shimanami_A2_1_bridge_route"
         : this.battleParams?.returnLocationId === "castle" || this.battleParams?.isBoss
         ? "bg_castle_battle"
         : "bg_dogo_battle";

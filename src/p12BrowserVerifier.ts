@@ -76,13 +76,6 @@ async function finishDialogue(): Promise<void> {
   assert(!isDialogueVisible(), "P12導入会話を通常の次へ／閉じる操作で完了する");
 }
 
-async function tapKey(code: string, key: string): Promise<void> {
-  window.dispatchEvent(new KeyboardEvent("keydown", { code, key, bubbles: true, cancelable: true }));
-  await sleep(80);
-  window.dispatchEvent(new KeyboardEvent("keyup", { code, key, bubbles: true, cancelable: true }));
-  await sleep(120);
-}
-
 async function holdKeys(keys: Array<{ code: string; key: string }>, durationMs: number): Promise<void> {
   for (const key of keys) window.dispatchEvent(new KeyboardEvent("keydown", { ...key, bubbles: true, cancelable: true }));
   await sleep(durationMs);
@@ -131,12 +124,11 @@ async function moveTo(
 
 async function inspect(label: string): Promise<void> {
   const target = button(label, false);
-  if (target) {
-    target.click();
-    await sleep(180);
-    return;
+  if (!target || target.hidden || target.disabled) {
+    throw new Error(`Interactable button unavailable: ${label}`);
   }
-  await tapKey("Enter", "Enter");
+  target.click();
+  await sleep(180);
 }
 
 async function fightEnemy(symbolId: string, label: string, boss = false): Promise<void> {
@@ -272,6 +264,9 @@ async function verify(): Promise<void> {
 
   await moveTo({ x: 560, y: 520 }, "上島の記憶");
   await inspect("上島の記憶");
+  await moveTo({ x: 1260, y: 520 }, "風の近道");
+  await inspect("風の近道");
+  assert(new SaveManager(SAVE_KEY).load()?.flags.p12_kamijima_shortcut_open === true, "風の近道を開く");
   await moveTo({ x: 940, y: 560 }, "くろほガモメ", 34, true);
   await fightEnemy("A2-E03", "くろほガモメ");
   await moveTo({ x: 1600, y: 540 }, "風の灯台への道");

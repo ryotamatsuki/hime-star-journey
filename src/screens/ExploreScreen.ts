@@ -56,7 +56,8 @@ const PATH_GUIDE_DURATION_MS = 2800;
 const FIRST_ENEMY_HINT_RADIUS = 132;
 const YUNO_EVENT_DURATION_MS = 6400;
 const CASTLE_GUARD_EVENT_DURATION_MS = 5200;
-const P12_KAMIJIMA_WIND_BARRIER: Rect = {
+const P12_KAMIJIMA_WIND_BARRIER = {
+  id: "p12_kamijima_wind_barrier",
   x: 1380,
   y: 388,
   width: 120,
@@ -1404,10 +1405,10 @@ export class ExploreScreen implements GameScreen {
       "wind_revisit",
       rewardAlreadyClaimed
         ? "同じ風車の羽根が、風よみの前とは違う音を奏でた。道がひらく。"
-        : "同じ風車の羽根が風を返し、風のコンパスを落とした。戻ってきた道に、確かな報酬がある。"
+        : "同じ風車の羽根が風よみの前とは違う音を奏で、風のコンパスを落とした。戻ってきた道に、確かな報酬がある。"
     );
     if (!rewardAlreadyClaimed) {
-      this.recordP12Discovery("wind_revisit_reward", "風のコンパスを手に入れた。風道の向きが、手帳にも記録された。");
+      this.recordP12Discovery("wind_revisit_reward", "違う音を奏でた風車から、風のコンパスを手に入れた。風道の向きが、手帳にも記録された。");
     }
   }
 
@@ -1486,6 +1487,10 @@ export class ExploreScreen implements GameScreen {
         this.recordP12Discovery("bridge_wind_puzzle", "帆を海峡の風へ合わせた。短い風道が橋の先を照らした。");
         return;
       case "p12_bridge_to_watchtower":
+        if (!this.saveData.flags.p12_bridge_sail_aligned) {
+          this.message = "帆の向きを合わせると、橋の風道が見えるようになる。";
+          return;
+        }
         this.recordP12Discovery("bridge_memory", "橋の記憶を胸に、海城の見張り台へ向かう。");
         this.checkpointP12("bridge");
         this.transitionP12("A2-3");
@@ -1552,6 +1557,12 @@ export class ExploreScreen implements GameScreen {
           ...this.saveData,
           flags: { ...this.saveData.flags, p12_kamijima_shortcut_open: true }
         });
+        this.area = {
+          ...this.area,
+          collisionRects: this.area.collisionRects.filter(
+            (rect) => rect !== P12_KAMIJIMA_WIND_BARRIER
+          )
+        };
         this.windRevealRemainingMs = 4200;
         this.recordP12Discovery("kamijima_shortcut", "風よみで見つけた近道が、以前の島道を灯台へつないだ。");
         return;
