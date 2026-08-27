@@ -403,7 +403,11 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
   await clickButton("湯の星の気配", false);
   await finishDialogue();
   await waitFor(() => Boolean(document.querySelector(".star-map-ui")), "星地図", 12000);
+  await clickButton("探索へ戻る");
+  await waitForExplore("Dogo Onsen");
   await openAndVerifyNotebook("旅の記録 6/10", "湯の星");
+  await tapKey("KeyM", "m");
+  await waitFor(() => Boolean(document.querySelector(".star-map-ui")), "手帳確認後の星地図再表示");
   for (let index = 0; index < 5 && !bodyText().includes("松山城 / "); index += 1) await tapKey("ArrowRight", "ArrowRight");
   assert(bodyText().includes("松山城 / "), "星地図で松山城を選択できる");
   await tapKey("Enter", "Enter");
