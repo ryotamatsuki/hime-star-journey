@@ -397,13 +397,10 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
     { x: 1280, y: 560 },
     { x: 1240, y: 540 },
     { x: 1200, y: 520 },
-    { x: 1160, y: 520 },
-    { x: 1120, y: 500 },
-    { x: 1080, y: 500 },
-    { x: 1020, y: 520 }
+    { x: 1160, y: 520 }
   ], "湯の星への帰路");
-  await moveAlong([{ x: 1015, y: 520 }], "湯の星");
-  await tapKey("Enter", "Enter");
+  await waitFor(() => Boolean(button("湯の星の気配", false)), "湯の星のinteraction", 5000);
+  await clickButton("湯の星の気配", false);
   await finishDialogue();
   await waitFor(() => Boolean(document.querySelector(".star-map-ui")), "星地図", 12000);
   await openAndVerifyNotebook("旅の記録 6/10", "湯の星");
