@@ -388,7 +388,10 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
     await moveAlong(route.points, route.label);
     await fightEnemy(route.id, route.label);
   }
-  await moveAlong([{ x: 840, y: 700 }, { x: 900, y: 620 }, { x: 960, y: 560 }, { x: 1015, y: 520 }], "湯の星");
+  const dogoEastRoute = dogoRoutes.find((route) => route.id === "D-E03");
+  if (!dogoEastRoute) throw new Error("D-E03 route is missing");
+  await moveAlong([...dogoEastRoute.points.slice(0, -2)].reverse(), "湯の星への帰路");
+  await moveAlong([{ x: 900, y: 620 }, { x: 960, y: 560 }, { x: 1015, y: 520 }], "湯の星");
   await tapKey("Enter", "Enter");
   await finishDialogue();
   await waitFor(() => Boolean(document.querySelector(".star-map-ui")), "星地図", 12000);
