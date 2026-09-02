@@ -408,7 +408,7 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
   await tapKey("Enter", "Enter");
   await waitForExplore("松山城 C0");
   await finishDialogue();
-  await openAndVerifyNotebook("旅の記録 6/10", "湯の星");
+  await openAndVerifyNotebook("旅の記録 7/10", "湯の星");
   await moveAlong([{ x: 500, y: 610 }], "松山城の見回り");
   await waitFor(() => visible(document.querySelector<HTMLButtonElement>(".explore-talk-button")), "城山の見回り");
   await clickButton("城山の見回りと話す");
@@ -471,18 +471,18 @@ async function main(): Promise<void> {
     verifyNotebookData();
     verifySaveCompatibility();
     const phase = localStorage.getItem(PHASE_KEY);
-    if (phase === "endingReload") {
-      await runAfterEndingReload();
-    } else if (phase === "earlyReload") {
+    if (phase === "earlyReload") {
       await runAfterEarlyReload();
+    } else if (phase === "endingReload") {
+      await runAfterEndingReload();
     } else {
       await runFreshPlaythrough();
     }
     setStatus("pass");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(error);
     setStatus("fail", message);
+    throw error;
   }
 }
 
