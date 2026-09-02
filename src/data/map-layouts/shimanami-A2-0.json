@@ -28,7 +28,7 @@
   "interactablePositions": [
     { "id": "p12_hub_log", "x": 1540, "y": 760, "width": 112, "height": 90, "label": "港の航路図" },
     { "id": "p12_hub_bridge_route", "x": 1080, "y": 720, "width": 120, "height": 92, "label": "橋道の入口" },
-    { "id": "p12_hub_boat_route", "x": 820, "y": 650, "width": 120, "height": 92, "label": "小舟の桟橋" },
+    { "id": "p12_hub_boat_route", "x": 820, "y": 660, "width": 120, "height": 92, "label": "小舟の桟橋" },
     { "id": "p12_hub_windmill", "x": 140, "y": 720, "width": 112, "height": 116, "label": "港の風車" },
     { "id": "p12_hub_scenic_point", "x": 1280, "y": 780, "width": 112, "height": 92, "label": "港の景勝点" }
   ],
