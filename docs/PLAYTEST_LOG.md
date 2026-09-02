@@ -62,8 +62,6 @@
 
 判定: **P12 NO-GO / REVISION REQUIRED**。画像・runtime統合は次候補まで進んだが、手動Hard Gateとproduction QAを閉じていない。P13へ進まない。
 
-
-
 ### Playtest-004 / A2-4導線修正
 
 - 日時: 2026-08-27（JST）
@@ -85,3 +83,20 @@
 - 検証状態: Pythonによるwalkable／collision／interactable監査と、A2全域の開始地点・敵コライダー・guide pathを含む `maps:validate`、typecheck、lint、editor:smoke、buildはPASS。候補branchのChrome CI、通常操作60〜80分、人手KPI、iOS/Android相当操作、production QAは未完了。
 
 判定: **P12 NO-GO / REVISION REQUIRED**。候補実装は更新したが、ブラウザCIと人手Hard Gateの証拠がないため、merge・P13移行は保留する。
+
+### Playtest-006 / P12.1 Final Candidate QA
+
+- 日時: 2026-09-03（JST）
+- 対象: PR #16 `feature/p12-1-shimanami-final-validation`
+- 基準main: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`
+- Chrome CI: Actions #123 (`33696821948`)、code candidate HEAD `7e9fb2da52108ca620e2bb640594d5d2b2ca7c5d` で `git diff --check`、npm ci、typecheck、lint、maps:validate、editor:smoke、build、P7、P8、P9、P10、P11、P12を同一runでPASS。
+- P10 #104回帰: safe battle return導入後もP10 verifierがD-E03戦後の旧直線導線を仮定していたことが原因。runtimeの湯の星は通常interaction可能であり、verifierを実道・実interaction・現行StarMap contractへ追随させてclosureした。
+- P12 browser: 橋道route、帆パズル、A2-E01、風よみ、同じ風車revisit、風のコンパス、上島の風壁／近道、A2-E03、灯台、Boss、victory save、telemetryまでfail-closedでPASS。A2-E03戦後はwalkable内・collision外・敵collider外の安全復帰を意味的に検証。
+- Production visual: Actions visual QA bundleの実PNGを表示し、背景6枚、敵3種、Boss、NPCを独立確認。11 runtime assetのSHA256はmanifestと11/11一致。
+- Walkable/collision overlay: A2-0〜A2-5の本番背景へwalkable、collision、guide path、objectを重ねて確認。A2-0で小舟用walkableがフェリー船体側へ食い込むHighを検出し、船体側branchを撤去して石畳岸壁のみwalkableに変更。boat portalも岸壁側へ移動した。
+- Interaction: A2-3の風車／上島portal、A2-2のreward／portalは配置を分離。A2-2の星のかけらはSave正規化で1個上限とし、再interactionによる無限取得を防止。
+- Lazy loading: TitleはP12 assetをcore manifestから除外し、Shimanami入場後に現在Areaの背景・敵・NPCのみ `loadAreaAssets()` する構造を確認。明白なblocking issueなし。final performance数値は次工程で測る。
+- Independent review: runtime/save、P10 compatibility、map/geometry、visual、interaction/child navigation、battle/wind/return、lazy loading/assets、full diff/test adequacyの8 roleで独立review passを実施。Critical 0、High 0。Medium/Observationとして、小舟routeの完全browser E2Eは人手Gateへ残ること、A2-4の風shortcutは能力で可視化される草地shortcutであること、Area asset非同期ロード時の短時間fallback可能性を記録。
+- 未実施: 60〜80分人手通常操作、exploration KPI本計測、iOS/Android実機相当Final QA、merge後production QA、Final P12判定。
+
+候補判定: **READY FOR MANUAL HARD GATE**。P12 FINAL PASSではない。PR #16はmergeしない。次工程は60〜80分人手通常操作Hard Gateであり、P13は開始しない。
