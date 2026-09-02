@@ -27,7 +27,10 @@ const itemCounts = (value: unknown): Record<string, number> => {
       .filter((entry): entry is [string, number] =>
         typeof entry[1] === "number" && Number.isFinite(entry[1]) && entry[1] >= 0
       )
-      .map(([key, count]) => [key, Math.floor(count)])
+      .map(([key, count]) => [
+        key,
+        key === "p12_star_shard" ? Math.min(1, Math.floor(count)) : Math.floor(count)
+      ])
   );
 };
 const nonNegativeNumberArray = (value: unknown): number[] =>
