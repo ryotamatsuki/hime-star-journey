@@ -23,11 +23,11 @@
     { "id": "A2-E07", "x": 1000, "y": 960, "label": "しおガニ" }
   ],
   "npcPositions": [
-    { "id": "npc_p12_watchkeeper", "x": 420, "y": 850, "label": "見張り台の子" }
+    { "id": "npc_p12_watchkeeper", "x": 600, "y": 900, "label": "見張り台の子" }
   ],
   "interactablePositions": [
     { "id": "p12_wind_memory", "x": 360, "y": 780, "width": 112, "height": 96, "label": "風よみの星" },
-    { "id": "p12_windmill", "x": 1420, "y": 620, "width": 112, "height": 116, "label": "見張り台の風車" },
+    { "id": "p12_windmill", "x": 1280, "y": 760, "width": 112, "height": 116, "label": "見張り台の風車" },
     { "id": "p12_watchtower_scenic", "x": 1180, "y": 620, "width": 112, "height": 92, "label": "海城の景勝点" },
     { "id": "p12_watchtower_to_island", "x": 1510, "y": 620, "width": 120, "height": 92, "label": "上島への道" }
   ],
