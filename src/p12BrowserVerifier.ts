@@ -318,6 +318,8 @@ async function verify(): Promise<void> {
 
   await moveTo({ x: 756, y: 786 }, "上島の記憶");
   await inspect("上島の記憶");
+  await moveTo({ x: 850, y: 900 }, "風の近道への島道");
+  await moveTo({ x: 1050, y: 830 }, "風の近道への枝道");
   await moveTo({ x: 1230, y: 820 }, "風の近道");
   await inspect("風の近道");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_kamijima_shortcut_open === true, "風の近道を開く");
