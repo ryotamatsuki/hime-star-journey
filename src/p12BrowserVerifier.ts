@@ -239,27 +239,27 @@ async function verify(): Promise<void> {
   await waitFor(() => bodyText().includes("現在地：来島の橋道"), "橋道へのエリア遷移");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_route_bridge === true, "Hubで橋道ルートを選択して保存する");
 
-  await moveTo({ x: 576, y: 806 }, "橋の記憶");
+  await moveTo({ x: 556, y: 806 }, "橋の記憶");
   await inspect("橋の記憶");
   assert(bodyText().includes("橋の欄干") || new SaveManager(SAVE_KEY).load()?.flags.p12_discovery_bridge_memory === true, "橋の記憶を発見する");
   await moveTo({ x: 816, y: 696 }, "帆の向き合わせ");
   await inspect("帆の向き合わせ");
   assert(new SaveManager(SAVE_KEY).load()?.flags.p12_bridge_sail_aligned === true, "橋道の風パズルを保存する");
-  await moveTo({ x: 1050, y: 600 }, "かぜぬすみ", 34, true);
+  await moveTo({ x: 1000, y: 600 }, "かぜぬすみ", 34, true);
   await fightEnemy("A2-E01", "かぜぬすみ");
-  await moveTo({ x: 1300, y: 600 }, "橋道の出口へ戻る");
-  await moveTo({ x: 1640, y: 666 }, "見張り台への道");
+  await moveTo({ x: 1200, y: 520 }, "橋道の出口へ戻る");
+  await moveTo({ x: 1460, y: 421 }, "見張り台への道");
   await inspect("見張り台への道");
   await waitFor(() => bodyText().includes("現在地：海城の見張り台"), "見張り台へのエリア遷移");
 
-  await moveTo({ x: 1476, y: 678 }, "風よみ前の風車");
+  await moveTo({ x: 1336, y: 818 }, "風よみ前の風車");
   await inspect("見張り台の風車");
   assert(bodyText().includes("風車は止まっている"), "風よみ前の風車が停止していることを確認する");
   await moveTo({ x: 416, y: 828 }, "風よみの星");
   await inspect("風よみの星");
   let save = new SaveManager(SAVE_KEY).load();
   assert(save?.flags.p12_wind_ability === true, "風よみの取得をセーブする");
-  await moveTo({ x: 1476, y: 678 }, "風よみ後の同じ風車");
+  await moveTo({ x: 1336, y: 818 }, "風よみ後の同じ風車");
   await inspect("見張り台の風車");
   save = new SaveManager(SAVE_KEY).load();
   assert(save?.flags.p12_windmill_revisited === true, "風よみ後に同じ風車を再訪する");
@@ -268,7 +268,7 @@ async function verify(): Promise<void> {
   await inspect("上島への道");
   await waitFor(() => bodyText().includes("現在地：上島の島道"), "上島へのエリア遷移");
 
-  await moveTo({ x: 820, y: 820 }, "上島の記憶");
+  await moveTo({ x: 756, y: 786 }, "上島の記憶");
   await inspect("上島の記憶");
   await moveTo({ x: 1230, y: 820 }, "風の近道");
   await inspect("風の近道");
