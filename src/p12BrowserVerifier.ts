@@ -1,8 +1,11 @@
 import "./styles.css";
 import { GameApp } from "./core/GameApp";
 import { SaveManager } from "./core/SaveManager";
+import { getEnemySymbolById } from "./data/enemySymbols";
 import { getMapLayout } from "./data/mapLayoutRegistry";
 import { P12_AREA_IDS, p12DiscoveryCount } from "./data/p12";
+import { Player } from "./entities/Player";
+import { intersects, isRectWithinWalkableAreas, wouldCollide } from "./systems/CollisionSystem";
 import type { SaveData } from "./types/save";
 
 const SAVE_KEY = "__p12_browser_verifier_save__";
@@ -91,6 +94,36 @@ function playerPosition(): { x: number; y: number } | null {
   return Number.isFinite(x) && Number.isFinite(y)
     ? { x: (x / 100) * WORLD_WIDTH, y: (y / 100) * WORLD_HEIGHT }
     : null;
+}
+
+function isSafeBattleReturnPosition(position: { x: number; y: number }, symbolId: string): boolean {
+  const enemy = getEnemySymbolById(symbolId);
+  if (!enemy) return false;
+  const layout = getMapLayout(enemy.locationId, enemy.areaId);
+  if (!layout) return false;
+
+  const playerCollider = new Player(position.x, position.y).getCollider();
+  const bounds = layout.cameraBounds;
+  const withinBounds = playerCollider.x >= bounds.x
+    && playerCollider.y >= bounds.y
+    && playerCollider.x + playerCollider.width <= bounds.x + bounds.width
+    && playerCollider.y + playerCollider.height <= bounds.y + bounds.height;
+  if (!withinBounds || wouldCollide(playerCollider, layout.collisionRects ?? [])) return false;
+
+  const walkableRects = layout.walkableRects ?? [];
+  const walkablePolygons = layout.walkablePolygons ?? [];
+  const withinWalkable = walkableRects.length === 0 && walkablePolygons.length === 0
+    ? true
+    : isRectWithinWalkableAreas(playerCollider, walkableRects, walkablePolygons);
+  if (!withinWalkable) return false;
+
+  const enemyCollider = {
+    x: enemy.x + enemy.collider.x,
+    y: enemy.y + enemy.collider.y,
+    width: enemy.collider.width,
+    height: enemy.collider.height
+  };
+  return !intersects(playerCollider, enemyCollider);
 }
 
 async function moveTo(
@@ -183,8 +216,23 @@ async function fightEnemy(symbolId: string, label: string, boss = false): Promis
   const save = new SaveManager(SAVE_KEY).load();
   assert(save?.defeatedEnemyIds.includes(symbolId), `${label}の勝利結果をセーブする`);
   if (symbolId === "A2-E03") {
+    await waitFor(() => playerPosition() !== null, `${label} safe return position`, 3000);
     const returned = playerPosition();
-    assert(Boolean(returned && returned.x > 1300), "上島の必須敵戦後に戦闘地点付近へ安全復帰する");
+    const savedReturn = save?.playerPosition;
+    assert(
+      Boolean(returned && isSafeBattleReturnPosition(returned, symbolId)),
+      `上島の必須敵戦後にwalkable内・collision外・敵collider外へ安全復帰する position=${JSON.stringify(returned)} saved=${JSON.stringify(savedReturn)}`
+    );
+    assert(
+      Boolean(savedReturn && isSafeBattleReturnPosition(savedReturn, symbolId)),
+      `上島の必須敵戦後の安全復帰位置をsaveにも保持する saved=${JSON.stringify(savedReturn)}`
+    );
+    const enemy = getEnemySymbolById(symbolId);
+    const returnDistance = returned && enemy ? Math.hypot(returned.x - enemy.x, returned.y - enemy.y) : Number.POSITIVE_INFINITY;
+    assert(
+      returnDistance <= 420,
+      `上島の必須敵戦後に戦闘地点付近へ復帰する position=${JSON.stringify(returned)} distance=${Math.round(returnDistance)}`
+    );
   }
 }
 
@@ -278,6 +326,7 @@ async function verify(): Promise<void> {
   await moveTo({ x: 1690, y: 850 }, "風の灯台への道");
   await inspect("風の灯台への道");
   await waitFor(() => bodyText().includes("現在地：風の灯台"), "Boss空間へのエリア遷移");
+
   await moveTo({ x: 1050, y: 820 }, "しまかぜ大だこ", 34, true);
   await fightEnemy("A2-B01", "しまかぜ大だこ", true);
 
