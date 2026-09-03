@@ -232,4 +232,30 @@ P12.1の本番背景を座標グリッドと重ねて確認した結果、旧geo
 
 ただしbrowser verifierは通常操作の代替ではなく、keyboard eventとDOM buttonを使う契約検証である。60〜80分の人手通し、実機smartphone、production load/performanceは別Hard Gateとして残す。
 
-**現時点の判定**: geometry/runtime修正候補を追加した段階であり、Chrome CI再実行と人手Hard Gateが未完了のため、正式判定は引き続き **P12 NO-GO / REVISION REQUIRED** とする。
+**当時の判定**: geometry/runtime修正候補を追加した段階ではChrome CI再実行と人手Hard Gateが未完了だったため、**P12 NO-GO / REVISION REQUIRED** とした。この判定は2026-09-03のDEC-P12.1-06で候補準備状態のみ更新する。
+
+## 2026-09-03 P12.1 Final Candidate QA
+
+### DEC-P12.1-04 production backgroundの可視地面を最終geometryの正本とする
+
+Actionsのvisual QA bundleから本番背景6枚・敵3種・Boss・NPCの実PNGを表示し、A2-0〜A2-5へwalkable/collision/guide/objectを重ねて確認する。manifestやschemaだけではvisual PASSとしない。
+
+A2-0では、小舟route用walkable branchがフェリー船体側へ食い込んでいたためHighと判定した。船体側branchを撤去し、歩行域を石畳岸壁へ限定し、小舟portalを岸壁側へ移した。`maps:validate`が移動後portal中心の4px境界外を検出したため、portalをさらに可歩行域内へ調整した。
+
+**理由**: schema上到達可能でも、背景上で海・船・建物を歩ける状態は本作の探索品質として不合格だからである。production画像と実geometryの整合を最終候補判定のHard Constraintとする。
+
+### DEC-P12.1-05 browser verifierは固定座標ではなくruntimeの意味契約を検証する
+
+Actions #104のP10失敗は、safe battle return導入後もP10 verifierがD-E03戦後の旧直線導線を仮定していたことが直接原因だった。途中runではruntime上「湯の星の気配」が通常interaction可能な地点まで到達できていたため、Dogo runtimeを巻き戻さず、verifierを実道・interaction可能状態・現行StarMap contractへ追随させた。
+
+P12でも、A2-E03戦後の復帰は単一の期待座標ではなく、walkable内・collision外・enemy collider外であることを意味的に検証する。
+
+**理由**: verifier座標をゲーム仕様の正本にすると、安全復帰やgeometry改善を誤ってregression扱いし、逆に実runtime bugを隠す可能性があるため。
+
+### DEC-P12.1-06 READY FOR MANUAL HARD GATEとP12 FINAL PASSを分離する
+
+Actions #123 (`33696821948`) のcode candidate HEAD `7e9fb2da52108ca620e2bb640594d5d2b2ca7c5d` で、`git diff --check`、npm ci、typecheck、lint、maps:validate、editor:smoke、build、P7〜P12 browserを同一runですべてPASSした。実画像visual/geometry reviewと8つの独立review passではCritical 0、High 0となった。
+
+したがってP12.1 candidateは **READY FOR MANUAL HARD GATE** とする。ただしこれはP12 FINAL PASSではない。60〜80分の人手通常操作、exploration KPI本計測、iOS/Android実機相当Final QA、production merge後QAを完了するまでPR #16はmergeせず、P13/A3量産を開始しない。
+
+**理由**: 自動CI・静的検証・画像レビューで保証できる範囲と、人間の探索時間・迷子復帰・操作疲労・実機性能でしか保証できない範囲を明確に分離するため。
