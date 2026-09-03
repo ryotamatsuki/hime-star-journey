@@ -20,6 +20,21 @@ P4.5では会話枠・話者名・本文・次へボタンは画像生成せず�
 
 P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画像生成し直した。旧画像は参照キービジュアルに近く、UI・キャラクター・敵・カードを含んでいたため、`public/assets/generated/_backup/p5_1/dogo_battle_bg_before_p5_1.png` に退避した。新しい背景はBattleScreenで使用済み。
 
+## P12.1 しまなみ本番ビジュアル
+
+P12.1ではA2-0〜A2-5の本番背景6枚、しまなみ地域敵3種、Boss、NPCを `docs/asset-prompts/p12.1/manifest.json` とsource/provenance/SHA256付きで管理し、runtimeのArea単位lazy loadingへ接続した。2026-09-03 Final Candidate QAで11 assetの実PNGそのものを表示し、背景6枚はwalkable/collision/guide path overlayを重ねて確認した。
+
+A2-0では小舟routeのwalkableがフェリー船体へ食い込むHighを検出し、船体側walkable枝を撤去して小舟portalを岸壁側へ移動した。A2-1〜A2-5はproduction地面と主要walkable/guide/collisionのCritical/Highなし。A2-3の風車／上島portal、A2-2の星のかけら／portalもprogression interactionを奪わない配置へ分離済み。Actions #123ではvisual QA bundle upload、static/build、P7〜P12 Chrome gateを同一HEAD・同一runでPASSした。
+
+| ID群 | 用途 | 状態 | 接続先 / 備考 |
+|---|---|---|---|
+| `bg_shimanami_A2_0_port_hub` ～ `bg_shimanami_A2_5_wind_lighthouse` | しまなみA2背景6枚 | generated / connected / final-candidate-reviewed | ExploreScreen、しまなみBattleScreen。実画像＋geometry overlayを確認。A2-0 High修正後、Critical/High 0。manifestのsource/runtime/SHA一致。 |
+| `enemy_shimanami_wind_thief`, `enemy_shimanami_tide_crab`, `enemy_shimanami_gull` | 地域敵3種 | processed-transparent / connected / final-candidate-reviewed | 実PNGを表示してcharacter readabilityを確認。Field enemy symbol、通常Battleでcontain描画。Critical/High 0。 |
+| `boss_shimanami_octopus` | しまかぜ大だこ | processed-transparent / connected / final-candidate-reviewed | 実PNGを表示してsilhouette/landmark readabilityを確認。A2-5 field、Boss battle。Critical/High 0。 |
+| `npc_shimanami_keeper` | しまなみ案内NPC | processed-transparent / connected / final-candidate-reviewed | 実PNGを表示してreadabilityを確認。A2 NPC。Critical/High 0。現状は同一assetを各Subareaで使用。 |
+
+P12.1 production visual candidateの **Critical 0 / High 0**。ただしこれはFinal P12 asset completionではない。60〜80分人手Hard Gate、iOS/Android実機相当Final QA、merge後GitHub Pagesのproduction load/404/console/performance QAは未実施のため、PR #16はmergeせず **READY FOR MANUAL HARD GATE** で停止する。
+
 ## P6 プロローグ・湯の星
 
 | ファイル群 | 用途 | 状態 | 接続先 |
@@ -132,5 +147,3 @@ P5.1では `dogo_battle_bg` を道後温泉通常戦闘専用背景として画�
 ## 参照画像
 
 主要ビジュアル8枚は `docs/visual-reference/key-visuals/` に整理済み。これらは構図、色、UI密度の参照であり、Runtime Assetとして直接使用しない。P2方針変更後も上書きしていない。
-
-

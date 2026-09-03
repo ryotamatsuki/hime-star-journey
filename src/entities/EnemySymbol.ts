@@ -60,7 +60,12 @@ export class EnemySymbol {
     ctx.globalAlpha *= opacity;
 
     if (image) {
-      ctx.drawImage(image, screen.x - drawSize / 2, screen.y - drawSize, drawSize, drawSize);
+      const sourceAspect = image.naturalWidth > 0 && image.naturalHeight > 0
+        ? image.naturalWidth / image.naturalHeight
+        : 1;
+      const drawWidth = sourceAspect > 1 ? drawSize : drawSize * sourceAspect;
+      const drawHeight = sourceAspect > 1 ? drawSize / sourceAspect : drawSize;
+      ctx.drawImage(image, screen.x - drawWidth / 2, screen.y - drawHeight, drawWidth, drawHeight);
       ctx.restore();
       return;
     }

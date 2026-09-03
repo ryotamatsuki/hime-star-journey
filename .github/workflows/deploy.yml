@@ -24,6 +24,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR diff whitespace
+        if: github.event_name == 'pull_request'
+        run: git diff --check "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -48,6 +54,19 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Upload P12 visual QA bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: p12-visual-qa-bundle
+          path: |
+            public/assets/generated/backgrounds/shimanami_*.png
+            public/assets/generated/enemies/shimanami_*.png
+            public/assets/generated/bosses/shimanami_*.png
+            public/assets/generated/characters/shimanami_keeper.png
+            src/data/map-layouts/shimanami-A2-*.json
+            docs/asset-prompts/p12.1/manifest.json
+          if-no-files-found: error
 
       - name: Start verifier dev server
         run: |

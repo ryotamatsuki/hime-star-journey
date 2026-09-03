@@ -1,0 +1,20 @@
+{
+  "phase": "P12.1",
+  "generatedAt": "2026-08-26",
+  "branch": "feature/p12-1-shimanami-final-validation",
+  "sourceDirectory": "docs/asset-sources/p12.1",
+  "runtimeDirectory": "public/assets/generated",
+  "assets": [
+    { "id": "bg_shimanami_A2_0_port_hub", "runtime": "backgrounds/shimanami_A2_0_port_hub.png", "source": "p12.1_A2-0_port_hub_source.png", "sha256": "00ebc383f59af7841fc69e137815304e6f41d91a34d5d965b4ccf7a82ec31444", "use": ["A2-0 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_1_bridge_route", "runtime": "backgrounds/shimanami_A2_1_bridge_route.png", "source": "p12.1_A2-1_bridge_route_source.png", "sha256": "447e250e9c68d046e416ecf88bf04b167b6d04e4c79d2692865b775f448676aa", "use": ["A2-1 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_2_island_village", "runtime": "backgrounds/shimanami_A2_2_island_village.png", "source": "p12.1_A2-2_island_village_source.png", "sha256": "c030921ff41de7ae5eb296f6362bd800da2d28e4ae931e304613a4a459d09b09", "use": ["A2-2 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_3_watchtower", "runtime": "backgrounds/shimanami_A2_3_watchtower.png", "source": "p12.1_A2-3_watchtower_source.png", "sha256": "3a505f276b4fff5a1d5491ef52ddd670df2305c5ac32729165dc3e4f8d988c42", "use": ["A2-3 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_4_kamijima_path", "runtime": "backgrounds/shimanami_A2_4_kamijima_path.png", "source": "p12.1_A2-4_kamijima_source.png", "sha256": "f663dfaf05b430266de0f63fcc0e2ca92b96dd8c098f5b9394ec3b53d7e6e75d", "use": ["A2-4 Explore", "P12 normal battle"] },
+    { "id": "bg_shimanami_A2_5_wind_lighthouse", "runtime": "backgrounds/shimanami_A2_5_wind_lighthouse.png", "source": "p12.1_A2-5_lighthouse_source.png", "sha256": "25a657d74a039be59cb9b454d429c35378879bb8b630e1be0ab5aed964863fd3", "use": ["A2-5 Explore", "Boss battle"] },
+    { "id": "enemy_shimanami_wind_thief", "runtime": "enemies/shimanami_wind_thief.png", "source": "p12.1_enemy_wind_thief_source.png", "sha256": "2a77f6e520f50f88d6750782199734ba4a2d03462b3fb111f0c60387d9005bce", "use": ["A2-E01", "A2-E05", "A2-E08"] },
+    { "id": "enemy_shimanami_tide_crab", "runtime": "enemies/shimanami_tide_crab.png", "source": "p12.1_enemy_tide_crab_source.png", "sha256": "267427fafe2279aec91936f238098372b11841d38e89bead586125465f6137b7", "use": ["A2-E02", "A2-E04", "A2-E07"] },
+    { "id": "enemy_shimanami_gull", "runtime": "enemies/shimanami_gull.png", "source": "p12.1_enemy_gull_source.png", "sha256": "b21dfaff3797a3f44d4350654921d39fef19f2f830fb7191c048d3e53376049d", "use": ["A2-E03", "A2-E06"] },
+    { "id": "boss_shimanami_octopus", "runtime": "bosses/shimanami_wind_octopus.png", "source": "p12.1_boss_wind_octopus_source.png", "sha256": "50a8929a09df4b38119396518e234dacd5e15b9000ec44d6374358ad4b6047d6", "use": ["A2-B01", "A2-5 battle"] },
+    { "id": "npc_shimanami_keeper", "runtime": "characters/shimanami_keeper.png", "source": "p12.1_npc_keeper_source.png", "sha256": "be6aa1935a3fb442417d4df805f7c43d14ff2489a59c1ad9ab6f1b875e13af6d", "use": ["A2 NPCs"] }
+  ]
+}

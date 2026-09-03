@@ -65,7 +65,8 @@ export class Player {
           normalizedY * this.speed * deltaTime,
           walkableRects,
           walkablePolygons,
-          bounds
+          bounds,
+          collisionRects
         )
         : moveRectWithCollisions(
           currentCollider,

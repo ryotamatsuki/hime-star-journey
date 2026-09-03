@@ -5,24 +5,27 @@
   "name": "風の灯台",
   "worldWidth": 1920,
   "worldHeight": 1080,
-  "backgroundAssetId": "bg_shimanami",
-  "playerStart": { "x": 260, "y": 540 },
+  "backgroundAssetId": "bg_shimanami_A2_5_wind_lighthouse",
+  "playerStart": { "x": 320, "y": 850 },
   "cameraBounds": { "id": "camera_shimanami_A2_5", "x": 0, "y": 0, "width": 1920, "height": 1080 },
-  "walkableRects": [
-    { "id": "shimanami_A2_5_lighthouse_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "風の灯台" }
+  "walkableRects": [],
+  "walkablePolygons": [
+    { "id": "shimanami_A2_5_lighthouse_arena", "points": [{ "x": 120, "y": 720 }, { "x": 380, "y": 650 }, { "x": 720, "y": 620 }, { "x": 1100, "y": 620 }, { "x": 1400, "y": 650 }, { "x": 1700, "y": 720 }, { "x": 1700, "y": 940 }, { "x": 1400, "y": 1040 }, { "x": 500, "y": 1040 }, { "x": 120, "y": 940 }] },
+    { "id": "shimanami_A2_5_lighthouse_stairs", "points": [{ "x": 1160, "y": 600 }, { "x": 1500, "y": 600 }, { "x": 1580, "y": 760 }, { "x": 1400, "y": 820 }, { "x": 1220, "y": 760 }] }
   ],
-  "walkablePolygons": [],
-  "collisionRects": [],
+  "collisionRects": [
+    { "id": "shimanami_A2_5_lighthouse_body", "x": 1260, "y": 180, "width": 200, "height": 350, "label": "風の灯台" }
+  ],
   "guidePaths": [
-    { "id": "shimanami_A2_5_boss_path", "label": "灯台への一本道", "points": [{ "x": 260, "y": 540 }, { "x": 600, "y": 540 }, { "x": 1030, "y": 560 }, { "x": 1500, "y": 540 }] }
+    { "id": "shimanami_A2_5_boss_path", "label": "灯台への一本道", "points": [{ "x": 320, "y": 850 }, { "x": 700, "y": 820 }, { "x": 1050, "y": 820 }, { "x": 1350, "y": 700 }] }
   ],
   "enemySpawns": [
-    { "id": "A2-B01", "x": 1030, "y": 560, "label": "しまかぜ大だこ" }
+    { "id": "A2-B01", "x": 1050, "y": 820, "label": "しまかぜ大だこ" }
   ],
   "npcPositions": [],
   "interactablePositions": [
-    { "id": "p12_boss_altar", "x": 600, "y": 540, "width": 112, "height": 96, "label": "灯台の祭壇" },
-    { "id": "p12_boss_to_island", "x": 320, "y": 540, "width": 120, "height": 92, "label": "島道へ戻る" }
+    { "id": "p12_boss_altar", "x": 760, "y": 720, "width": 112, "height": 96, "label": "灯台の祭壇" },
+    { "id": "p12_boss_to_island", "x": 220, "y": 800, "width": 120, "height": 92, "label": "島道へ戻る" }
   ],
   "eventPositions": [],
   "markers": [

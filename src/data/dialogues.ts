@@ -225,7 +225,7 @@ export const dialogueEvents: DialogueEventData[] = [
       {
         speakerId: "port_master",
         speakerName: "港の船大工",
-        portraitAssetId: "npc_dogo_guide",
+        portraitAssetId: "npc_shimanami_keeper",
         text: "橋道は風の記憶が残りやすい。小舟道は潮の音が手がかりになるよ。"
       },
       {
@@ -244,7 +244,7 @@ export const dialogueEvents: DialogueEventData[] = [
       {
         speakerId: "bridge_keeper",
         speakerName: "橋道の見張り",
-        portraitAssetId: "npc_dogo_guide",
+        portraitAssetId: "npc_shimanami_keeper",
         text: "橋の上では、風が昔の旅人の声を運んでくる。星の紐を探してごらん。"
       }
     ]
@@ -257,7 +257,7 @@ export const dialogueEvents: DialogueEventData[] = [
       {
         speakerId: "island_keeper",
         speakerName: "島の船守",
-        portraitAssetId: "npc_yumori_grandma",
+        portraitAssetId: "npc_shimanami_keeper",
         text: "集落の石垣に、風を待つ人の記憶が残っとる。急がず、音を聞いて進みんさい。"
       }
     ]
@@ -270,7 +270,7 @@ export const dialogueEvents: DialogueEventData[] = [
       {
         speakerId: "watchkeeper",
         speakerName: "見張り台の子",
-        portraitAssetId: "npc_dogo_guide",
+        portraitAssetId: "npc_shimanami_keeper",
         text: "風の星は、風車が止まった場所にあるよ。受け取ったら、同じ羽根をもう一度見て。"
       },
       {
@@ -278,6 +278,25 @@ export const dialogueEvents: DialogueEventData[] = [
         speakerName: "シロ",
         portraitAssetId: "portrait_shiro",
         text: "風よみを手に入れる前と後で、同じ場所の意味が変わるんだね。"
+      }
+    ]
+  },
+  {
+    id: "npc_p12_kamijima_guide",
+    triggerType: "npc",
+    once: false,
+    lines: [
+      {
+        speakerId: "kamijima_keeper",
+        speakerName: "上島の風守",
+        portraitAssetId: "npc_shimanami_keeper",
+        text: "上島では、風をつかまえずに待つんだよ。風が通る道を残しておくのさ。"
+      },
+      {
+        speakerId: "shiro",
+        speakerName: "シロ",
+        portraitAssetId: "portrait_shiro",
+        text: "だから、風よみは道を閉じる力じゃなくて、道を見つける力なんだね。"
       }
     ]
   }

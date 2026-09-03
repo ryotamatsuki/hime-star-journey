@@ -388,16 +388,27 @@ async function runRemainderAfterEarlyReload(): Promise<void> {
     await moveAlong(route.points, route.label);
     await fightEnemy(route.id, route.label);
   }
-  await moveAlong([{ x: 840, y: 700 }, { x: 900, y: 620 }, { x: 960, y: 560 }, { x: 1015, y: 520 }], "湯の星");
-  await tapKey("Enter", "Enter");
+  await moveAlong([
+    { x: 1410, y: 630 },
+    { x: 1390, y: 630 },
+    { x: 1380, y: 620 },
+    { x: 1360, y: 600 },
+    { x: 1320, y: 580 },
+    { x: 1280, y: 560 },
+    { x: 1240, y: 540 },
+    { x: 1200, y: 520 },
+    { x: 1160, y: 520 }
+  ], "湯の星への帰路");
+  await waitFor(() => Boolean(button("湯の星の気配", false)), "湯の星のinteraction", 5000);
+  await clickButton("湯の星の気配", false);
   await finishDialogue();
   await waitFor(() => Boolean(document.querySelector(".star-map-ui")), "星地図", 12000);
-  await openAndVerifyNotebook("旅の記録 6/10", "湯の星");
   for (let index = 0; index < 5 && !bodyText().includes("松山城 / "); index += 1) await tapKey("ArrowRight", "ArrowRight");
   assert(bodyText().includes("松山城 / "), "星地図で松山城を選択できる");
   await tapKey("Enter", "Enter");
   await waitForExplore("松山城 C0");
   await finishDialogue();
+  await openAndVerifyNotebook("旅の記録 7/10", "湯の星");
   await moveAlong([{ x: 500, y: 610 }], "松山城の見回り");
   await waitFor(() => visible(document.querySelector<HTMLButtonElement>(".explore-talk-button")), "城山の見回り");
   await clickButton("城山の見回りと話す");
@@ -460,18 +471,18 @@ async function main(): Promise<void> {
     verifyNotebookData();
     verifySaveCompatibility();
     const phase = localStorage.getItem(PHASE_KEY);
-    if (phase === "endingReload") {
-      await runAfterEndingReload();
-    } else if (phase === "earlyReload") {
+    if (phase === "earlyReload") {
       await runAfterEarlyReload();
+    } else if (phase === "endingReload") {
+      await runAfterEndingReload();
     } else {
       await runFreshPlaythrough();
     }
     setStatus("pass");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(error);
     setStatus("fail", message);
+    throw error;
   }
 }
 

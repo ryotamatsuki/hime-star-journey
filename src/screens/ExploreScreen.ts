@@ -12,6 +12,7 @@ import { NPC } from "../entities/NPC";
 import { Player } from "../entities/Player";
 import { getEnemySymbolsForArea } from "../data/enemySymbols";
 import { getEncounterById } from "../data/encounters";
+import { p12AssetManifest } from "../data/assets";
 import { getInteractablesForArea } from "../data/interactables";
 import { dogoArea, getMapArea, type MapAreaData, type WalkablePolygon } from "../data/maps";
 import { getNpcsForArea } from "../data/npcs";
@@ -24,11 +25,17 @@ import {
   p12RequiredEnemiesCleared
 } from "../data/p12";
 import { castleQuest, dogoQuest } from "../data/quests";
-import { expandRect, intersects, type Rect } from "../systems/CollisionSystem";
+import {
+  expandRect,
+  intersects,
+  isRectWithinWalkableAreas,
+  wouldCollide,
+  type Rect
+} from "../systems/CollisionSystem";
 import { DialogueSystem } from "../systems/DialogueSystem";
 import type { BattleStartParams } from "../types/battle";
 import type { GameScreen, ScreenId } from "../types/game";
-import type { SaveData } from "../types/save";
+import type { P12TelemetryEvent, SaveData } from "../types/save";
 import { DialogueBox } from "../ui/DialogueBox";
 
 type ExploreScreenOptions = {
@@ -43,6 +50,10 @@ type ExploreScreenParams = {
   saveData?: SaveData;
   locationId?: string;
   areaId?: string;
+  playerPosition?: {
+    x: number;
+    y: number;
+  };
 };
 
 type EnemyContactInfo = {
@@ -55,9 +66,18 @@ const PATH_GUIDE_DURATION_MS = 2800;
 const FIRST_ENEMY_HINT_RADIUS = 132;
 const YUNO_EVENT_DURATION_MS = 6400;
 const CASTLE_GUARD_EVENT_DURATION_MS = 5200;
+const P12_KAMIJIMA_WIND_BARRIER = {
+  id: "p12_kamijima_wind_barrier",
+  x: 1340,
+  y: 720,
+  width: 120,
+  height: 260
+};
 
 function interactionPriority(id: string): number {
   if (id === "p12_windmill") return 3;
+  if (id === "p12_bridge_wind_puzzle") return 3;
+  if (id.includes("p12_") && (id.includes("puzzle") || id.includes("reward") || id.includes("scenic") || id.includes("shortcut"))) return 2;
   if (id.includes("p12_") && id.includes("discovery")) return 2;
   if (id.includes("p12_") && (id.includes("_route") || id.includes("_to_"))) return 1;
   if (id === "dogo_star_placeholder") return 2;
@@ -99,6 +119,8 @@ export class ExploreScreen implements GameScreen {
   private castleGuardEventMs = 0;
   private p12PlaytimeMs = 0;
   private p12PersistAccumulatorMs = 0;
+  private windRevealRemainingMs = 0;
+  private shiroSearchButton: HTMLButtonElement | null = null;
 
   constructor(private readonly options: ExploreScreenOptions) {}
 
@@ -110,6 +132,25 @@ export class ExploreScreen implements GameScreen {
     const areaId = typedParams?.areaId ?? nextSave.currentAreaId;
 
     this.area = getMapArea(locationId, areaId);
+    if (
+      this.area.locationId === "shimanami" &&
+      this.area.id === "A2-4" &&
+      !nextSave.flags.p12_kamijima_shortcut_open
+    ) {
+      this.area = {
+        ...this.area,
+        collisionRects: [...this.area.collisionRects, P12_KAMIJIMA_WIND_BARRIER]
+      };
+    }
+    if (this.area.locationId === "shimanami") {
+      const areaAssetIds = new Set([
+        this.area.backgroundAssetId,
+        ...getEnemySymbolsForArea(this.area.locationId, this.area.id).map((symbol) => symbol.assetId),
+        ...getNpcsForArea(this.area.locationId, this.area.id).map((npc) => npc.assetId)
+      ]);
+      const areaAssets = p12AssetManifest.images.filter((asset) => areaAssetIds.has(asset.id));
+      void this.options.assetLoader.loadAreaAssets(areaAssets).then(() => this.updateUi());
+    }
     this.camera.setWorldSize(this.area.worldWidth, this.area.worldHeight);
     this.saveData = this.options.saveManager.save({
       ...nextSave,
@@ -122,8 +163,36 @@ export class ExploreScreen implements GameScreen {
       currentLocationId: this.area.locationId,
       currentAreaId: this.area.id
     });
+    if (this.area.locationId === "shimanami") {
+      const areaIds = [...(this.saveData.p12AreaIds ?? [])];
+      const areaTimes = [...(this.saveData.p12AreaEnterElapsedMs ?? [])];
+      if (areaIds.at(-1) !== this.area.id) {
+        areaIds.push(this.area.id);
+        areaTimes.push(Math.round(this.saveData.p12SessionElapsedMs ?? 0));
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          p12AreaIds: areaIds,
+          p12AreaEnterElapsedMs: areaTimes
+        });
+      }
+      this.saveData = this.options.saveManager.save(this.appendP12Event(this.saveData, {
+        type: "area_enter",
+        id: this.area.id,
+        areaId: this.area.id,
+        elapsedMs: Math.round(this.saveData.p12SessionElapsedMs ?? 0)
+      }));
+    }
 
-    this.player = new Player(this.area.playerStart.x, this.area.playerStart.y);
+    const requestedPlayerPosition = typedParams?.playerPosition
+      ?? (nextSave.currentLocationId === this.area.locationId && nextSave.currentAreaId === this.area.id
+        ? nextSave.playerPosition
+        : undefined);
+    const playerPosition = this.resolvePlayerPosition(requestedPlayerPosition);
+    this.player = new Player(playerPosition.x, playerPosition.y);
+    this.saveData = this.options.saveManager.save({
+      ...this.saveData,
+      playerPosition
+    });
     this.companion = new Companion(this.player.x + 62, this.player.y - 42);
     this.camera.follow(this.player.x, this.player.y);
     this.enemySymbols = getEnemySymbolsForArea(this.area.locationId, this.area.id)
@@ -132,6 +201,9 @@ export class ExploreScreen implements GameScreen {
     this.interactables = getInteractablesForArea(this.area.locationId, this.area.id).map(
       (interactable) => new Interactable(interactable, (target) => this.showMessage(target.message))
     );
+    this.interactables.forEach((interactable) => {
+      interactable.setWindAwake(Boolean(this.saveData?.flags.p12_wind_ability));
+    });
     this.npcs = getNpcsForArea(this.area.locationId, this.area.id).map((npc) => new NPC(npc));
     this.transitioningToBattle = false;
     this.nearbyInteractable = null;
@@ -139,6 +211,7 @@ export class ExploreScreen implements GameScreen {
     this.lastEnemyContact = null;
     this.debugOverlayVisible = false;
     this.pathGuideRemainingMs = 0;
+    this.windRevealRemainingMs = 0;
     this.p12PlaytimeMs = this.area.locationId === "shimanami" ? this.saveData.p12SessionElapsedMs ?? 0 : 0;
     this.p12PersistAccumulatorMs = 0;
     this.message = this.getAreaIntroMessage();
@@ -165,10 +238,17 @@ export class ExploreScreen implements GameScreen {
       this.p12PersistAccumulatorMs += deltaTime * 1000;
       if (this.p12PersistAccumulatorMs >= 2000) {
         this.p12PersistAccumulatorMs = 0;
-        this.saveData = this.options.saveManager.save({
+        const elapsedMs = Math.round(this.p12PlaytimeMs);
+        this.saveData = this.options.saveManager.save(this.appendP12Event({
           ...this.saveData,
-          p12SessionElapsedMs: Math.round(this.p12PlaytimeMs)
-        });
+          p12SessionElapsedMs: elapsedMs,
+          playerPosition: { x: this.player.x, y: this.player.y }
+        }, {
+          type: "save_write",
+          id: "autosave",
+          areaId: this.area.id,
+          elapsedMs
+        }));
       }
     }
 
@@ -223,6 +303,7 @@ export class ExploreScreen implements GameScreen {
     }
 
     this.pathGuideRemainingMs = Math.max(0, this.pathGuideRemainingMs - deltaTime * 1000);
+    this.windRevealRemainingMs = Math.max(0, this.windRevealRemainingMs - deltaTime * 1000);
 
     this.player.update(
       deltaTime,
@@ -281,6 +362,8 @@ export class ExploreScreen implements GameScreen {
     ctx.imageSmoothingEnabled = true;
     this.renderMapLayer(ctx, this.area.backgroundAssetId, 1);
     this.renderPathGuide(ctx);
+    this.renderWindPaths(ctx);
+    this.renderKamijimaWindBarrier(ctx);
     this.renderDepthSortedWorldObjects(ctx);
     this.renderMapLayer(ctx, this.area.foregroundAssetId, 0.86);
     this.renderSteamOverlay(ctx);
@@ -291,12 +374,14 @@ export class ExploreScreen implements GameScreen {
 
   exit(): void {
     this.options.uiRoot.innerHTML = "";
+    delete this.options.uiRoot.dataset.dialogueActive;
     this.messageElement = null;
     this.nearbyElement = null;
     this.statusElement = null;
     this.miniMapElement = null;
     this.talkButton = null;
     this.pathGuideButton = null;
+    this.shiroSearchButton = null;
     this.interactButton = null;
     this.dialogueBox?.destroy();
     this.dialogueBox = null;
@@ -530,7 +615,7 @@ export class ExploreScreen implements GameScreen {
     const hints = document.createElement("p");
     hints.className = "explore-hints";
     hints.textContent =
-      "移動：WASD / 矢印　調べる：Enter / Space　道しるべ：H　開発表示：G　星地図：M　戻る：Esc";
+      "移動：WASD / 矢印 / タッチパッド　調べる：Enter / Space / ボタン　道しるべ：H　星地図：M　戻る：Esc";
     this.nearbyElement = document.createElement("p");
     this.nearbyElement.className = "nearby-note";
     this.talkButton = document.createElement("button");
@@ -550,6 +635,12 @@ export class ExploreScreen implements GameScreen {
     this.pathGuideButton.type = "button";
     this.pathGuideButton.textContent = "道しるべ";
     this.pathGuideButton.addEventListener("click", () => this.showPathGuide());
+    this.shiroSearchButton = document.createElement("button");
+    this.shiroSearchButton.className = "menu-button explore-shiro-search-button";
+    this.shiroSearchButton.type = "button";
+    this.shiroSearchButton.textContent = "シロ検索";
+    this.shiroSearchButton.title = "シロに今の目的を聞く";
+    this.shiroSearchButton.addEventListener("click", () => this.showShiroSearch());
     const mapButton = document.createElement("button");
     this.mapButton = mapButton;
     mapButton.className = "menu-button explore-map-button";
@@ -563,6 +654,7 @@ export class ExploreScreen implements GameScreen {
       this.nearbyElement,
       this.talkButton,
       this.interactButton,
+      this.shiroSearchButton,
       this.pathGuideButton,
       mapButton
     );
@@ -689,6 +781,9 @@ export class ExploreScreen implements GameScreen {
       this.interactButton.disabled = !canInteract;
       this.interactButton.textContent = this.nearbyInteractable ? `${this.nearbyInteractable.label}を調べる` : "調べる";
     }
+    if (this.shiroSearchButton) {
+      this.shiroSearchButton.disabled = this.dialogueSystem.isActive();
+    }
 
     this.syncDialogueBox();
     this.updateMiniMap();
@@ -805,6 +900,13 @@ export class ExploreScreen implements GameScreen {
     this.updateUi();
   }
 
+  private showShiroSearch(): void {
+    this.pathGuideRemainingMs = PATH_GUIDE_DURATION_MS;
+    this.message = `シロ検索：${this.getQuestObjective().replace(/^もくてき：/, "")}`;
+    this.lastEnemyContact = null;
+    this.updateUi();
+  }
+
   private tryStartDialogue(dialogueId: string): boolean {
     if (!this.saveData) {
       return false;
@@ -842,10 +944,12 @@ export class ExploreScreen implements GameScreen {
     const line = this.dialogueSystem.getCurrentLine();
 
     if (!line) {
+      delete this.options.uiRoot.dataset.dialogueActive;
       this.dialogueBox?.hide();
       return;
     }
 
+    this.options.uiRoot.dataset.dialogueActive = "true";
     this.dialogueBox?.show(line, this.dialogueSystem.isCurrentLineLast());
   }
 
@@ -908,6 +1012,51 @@ export class ExploreScreen implements GameScreen {
       ctx.beginPath();
       ctx.arc(screen.x, screen.y, 4 + ease * 3, 0, Math.PI * 2);
       ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  private renderWindPaths(ctx: CanvasRenderingContext2D): void {
+    if (!this.saveData) return;
+    const bridgePuzzleActive = this.area.id === "A2-1" && this.saveData.flags.p12_bridge_sail_aligned === true;
+    if (!this.saveData.flags.p12_wind_ability && !bridgePuzzleActive) return;
+    const persistent = Boolean(this.saveData.flags.p12_windmill_revisited) || bridgePuzzleActive;
+    if (!persistent && this.windRevealRemainingMs <= 0) return;
+
+    const revealProgress = this.windRevealRemainingMs > 0
+      ? Math.sin((this.windRevealRemainingMs / 4200) * Math.PI)
+      : 0.72;
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    for (const path of this.area.guidePaths ?? []) {
+      this.drawGuidePath(ctx, path.points, 0.45 + revealProgress * 0.45);
+    }
+    ctx.restore();
+  }
+
+  private renderKamijimaWindBarrier(ctx: CanvasRenderingContext2D): void {
+    if (
+      this.area.id !== "A2-4" ||
+      this.saveData?.flags.p12_kamijima_shortcut_open
+    ) {
+      return;
+    }
+
+    const top = this.camera.worldToScreen({ x: P12_KAMIJIMA_WIND_BARRIER.x + 20, y: P12_KAMIJIMA_WIND_BARRIER.y + 18 });
+    const bottom = this.camera.worldToScreen({ x: P12_KAMIJIMA_WIND_BARRIER.x + 20, y: P12_KAMIJIMA_WIND_BARRIER.y + P12_KAMIJIMA_WIND_BARRIER.height - 18 });
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    ctx.strokeStyle = "rgba(132, 225, 255, 0.76)";
+    ctx.shadowColor = "rgba(98, 214, 255, 0.88)";
+    ctx.shadowBlur = 18;
+    ctx.lineWidth = 7;
+    ctx.lineCap = "round";
+    for (let index = 0; index < 3; index += 1) {
+      const offset = index * 28;
+      ctx.beginPath();
+      ctx.moveTo(top.x + offset, top.y);
+      ctx.bezierCurveTo(top.x + offset - 28, top.y + 54, bottom.x + offset + 28, bottom.y - 54, bottom.x + offset, bottom.y);
+      ctx.stroke();
     }
     ctx.restore();
   }
@@ -1087,6 +1236,7 @@ export class ExploreScreen implements GameScreen {
     }
 
     const encounter = getEncounterById(enemy.encounterId);
+    const returnPlayerPosition = this.getBattleReturnPosition(enemy);
     this.lastEnemyContact = {
       enemySymbolId: enemy.symbolId,
       encounterId: enemy.encounterId,
@@ -1096,16 +1246,96 @@ export class ExploreScreen implements GameScreen {
     this.updateUi();
 
     this.transitioningToBattle = true;
+    const battleStartSave = this.appendP12Event({
+      ...this.saveData,
+      currentScreenId: "battle",
+      currentLocationId: this.area.locationId,
+      currentAreaId: this.area.id,
+      playerPosition: returnPlayerPosition,
+      p12SessionElapsedMs: this.area.locationId === "shimanami"
+        ? Math.round(this.p12PlaytimeMs)
+        : this.saveData.p12SessionElapsedMs
+    }, {
+      type: encounter?.isBoss === true ? "boss_start" : "battle_start",
+      id: enemy.symbolId,
+      areaId: this.area.id,
+      elapsedMs: Math.round(this.p12PlaytimeMs)
+    });
+    this.saveData = this.options.saveManager.save(battleStartSave);
     const params: BattleStartParams & { saveData: SaveData } = {
       enemySymbolId: enemy.symbolId,
       encounterId: enemy.encounterId,
       returnLocationId: this.area.locationId,
       returnAreaId: this.area.id,
       isBoss: encounter?.isBoss === true,
+      returnPlayerPosition,
       saveData: this.saveData
     };
 
     this.options.screenManager.change("battle", params);
+  }
+
+  private resolvePlayerPosition(position?: { x: number; y: number }): { x: number; y: number } {
+    if (position && this.isSafePlayerPosition(position)) {
+      return { x: position.x, y: position.y };
+    }
+    return { x: this.area.playerStart.x, y: this.area.playerStart.y };
+  }
+
+  private isSafePlayerPosition(position: { x: number; y: number }): boolean {
+    if (!Number.isFinite(position.x) || !Number.isFinite(position.y)) return false;
+
+    const candidate = new Player(position.x, position.y);
+    const collider = candidate.getCollider();
+    const bounds = this.area.cameraBounds;
+    const withinBounds = collider.x >= bounds.x
+      && collider.y >= bounds.y
+      && collider.x + collider.width <= bounds.x + bounds.width
+      && collider.y + collider.height <= bounds.y + bounds.height;
+    if (!withinBounds || wouldCollide(collider, this.area.collisionRects)) return false;
+
+    const walkableRects = this.area.walkableRects;
+    const walkablePolygons = this.area.walkablePolygons ?? [];
+    return walkableRects.length === 0 && walkablePolygons.length === 0
+      ? true
+      : isRectWithinWalkableAreas(collider, walkableRects, walkablePolygons);
+  }
+
+  private getBattleReturnPosition(enemy: EnemySymbol): { x: number; y: number } {
+    const current = { x: this.player.x, y: this.player.y };
+    const awayX = current.x - enemy.x;
+    const awayY = current.y - enemy.y;
+    const distance = Math.hypot(awayX, awayY);
+    const direction = distance > 0.001
+      ? { x: awayX / distance, y: awayY / distance }
+      : { x: -1, y: 0 };
+    const candidates = [
+      current,
+      { x: current.x + direction.x * 72, y: current.y + direction.y * 72 },
+      { x: current.x + direction.x * 120, y: current.y + direction.y * 120 },
+      { x: current.x + direction.x * 168, y: current.y + direction.y * 168 },
+      this.area.playerStart
+    ];
+
+    return candidates.find((candidate) => {
+      if (!this.isSafePlayerPosition(candidate)) return false;
+      return !intersects(new Player(candidate.x, candidate.y).getCollider(), enemy.getCollider());
+    }) ?? { x: this.area.playerStart.x, y: this.area.playerStart.y };
+  }
+
+  private appendP12Event(save: SaveData, event: P12TelemetryEvent): SaveData {
+    if (this.area.locationId !== "shimanami") return save;
+    return {
+      ...save,
+      p12EventLog: [...(save.p12EventLog ?? []), event]
+    };
+  }
+
+  private isP12EnemyDefeated(enemyId: string): boolean {
+    if (!this.saveData) return false;
+    return this.saveData.defeatedEnemyIds.includes(enemyId)
+      || this.saveData.flags[`enemy_defeated_${enemyId}`] === true
+      || this.saveData.flags[`enemy_defeated_${enemyId.replace("-", "_")}`] === true;
   }
 
   private syncQuestProgress(): void {
@@ -1147,8 +1377,16 @@ export class ExploreScreen implements GameScreen {
       || nextFlags.enemy_defeated_A2_B01 === true
       || nextFlags["enemy_defeated_A2-B01"] === true;
     if (bossDefeated && !nextFlags.p12_completed) {
-      const withDiscovery = markP12Discovery(this.saveData, "boss_clear", this.p12PlaytimeMs);
-      const completed = completeP12(withDiscovery);
+      const withDiscovery = markP12Discovery(this.saveData, "boss_clear", Math.round(this.p12PlaytimeMs));
+      const withEvent = this.saveData.p12DiscoveryIds?.includes("boss_clear")
+        ? withDiscovery
+        : this.appendP12Event(withDiscovery, {
+            type: "discovery",
+            id: "boss_clear",
+            areaId: this.area.id,
+            elapsedMs: Math.round(this.p12PlaytimeMs)
+          });
+      const completed = completeP12(withEvent);
       this.saveData = this.options.saveManager.save({
         ...completed,
         flags: {
@@ -1257,38 +1495,95 @@ export class ExploreScreen implements GameScreen {
 
   private recordP12Discovery(discoveryId: string, message: string): void {
     if (!this.saveData) return;
+    const elapsedMs = Math.round(this.p12PlaytimeMs);
+    const isNewDiscovery = !(this.saveData.p12DiscoveryIds ?? []).includes(discoveryId);
+    const marked = markP12Discovery(
+      { ...this.saveData, p12SessionElapsedMs: elapsedMs },
+      discoveryId,
+      elapsedMs
+    );
+    const nextSave = isNewDiscovery
+      ? this.appendP12Event(marked, {
+          type: discoveryId.endsWith("_reward") ? "reward" : "discovery",
+          id: discoveryId,
+          areaId: this.area.id,
+          elapsedMs
+        })
+      : marked;
     this.saveData = this.options.saveManager.save(
-      markP12Discovery(
-        { ...this.saveData, p12SessionElapsedMs: Math.round(this.p12PlaytimeMs) },
-        discoveryId,
-        Math.round(this.p12PlaytimeMs)
-      )
+      nextSave
     );
     this.message = message;
     this.lastEnemyContact = null;
   }
 
+  private activateP12WindmillRevisit(): void {
+    if (!this.saveData) return;
+    const rewardAlreadyClaimed = Boolean(this.saveData.flags.p12_windmill_rewarded);
+    this.saveData = this.options.saveManager.save({
+      ...this.saveData,
+      acquiredItems: rewardAlreadyClaimed
+        ? this.saveData.acquiredItems
+        : {
+            ...this.saveData.acquiredItems,
+            p12_wind_compass: (this.saveData.acquiredItems.p12_wind_compass ?? 0) + 1
+          },
+      flags: {
+        ...this.saveData.flags,
+        p12_windmill_revisited: true,
+        p12_windmill_rewarded: true
+      }
+    });
+    this.windRevealRemainingMs = 4200;
+    this.interactables.forEach((interactable) => interactable.setWindAwake(true));
+    this.recordP12Discovery(
+      "wind_revisit",
+      rewardAlreadyClaimed
+        ? "同じ風車の羽根が、風よみの前とは違う音を奏でた。道がひらく。"
+        : "同じ風車の羽根が風よみの前とは違う音を奏で、風のコンパスを落とした。戻ってきた道に、確かな報酬がある。"
+    );
+    if (!rewardAlreadyClaimed) {
+      this.recordP12Discovery("wind_revisit_reward", "違う音を奏でた風車から、風のコンパスを手に入れた。風道の向きが、手帳にも記録された。");
+    }
+  }
+
   private checkpointP12(checkpointId: string): void {
     if (!this.saveData) return;
+    const elapsedMs = Math.round(this.p12PlaytimeMs);
     this.saveData = this.options.saveManager.save(
-      markP12Checkpoint(
-        { ...this.saveData, p12SessionElapsedMs: Math.round(this.p12PlaytimeMs) },
-        checkpointId,
-        Math.round(this.p12PlaytimeMs)
+      this.appendP12Event(
+        markP12Checkpoint(
+          { ...this.saveData, p12SessionElapsedMs: elapsedMs },
+          checkpointId,
+          elapsedMs
+        ),
+        {
+          type: "checkpoint",
+          id: checkpointId,
+          areaId: this.area.id,
+          elapsedMs
+        }
       )
     );
   }
 
   private transitionP12(areaId: string): void {
     if (!this.saveData) return;
-    const nextSave = this.options.saveManager.save({
+    const elapsedMs = Math.round(this.p12PlaytimeMs);
+    const nextSave = this.options.saveManager.save(this.appendP12Event({
       ...this.saveData,
       currentScreenId: "explore",
       currentChapterId: `p12_${areaId}`,
       currentLocationId: "shimanami",
       currentAreaId: areaId,
-      p12SessionElapsedMs: Math.round(this.p12PlaytimeMs)
-    });
+      p12SessionElapsedMs: elapsedMs,
+      playerPosition: undefined
+    }, {
+      type: "area_exit",
+      id: this.area.id,
+      areaId: this.area.id,
+      elapsedMs
+    }));
     this.options.screenManager.change("explore", {
       saveData: nextSave,
       locationId: "shimanami",
@@ -1304,18 +1599,36 @@ export class ExploreScreen implements GameScreen {
         this.recordP12Discovery("hub_route", "航路図に、橋道と小舟道が同じ見張り台へ集まることが記されている。");
         return;
       case "p12_hub_bridge_route":
+        if (this.saveData.flags.p12_route_boat) {
+          this.message = "小舟道を選んだ旅では、橋道へ戻れない。今の風の手がかりを追おう。";
+          return;
+        }
         this.saveData = this.options.saveManager.save({
-          ...this.saveData,
-          flags: { ...this.saveData.flags, p12_route_bridge: true, p12_started: true }
+          ...this.appendP12Event(this.saveData, {
+            type: "route_choice",
+            id: "bridge",
+            areaId: this.area.id,
+            elapsedMs: Math.round(this.p12PlaytimeMs)
+          }),
+          flags: { ...this.saveData.flags, p12_route_bridge: true, p12_route_boat: false, p12_started: true }
         });
         this.recordP12Discovery("hub_route", "橋道を選んだ。細い鈴の音が、風の記憶へ導いている。");
         this.checkpointP12("hub");
         this.transitionP12("A2-1");
         return;
       case "p12_hub_boat_route":
+        if (this.saveData.flags.p12_route_bridge) {
+          this.message = "橋道を選んだ旅では、小舟道へ戻れない。橋の風の記憶を追おう。";
+          return;
+        }
         this.saveData = this.options.saveManager.save({
-          ...this.saveData,
-          flags: { ...this.saveData.flags, p12_route_boat: true, p12_started: true }
+          ...this.appendP12Event(this.saveData, {
+            type: "route_choice",
+            id: "boat",
+            areaId: this.area.id,
+            elapsedMs: Math.round(this.p12PlaytimeMs)
+          }),
+          flags: { ...this.saveData.flags, p12_route_boat: true, p12_route_bridge: false, p12_started: true }
         });
         this.recordP12Discovery("hub_route", "小舟道を選んだ。潮の音が、島の暮らしの記憶へ導いている。");
         this.checkpointP12("hub");
@@ -1325,17 +1638,32 @@ export class ExploreScreen implements GameScreen {
         if (!this.saveData.flags.p12_wind_ability) {
           this.message = "港の風車はまだ止まっている。風よみを得たあとなら、羽根の意味が変わりそうだ。";
         } else {
-          this.saveData = this.options.saveManager.save({
-            ...this.saveData,
-            flags: { ...this.saveData.flags, p12_windmill_revisited: true }
-          });
-          this.recordP12Discovery("wind_revisit", "同じ風車の羽根が、港から見張り台へ風の道を返してくれた。");
+          this.activateP12WindmillRevisit();
         }
+        return;
+      case "p12_hub_scenic_point":
+        this.recordP12Discovery("hub_scenic", "港の景勝点から、橋と島の位置が一つの旅の地図として見えた。");
         return;
       case "p12_bridge_discovery":
         this.recordP12Discovery("bridge_memory", "橋の欄干に残った星形の紐が、昔の風の記憶を見せてくれた。");
         return;
+      case "p12_bridge_wind_puzzle":
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          flags: { ...this.saveData.flags, p12_bridge_sail_aligned: true }
+        });
+        this.windRevealRemainingMs = 4200;
+        this.recordP12Discovery("bridge_wind_puzzle", "帆を海峡の風へ合わせた。短い風道が橋の先を照らした。");
+        return;
       case "p12_bridge_to_watchtower":
+        if (!this.saveData.flags.p12_bridge_sail_aligned) {
+          this.message = "帆の向きを合わせると、橋の風道が見えるようになる。";
+          return;
+        }
+        if (!this.isP12EnemyDefeated("A2-E01")) {
+          this.message = "橋道の影をしずめると、見張り台への道がひらく。";
+          return;
+        }
         this.recordP12Discovery("bridge_memory", "橋の記憶を胸に、海城の見張り台へ向かう。");
         this.checkpointP12("bridge");
         this.transitionP12("A2-3");
@@ -1343,7 +1671,25 @@ export class ExploreScreen implements GameScreen {
       case "p12_island_discovery":
         this.recordP12Discovery("island_memory", "集落の石垣に刻まれた潮の星が、島の人々の記憶をつないだ。");
         return;
+      case "p12_island_star_reward":
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          acquiredItems: {
+            ...this.saveData.acquiredItems,
+            p12_star_shard: (this.saveData.acquiredItems.p12_star_shard ?? 0) + 1
+          }
+        });
+        this.recordP12Discovery("island_star_reward", "星のかけらを手に入れた。島の寄り道が、灯台へ向かう光を増やした。");
+        return;
       case "p12_island_to_watchtower":
+        if (!this.saveData.flags.p12_route_boat) {
+          this.message = "小舟道を選んだ旅の坂道だけが、見張り台へ続いている。";
+          return;
+        }
+        if (!this.isP12EnemyDefeated("A2-E02")) {
+          this.message = "島の坂道の影をしずめると、見張り台への道がひらく。";
+          return;
+        }
         this.recordP12Discovery("island_memory", "島の記憶を胸に、海城の見張り台へ向かう。");
         this.checkpointP12("island");
         this.transitionP12("A2-3");
@@ -1357,6 +1703,8 @@ export class ExploreScreen implements GameScreen {
           ...this.saveData,
           flags: { ...this.saveData.flags, p12_started: true, p12_wind_ability: true }
         });
+        this.windRevealRemainingMs = 4200;
+        this.interactables.forEach((interactable) => interactable.setWindAwake(true));
         this.recordP12Discovery("wind_ability", "風よみを受け取った。止まった風車の羽根が、遠くでひとつだけ動いた。");
         this.checkpointP12("watchtower");
         return;
@@ -1365,11 +1713,7 @@ export class ExploreScreen implements GameScreen {
           this.message = "風車は止まっている。先に見張り台の風の星を調べよう。";
           return;
         }
-        this.saveData = this.options.saveManager.save({
-          ...this.saveData,
-          flags: { ...this.saveData.flags, p12_windmill_revisited: true }
-        });
-        this.recordP12Discovery("wind_revisit", "同じ風車の羽根が、風よみの前とは違う音を奏でた。道がひらく。");
+        this.activateP12WindmillRevisit();
         return;
       case "p12_watchtower_to_island":
         if (!this.saveData.flags.p12_wind_ability || !this.saveData.flags.p12_windmill_revisited) {
@@ -1382,7 +1726,32 @@ export class ExploreScreen implements GameScreen {
       case "p12_kamijima_discovery":
         this.recordP12Discovery("kamijima_memory", "上島の石に、灯台へ風を返す願いが残っている。");
         return;
+      case "p12_watchtower_scenic":
+        this.recordP12Discovery("watchtower_scenic", "見張り台から海を読む知恵を受け取った。風と潮の向きが灯台へ重なる。");
+        return;
+      case "p12_kamijima_shortcut":
+        if (!this.saveData.flags.p12_wind_ability) {
+          this.message = "この細道は風よみを手に入れてから見えるようになる。";
+          return;
+        }
+        this.saveData = this.options.saveManager.save({
+          ...this.saveData,
+          flags: { ...this.saveData.flags, p12_kamijima_shortcut_open: true }
+        });
+        this.area = {
+          ...this.area,
+          collisionRects: this.area.collisionRects.filter(
+            (rect) => rect !== P12_KAMIJIMA_WIND_BARRIER
+          )
+        };
+        this.windRevealRemainingMs = 4200;
+        this.recordP12Discovery("kamijima_shortcut", "風よみで見つけた近道が、以前の島道を灯台へつないだ。");
+        return;
       case "p12_kamijima_to_boss":
+        if (!this.saveData.flags.p12_kamijima_shortcut_open) {
+          this.message = "風の近道をひらくと、灯台への風道がつながる。青い風の壁を調べよう。";
+          return;
+        }
         if (!p12RequiredEnemiesCleared(this.saveData)) {
           this.message = "島道の影をまだ感じる。選んだ道の影と、上島の影をしずめよう。";
           return;
@@ -1688,6 +2057,7 @@ export class ExploreScreen implements GameScreen {
         star_map_unlocked: true,
         location_castle_unlocked: true
       },
+      starMapReturnScreenId: "title",
       lastSynopsis: "道後温泉で湯の星を取り戻し、星地図と松山城への道が開きました。"
     });
     this.yunoEventMs = 0;
@@ -1709,9 +2079,11 @@ export class ExploreScreen implements GameScreen {
       ...this.saveData,
       currentScreenId: "starMap",
       currentLocationId: this.area.locationId,
-      currentAreaId: this.area.id
+      currentAreaId: this.area.id,
+      playerPosition: { x: this.player.x, y: this.player.y },
+      starMapReturnScreenId: "explore"
     });
 
-    this.options.screenManager.change("starMap", { saveData: nextSave });
+    this.options.screenManager.change("starMap", { saveData: nextSave, returnScreenId: "explore" });
   }
 }

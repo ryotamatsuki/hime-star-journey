@@ -19,7 +19,18 @@ export class AssetLoader {
   }
 
   async loadImages(definitions: ImageAssetDefinition[]): Promise<void> {
-    await Promise.all(definitions.map((definition) => this.loadImage(definition)));
+    const pendingDefinitions = definitions.filter((definition) => {
+      const loaded = this.assets.get(definition.id);
+      return !loaded || loaded.status === "failed";
+    });
+    await Promise.all(pendingDefinitions.map((definition) => this.loadImage(definition)));
+  }
+
+  async loadAreaAssets(definitions: ImageAssetDefinition[]): Promise<void> {
+    const knownImages = new Map(this.manifest.images.map((definition) => [definition.id, definition]));
+    definitions.forEach((definition) => knownImages.set(definition.id, definition));
+    this.manifest = { ...this.manifest, images: [...knownImages.values()] };
+    await this.loadImages(definitions);
   }
 
   getManifest(): AssetManifest {
@@ -104,6 +115,35 @@ export class AssetLoader {
     }
 
     this.drawFallback(ctx, x, y, width, height, label);
+  }
+
+  drawImageContain(
+    ctx: CanvasRenderingContext2D,
+    assetId: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    label = assetId
+  ): void {
+    const image = this.getImage(assetId);
+
+    if (!image || image.naturalWidth <= 0 || image.naturalHeight <= 0) {
+      this.drawFallback(ctx, x, y, width, height, label);
+      return;
+    }
+
+    const sourceAspect = image.naturalWidth / image.naturalHeight;
+    const boxAspect = width / height;
+    const drawWidth = sourceAspect > boxAspect ? width : height * sourceAspect;
+    const drawHeight = sourceAspect > boxAspect ? width / sourceAspect : height;
+    ctx.drawImage(
+      image,
+      x + (width - drawWidth) / 2,
+      y + height - drawHeight,
+      drawWidth,
+      drawHeight
+    );
   }
 
   private loadImage(definition: ImageAssetDefinition): Promise<void> {

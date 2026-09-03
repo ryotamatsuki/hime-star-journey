@@ -75,7 +75,7 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 - [ ] 今治・上島をArea bundleとしてdata-drivenに登録
 - [ ] `ExploreScreen` から地域固有quest分岐を剥がす最小Quest/Objective Serviceを導入
 - [ ] Subarea/chunk遷移を実装
-- [ ] Area単位lazy asset loadingを実装
+- [x] Area単位lazy asset loadingを実装（P12.1で現在Areaの背景・敵・NPCへ限定）
 - [ ] 次Subareaの先読みを実装
 - [ ] SaveData versioning / migrationを追加
 - [ ] checkpoint / fast travel / autosave / reload ContinueをArea構造へ対応
@@ -90,29 +90,29 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 - [x] 橋route / 小舟routeの軽い分岐と再合流を実装
 - [x] `風よみ`取得前の視認可能なability gateを1〜2か所配置
 - [x] `風よみ`取得後に既訪地点の意味が変わる再訪を実装
-- [ ] 帆・風車・旗・霧・風道を使った環境gimmickを実装
-- [ ] 小環境puzzle 2〜4件
+- [x] 帆・風車・旗・霧・風道を使った環境gimmickを実装
+- [x] 小環境puzzle 2〜4件
 - [ ] 任意event 1〜2件
-- [ ] 景勝ポイント1件
-- [ ] 星のかけら等の探索報酬を必要最小限配置
+- [x] 景勝ポイント1件
+- [x] 星のかけら等の探索報酬を必要最小限配置
 
 ### Battle
 
-- [ ] 全敵シンボル6〜10体
-- [ ] 必須戦闘3〜5件
-- [ ] 地域rule「風」を戦闘へ統合
-- [ ] 風ruleをUI上で一目で理解できるようにする
+- [x] 全敵シンボル6〜10体
+- [x] 必須戦闘3〜5件
+- [x] 地域rule「風」を戦闘へ統合
+- [x] 風ruleをUI上で一目で理解できるようにする（実機可読性は未計測）
 - [ ] 通常戦45〜90秒目標を実測
-- [ ] しまなみ地域Bossを実装
+- [x] しまなみ地域Bossを実装
 - [ ] Boss戦3〜5分目標を実測
-- [ ] 単純なHP増加だけで難易度を作らないことをreview
+- [x] 単純なHP増加だけで難易度を作らず、白鷺札で追い風をためて次の一撃で解放する地域ruleをreview
 
 ### Smartphone / UX
 
 - [x] 横画面joystick移動を実機相当viewportで確認
 - [x] Interact buttonを導入または既存confirm導線をtouch向けに統合
-- [ ] Shiro Searchをtouchから1操作で利用可能にする
-- [ ] Battle card UIを最大6枚で操作可能にする
+- [x] Shiro Searchをtouchから1操作で利用可能にする（実機未計測）
+- [x] Battle card UIを最大6枚で操作可能にする（実機未計測）
 - [ ] Notebook / 星地図 / Safe Areaとjoystickの干渉を確認
 - [ ] iOS Safari相当viewportでsafe-areaを確認
 - [ ] Android Chrome相当viewportで確認
@@ -133,17 +133,19 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 ### Regression / Release Gate
 
 - [x] `npm ci`
+- [x] `git diff --check`（P12.1 Actions #123）
 - [x] typecheck
 - [x] lint
 - [x] maps:validate
 - [x] editor:smoke
 - [x] build
 - [x] P7/P8/P9/P10 browser回帰
-- [x] P12専用browser verifier
+- [x] P11 browser design contract
+- [x] P12専用browser verifier（P12.1 Actions #123、同一HEAD/run）
 - [x] P10 Prologue title→Ending回帰を維持（P10 browser gate）
 - [ ] P10から引き継いだ公開環境初期ロード時間を定量計測
 - [ ] initial load / Area transition / Subarea transition時間を記録
-- [x] runtime error / asset 404 / save migration error 0件（CI verifier範囲）
+- [x] runtime error / save migration error 0件（CI verifier範囲）
 - [ ] GitHub Pages production QA
 
 ### P12 Go / No-Go
@@ -153,9 +155,47 @@ P11最終判定: **設計完了**。P12へ進む前にP11 PRをreview/mergeす�
 - [ ] 探索密度がHard Gate内
 - [ ] 小学3年生相当のnavigationで迷子から自己復帰可能
 - [ ] smartphone移動が苦痛にならない
-- [ ] `風よみ`取得前後で再訪の意味が変わる
-- [ ] 地域性がfield / battle / storyへ同じruleとして統合される
-- [ ] lazy loadingでP10よりFull Game規模の初期ロードを悪化させない
+- [x] `風よみ`取得前後で再訪の意味が変わる（Chrome candidate QA）
+- [x] 地域性がfield / battle / storyへ同じ風ruleとして統合される（candidate review）
+- [ ] lazy loadingでP10よりFull Game規模の初期ロードを悪化させない（構造確認済み、数値未計測）
 - [x] Prologue回帰を壊さない
 
-P12 Hard Gate判定: **実装／回帰はPASS、探索KPIは条件付きPASS**。Chrome CI #95はcritical pathをPASSしたが、60〜80分の人手通しプレイと探索密度の中央値は未計測であるため、A3以降の量産は追加計測後に判断する。
+P12 Hard Gate判定: **Final判定未実施**。P12.1 candidateはChrome回帰・visual/geometry候補QAを通過したが、60〜80分の人手通しプレイと探索KPI本計測を完了するまでP12 FINAL PASSとはしない。
+
+## P12.1 Shimanami Visual Completion & Manual Hard Gate
+
+### 実装・候補QA済み
+
+- [x] 作業開始時に `origin/main` をfetchし、開始SHA `8bccc0941cbd57a89480406ce5ea1d64e766bdfa` を記録
+- [x] 専用branch `feature/p12-1-shimanami-final-validation` を使用
+- [x] 本番背景6枚、地域敵3種、Boss、地域NPCを生成し、source/runtime/provenance/SHA/使用場所をmanifest化
+- [x] A2-0〜A2-5の背景・walkable polygon・collision・guide pathをruntime統合
+- [x] Area単位のP12 asset lazy loading（現在Areaの背景・敵・NPC）
+- [x] 風battle rule、風よみ取得直後演出、同じ風車の再訪、風のコンパス報酬
+- [x] 上島の風壁をcollisionへ接続し、風の近道を実際の進行ゲート化
+- [x] Shiro Search、safe-area、手帳／星地図の横画面overflow対策、6-card最小可読性対策
+- [x] 戦闘前の安全復帰位置、勝利時即時保存、battle／Boss／area／checkpoint／autosave／reloadのP12イベントログ
+- [x] route選択を一度きりに固定し、選択routeの必須敵撃破を次エリア遷移条件へ接続
+- [x] A2任意敵をcritical guide pathから退避し、A2-4の近道→必須敵→灯台導線を再配置
+- [x] 会話中のtouch移動UIを抑制し、横画面Battle UIと狭い横画面の6-card fallbackを追加
+- [x] #104 P10 regressionをstale verifier navigationとして切り分け、現行battle-return / StarMap contractへ追随
+- [x] P7〜P12 Chrome CI Full PASS（Actions #123、同一HEAD/run）
+- [x] Actions visual QA bundleで本番背景6枚・敵3種・Boss・NPCの実PNGを表示確認
+- [x] 11 runtime assetのmanifest SHA256一致（11/11）
+- [x] A2-0〜A2-5のbackground + walkable/collision/guide/object overlay review
+- [x] A2-0で検出した船体上walkable Highを修正し、小舟portalを石畳岸壁側へ移動
+- [x] A2-3 windmill / portalとA2-2 reward / portalを分離
+- [x] A2-2 `p12_star_shard` を1個上限とし重複取得を防止
+- [x] 8 independent review roleでCritical 0 / High 0を確認
+
+### 次工程／未完了
+
+- [ ] 通常操作による60〜80分の人手通しプレイ
+- [ ] discovery interval全件、中央値、最大値、60秒超区間、longest empty walkを実測
+- [ ] 分岐→手掛かり／報酬、checkpoint/autosave、Subarea時間、通常戦、Boss時間を実測
+- [ ] 小舟routeを通常操作で含めたalternate-route人手確認
+- [ ] iOS Safari相当／Android Chrome相当の横画面実機相当操作、joystick疲労、safe-area、Boss視認
+- [ ] production merge後のinitial/Area/Subarea load、404、console、reload/Continue QA
+- [ ] Final P12 Go/No-Go
+
+P12.1候補判定: **READY FOR MANUAL HARD GATE**。これはP12 FINAL PASSではない。PR #16はmergeしない。60〜80分人手Hard Gateを次工程として開始し、P13/A3量産はFinal P12判定まで開始しない。

@@ -204,3 +204,58 @@ P12のChrome CI run #95で、P7〜P12の全browser gate、typecheck、lint、map
 - `docs/research/EHIME_GAME_DESIGN_RESEARCH.md`
 - `docs/ROADMAP.md`
 - `docs/archive/DECISIONS_PRE_P11.md`（P0〜P10 Decision Log）
+
+## 2026-08-26 P12.1 Shimanami Visual Completion & Manual Hard Gate
+
+### DEC-P12.1-01 本番画像統合とHard Gate未成立を明示する
+
+P12.1では、procedural fallbackを主要なA2背景から外し、A2-0〜A2-5の本番背景、地域敵、Boss、NPCをsource/runtime/provenance/SHA付きで管理する。Areaへ入った時点で、そのAreaに必要な背景・敵・NPCだけを遅延ロードする。
+
+walkable polygon、collisionRects、guide pathは画像上の道へ合わせ、`風よみ`取得後の風車変化・風battle rule・風のコンパス報酬・上島の風壁ゲートをruntimeへ接続する。横画面ではsafe-area、手帳、星地図、6-card可読性の候補修正を入れる。
+
+ただし、CI verifier・静的監査・sub-agent監査は人手60〜80分通しプレイの代替ではない。P12.1 branchは未デプロイで、production load、iOS/Android相当操作、探索KPI、通常戦／Boss時間も未計測である。したがって現時点の正式判定は **P12 NO-GO / REVISION REQUIRED** とし、P13の基盤共通化・A3以降の量産・main mergeを保留する。
+
+**開始SHA**: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`
+**Branch**: `feature/p12-1-shimanami-final-validation`
+
+### DEC-P12.1-02 背景の地面をwalkableの正本にする
+
+P12.1の本番背景を座標グリッドと重ねて確認した結果、旧geometryには海面・空・建物を歩行可能として扱う箇所があった。A2-0〜A2-5の `playerStart`、walkable polygon、guide path、collision rectangle、敵・NPC・interactableの主要位置を、背景上の港の舗装、橋道、集落の石道、見張り台のテラス、上島の島道、灯台広場へ再配置する。
+
+上島では、任意敵をguide pathから外し、`風の近道`を開く前だけ風壁collisionを残す。必須敵とportalは、選択route・必要flag・必須敵撃破の順序をruntimeで強制する。
+
+**理由**: static schema validationだけでは、見た目の地面と実際の歩行領域のずれを検出できないため。背景とgeometryの対応を、P12.1のvisual completionの必須条件とする。
+
+### DEC-P12.1-03 戦闘復帰と検証telemetryを実プレイに近づける
+
+戦闘開始時に安全な復帰位置を保存し、勝利結果は勝利入力直後に保存する。P12 telemetryにはarea enter/exit、発見、route choice、checkpoint、save、reload、battle start/end、Boss start/endを記録する。browser verifierは想定外のbattleを移動完了と扱わず、必要なbattle・Boss・autosaveイベントをfail-closedで確認する。
+
+ただしbrowser verifierは通常操作の代替ではなく、keyboard eventとDOM buttonを使う契約検証である。60〜80分の人手通し、実機smartphone、production load/performanceは別Hard Gateとして残す。
+
+**当時の判定**: geometry/runtime修正候補を追加した段階ではChrome CI再実行と人手Hard Gateが未完了だったため、**P12 NO-GO / REVISION REQUIRED** とした。この判定は2026-09-03のDEC-P12.1-06で候補準備状態のみ更新する。
+
+## 2026-09-03 P12.1 Final Candidate QA
+
+### DEC-P12.1-04 production backgroundの可視地面を最終geometryの正本とする
+
+Actionsのvisual QA bundleから本番背景6枚・敵3種・Boss・NPCの実PNGを表示し、A2-0〜A2-5へwalkable/collision/guide/objectを重ねて確認する。manifestやschemaだけではvisual PASSとしない。
+
+A2-0では、小舟route用walkable branchがフェリー船体側へ食い込んでいたためHighと判定した。船体側branchを撤去し、歩行域を石畳岸壁へ限定し、小舟portalを岸壁側へ移した。`maps:validate`が移動後portal中心の4px境界外を検出したため、portalをさらに可歩行域内へ調整した。
+
+**理由**: schema上到達可能でも、背景上で海・船・建物を歩ける状態は本作の探索品質として不合格だからである。production画像と実geometryの整合を最終候補判定のHard Constraintとする。
+
+### DEC-P12.1-05 browser verifierは固定座標ではなくruntimeの意味契約を検証する
+
+Actions #104のP10失敗は、safe battle return導入後もP10 verifierがD-E03戦後の旧直線導線を仮定していたことが直接原因だった。途中runではruntime上「湯の星の気配」が通常interaction可能な地点まで到達できていたため、Dogo runtimeを巻き戻さず、verifierを実道・interaction可能状態・現行StarMap contractへ追随させた。
+
+P12でも、A2-E03戦後の復帰は単一の期待座標ではなく、walkable内・collision外・enemy collider外であることを意味的に検証する。
+
+**理由**: verifier座標をゲーム仕様の正本にすると、安全復帰やgeometry改善を誤ってregression扱いし、逆に実runtime bugを隠す可能性があるため。
+
+### DEC-P12.1-06 READY FOR MANUAL HARD GATEとP12 FINAL PASSを分離する
+
+Actions #123 (`33696821948`) のcode candidate HEAD `7e9fb2da52108ca620e2bb640594d5d2b2ca7c5d` で、`git diff --check`、npm ci、typecheck、lint、maps:validate、editor:smoke、build、P7〜P12 browserを同一runですべてPASSした。実画像visual/geometry reviewと8つの独立review passではCritical 0、High 0となった。
+
+したがってP12.1 candidateは **READY FOR MANUAL HARD GATE** とする。ただしこれはP12 FINAL PASSではない。60〜80分の人手通常操作、exploration KPI本計測、iOS/Android実機相当Final QA、production merge後QAを完了するまでPR #16はmergeせず、P13/A3量産を開始しない。
+
+**理由**: 自動CI・静的検証・画像レビューで保証できる範囲と、人間の探索時間・迷子復帰・操作疲労・実機性能でしか保証できない範囲を明確に分離するため。

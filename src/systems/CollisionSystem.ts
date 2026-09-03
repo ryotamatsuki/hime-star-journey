@@ -75,21 +75,22 @@ export function moveRectWithinWalkableAreas(
   deltaY: number,
   walkableRects: Rect[],
   walkablePolygons: WalkablePolygon[],
-  bounds: Rect
+  bounds: Rect,
+  collisionRects: Rect[] = []
 ): MovementResult {
   let nextRect = { ...rect };
   let collidedX = false;
   let collidedY = false;
 
   const xRect = clampToBounds({ ...nextRect, x: nextRect.x + deltaX }, bounds);
-  if (isRectWithinWalkableAreas(xRect, walkableRects, walkablePolygons)) {
+  if (isRectWithinWalkableAreas(xRect, walkableRects, walkablePolygons) && !wouldCollide(xRect, collisionRects)) {
     nextRect = xRect;
   } else {
     collidedX = true;
   }
 
   const yRect = clampToBounds({ ...nextRect, y: nextRect.y + deltaY }, bounds);
-  if (isRectWithinWalkableAreas(yRect, walkableRects, walkablePolygons)) {
+  if (isRectWithinWalkableAreas(yRect, walkableRects, walkablePolygons) && !wouldCollide(yRect, collisionRects)) {
     nextRect = yRect;
   } else {
     collidedY = true;

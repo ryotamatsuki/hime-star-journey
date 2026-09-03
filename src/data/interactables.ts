@@ -9,7 +9,11 @@ export type InteractableKind =
   | "dark_well"
   | "castle_guard"
   | "p12_windmill"
-  | "p12_portal";
+  | "p12_portal"
+  | "p12_puzzle"
+  | "p12_reward"
+  | "p12_scenic"
+  | "p12_shortcut";
 
 export type InteractableData = {
   id: string;
@@ -134,6 +138,16 @@ const interactableDefinitions: InteractableDefinition[] = [
     message: "風車の羽根は止まっている。風を読む力があれば、別の音が聞こえそうだ。"
   },
   {
+    id: "p12_hub_scenic_point",
+    locationId: "shimanami",
+    areaId: "A2-0",
+    width: 112,
+    height: 92,
+    label: "港の景勝点",
+    kind: "p12_scenic",
+    message: "港の先から、来島海峡と島影が一枚の絵のように重なる。ここが旅の拠点だと分かる。"
+  },
+  {
     id: "p12_bridge_discovery",
     locationId: "shimanami",
     areaId: "A2-1",
@@ -142,6 +156,16 @@ const interactableDefinitions: InteractableDefinition[] = [
     label: "橋の記憶",
     kind: "star_hint",
     message: "橋の欄干に、昔の旅人が結んだ星形の紐が残っている。"
+  },
+  {
+    id: "p12_bridge_wind_puzzle",
+    locationId: "shimanami",
+    areaId: "A2-1",
+    width: 112,
+    height: 92,
+    label: "帆の向き合わせ",
+    kind: "p12_puzzle",
+    message: "止まった帆を海峡の風向きへ合わせると、橋の先に短い風道が浮かんだ。"
   },
   {
     id: "p12_bridge_to_watchtower",
@@ -162,6 +186,16 @@ const interactableDefinitions: InteractableDefinition[] = [
     label: "島の記憶",
     kind: "star_hint",
     message: "集落の石垣に、潮の満ち引きを刻んだ小さな星印がある。"
+  },
+  {
+    id: "p12_island_star_reward",
+    locationId: "shimanami",
+    areaId: "A2-2",
+    width: 112,
+    height: 92,
+    label: "星のかけら",
+    kind: "p12_reward",
+    message: "石垣のすき間から星のかけらが見つかった。寄り道した道が、旅の地図に光を足した。"
   },
   {
     id: "p12_island_to_watchtower",
@@ -194,6 +228,16 @@ const interactableDefinitions: InteractableDefinition[] = [
     message: "風車の羽根が、さっきとは違う向きで止まっている。"
   },
   {
+    id: "p12_watchtower_scenic",
+    locationId: "shimanami",
+    areaId: "A2-3",
+    width: 112,
+    height: 92,
+    label: "海城の景勝点",
+    kind: "p12_scenic",
+    message: "見張り台から潮目を読む。村上海賊の知恵は、海を守り人を帰すためのものだった。"
+  },
+  {
     id: "p12_watchtower_to_island",
     locationId: "shimanami",
     areaId: "A2-3",
@@ -212,6 +256,16 @@ const interactableDefinitions: InteractableDefinition[] = [
     label: "上島の記憶",
     kind: "star_hint",
     message: "島道の石に、風を待つ人たちの願いが淡く残っている。"
+  },
+  {
+    id: "p12_kamijima_shortcut",
+    locationId: "shimanami",
+    areaId: "A2-4",
+    width: 112,
+    height: 92,
+    label: "風の近道",
+    kind: "p12_shortcut",
+    message: "風よみで見つけた細い道が、灯台へ向かう坂を短くしている。前に見た景色が変わった。"
   },
   {
     id: "p12_kamijima_to_boss",

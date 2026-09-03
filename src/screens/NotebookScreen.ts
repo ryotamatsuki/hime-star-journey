@@ -66,7 +66,7 @@ export class NotebookScreen implements GameScreen {
       position: "absolute",
       inset: "0",
       alignItems: "flex-start",
-      padding: "24px",
+      padding: "max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left))",
       overflow: "auto",
       background: "rgba(24, 20, 31, 0.36)",
       color: "#3e2d23",
@@ -75,9 +75,10 @@ export class NotebookScreen implements GameScreen {
 
     const book = document.createElement("section");
     Object.assign(book.style, {
-      width: "min(1080px, 96vw)",
+      width: "min(1080px, 100%)",
       margin: "0 auto",
       padding: "28px",
+      boxSizing: "border-box",
       borderRadius: "22px",
       background: "linear-gradient(90deg, rgba(248,238,211,.97), rgba(255,249,229,.98) 49%, rgba(239,226,194,.97) 50%, rgba(252,244,220,.98))",
       boxShadow: "0 20px 50px rgba(20,12,28,.42)",
@@ -172,7 +173,11 @@ export class NotebookScreen implements GameScreen {
     panel.append(synopsis);
 
     const region = document.createElement("p");
-    const regionName = this.saveData.currentLocationId === "castle" ? "松山城" : "道後温泉";
+    const regionName = this.saveData.currentLocationId === "castle"
+      ? "松山城"
+      : this.saveData.currentLocationId === "shimanami"
+        ? "しまなみ"
+        : "道後温泉";
     region.textContent = `地域メモ: ${regionName} / ${this.saveData.currentAreaId}`;
     panel.append(region);
 

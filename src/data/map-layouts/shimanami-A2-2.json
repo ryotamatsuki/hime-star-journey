@@ -5,26 +5,29 @@
   "name": "島の坂道・集落",
   "worldWidth": 1920,
   "worldHeight": 1080,
-  "backgroundAssetId": "bg_shimanami",
-  "playerStart": { "x": 260, "y": 540 },
+  "backgroundAssetId": "bg_shimanami_A2_2_island_village",
+  "playerStart": { "x": 760, "y": 1020 },
   "cameraBounds": { "id": "camera_shimanami_A2_2", "x": 0, "y": 0, "width": 1920, "height": 1080 },
-  "walkableRects": [
-    { "id": "shimanami_A2_2_village_walk", "x": 80, "y": 100, "width": 1760, "height": 840, "label": "島の坂道" }
+  "walkableRects": [],
+  "walkablePolygons": [
+    { "id": "shimanami_A2_2_village_main_road", "points": [{ "x": 300, "y": 1080 }, { "x": 1050, "y": 1080 }, { "x": 980, "y": 930 }, { "x": 900, "y": 800 }, { "x": 850, "y": 680 }, { "x": 900, "y": 560 }, { "x": 900, "y": 430 }, { "x": 780, "y": 400 }, { "x": 660, "y": 450 }, { "x": 570, "y": 560 }, { "x": 500, "y": 700 }, { "x": 420, "y": 850 }, { "x": 350, "y": 980 }] },
+    { "id": "shimanami_A2_2_village_reward_branch", "points": [{ "x": 780, "y": 740 }, { "x": 920, "y": 690 }, { "x": 1100, "y": 720 }, { "x": 1180, "y": 800 }, { "x": 1120, "y": 900 }, { "x": 980, "y": 850 }, { "x": 850, "y": 800 }] }
   ],
-  "walkablePolygons": [],
   "collisionRects": [],
   "guidePaths": [
-    { "id": "shimanami_A2_2_village_path", "label": "集落を抜ける坂道", "points": [{ "x": 260, "y": 540 }, { "x": 700, "y": 620 }, { "x": 1140, "y": 500 }, { "x": 1580, "y": 540 }] }
+    { "id": "shimanami_A2_2_village_path", "label": "集落を抜ける坂道", "points": [{ "x": 760, "y": 1020 }, { "x": 700, "y": 880 }, { "x": 650, "y": 740 }, { "x": 680, "y": 620 }, { "x": 760, "y": 520 }] }
   ],
   "enemySpawns": [
-    { "id": "A2-E02", "x": 930, "y": 600, "label": "しおガニ" }
+    { "id": "A2-E02", "x": 700, "y": 680, "label": "しおガニ" },
+    { "id": "A2-E06", "x": 1000, "y": 820, "label": "くろほガモメ" }
   ],
   "npcPositions": [
-    { "id": "npc_p12_island_keeper", "x": 420, "y": 580, "label": "島の船守" }
+    { "id": "npc_p12_island_keeper", "x": 560, "y": 960, "label": "島の船守" }
   ],
   "interactablePositions": [
-    { "id": "p12_island_discovery", "x": 540, "y": 580, "width": 112, "height": 92, "label": "島の記憶" },
-    { "id": "p12_island_to_watchtower", "x": 1520, "y": 540, "width": 120, "height": 92, "label": "見張り台への坂" }
+    { "id": "p12_island_discovery", "x": 540, "y": 790, "width": 112, "height": 92, "label": "島の記憶" },
+    { "id": "p12_island_star_reward", "x": 980, "y": 740, "width": 112, "height": 92, "label": "星のかけら" },
+    { "id": "p12_island_to_watchtower", "x": 720, "y": 440, "width": 120, "height": 92, "label": "見張り台への坂" }
   ],
   "eventPositions": [],
   "markers": [

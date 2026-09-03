@@ -38,8 +38,8 @@ async function verify(): Promise<void> {
   for (const areaId of P12_AREA_IDS) {
     const layout = getMapLayout("shimanami", areaId);
     assert(Boolean(layout), `${areaId}のデータ駆動レイアウトを登録する`);
-    assert(Boolean(layout?.walkableRects.length), `${areaId}に歩行可能領域を持たせる`);
-    assert(layout?.backgroundAssetId === "bg_shimanami", `${areaId}をしまなみ背景契約へ接続する`);
+    assert(Boolean(layout?.walkableRects.length || layout?.walkablePolygons.length), `${areaId}に歩行可能領域を持たせる`);
+    assert(layout?.backgroundAssetId.startsWith("bg_shimanami_A2_"), `${areaId}を固有の本番しまなみ背景へ接続する`);
   }
 
   const allIds = P12_AREA_IDS.flatMap((areaId) => {

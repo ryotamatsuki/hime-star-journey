@@ -8,6 +8,7 @@ export type DialogueSpeakerId =
   | "bridge_keeper"
   | "island_keeper"
   | "watchkeeper"
+  | "kamijima_keeper"
   | "system";
 
 export type DialogueLine = {

@@ -23,7 +23,11 @@ export type BattleActionResult = {
   effect?: BattleEffect;
 };
 
-export function createBattleState(encounter: EncounterData, save: SaveData): BattleState {
+export function createBattleState(
+  encounter: EncounterData,
+  save: SaveData,
+  options: { windRule?: boolean } = {}
+): BattleState {
   const partyMembers = createPartyMembers(save);
   const enemies = encounter.enemies.map((entry, index): BattleActor => {
     const base = getEnemyData(entry.enemyId);
@@ -55,6 +59,8 @@ export function createBattleState(encounter: EncounterData, save: SaveData): Bat
     turnCount: 1,
     phase: "playerCommand",
     isBossBattle: Boolean(encounter.isBoss),
+    windRule: Boolean(options.windRule),
+    windCharge: 0,
     sealGauge: encounter.isBoss
       ? {
           targetInstanceId: enemies[0]?.instanceId ?? "boss",
@@ -167,7 +173,19 @@ export function applyBattleCard(
     return { state, logs: ["対象を選べません。"] };
   }
 
-  const damage = calculateCardDamage(nextActor, target, card);
+  const isWindChargeCard = nextState.windRule && card.id === "card_shirasagi_ofuda";
+  const releasesWind = nextState.windRule
+    && (nextState.windCharge ?? 0) > 0
+    && card.id !== "card_shirasagi_ofuda"
+    && (card.role === "attack" || card.role === "seal");
+  let damage = calculateCardDamage(nextActor, target, card);
+  if (releasesWind) {
+    damage += 4;
+    nextState.windCharge = 0;
+  }
+  if (isWindChargeCard) {
+    nextState.windCharge = 1;
+  }
   const isUnsealedBoss =
     nextState.isBossBattle &&
     target.actorType === "boss" &&
@@ -177,15 +195,18 @@ export function applyBattleCard(
   target.hp = isUnsealedBoss ? Math.max(1, nextHp) : nextHp;
 
   const logs = [`${nextActor.name}は${card.name}を使った。`, `${target.name}に${damage}ダメージ。`];
+  if (isWindChargeCard) logs.push("白鷺札が追い風を集めた。次の一撃で風を解放できる。");
+  if (releasesWind) logs.push("ためた追い風を解放した。風の道が一気にひらく。");
   let effectKind: BattleEffectKind = card.role === "seal" ? "seal" : "attack";
 
   if (isUnsealedBoss && nextHp <= 0) {
-    logs.push("カゲマサの影は崩れかけたが、星封じを完成させなければ再封印できない。" );
+    logs.push(`${target.name}は崩れかけたが、星封じを完成させなければ再封印できない。`);
   }
 
   if (nextState.isBossBattle && nextState.sealGauge && card.bossSealDamage) {
-    nextState.sealGauge.value = Math.max(0, nextState.sealGauge.value - card.bossSealDamage);
-    logs.push(`封印の光が${card.bossSealDamage}つ進んだ。`);
+    const sealDamage = card.bossSealDamage + (releasesWind ? 1 : 0);
+    nextState.sealGauge.value = Math.max(0, nextState.sealGauge.value - sealDamage);
+    logs.push(`封印の光が${sealDamage}つ進んだ。`);
     effectKind = "seal";
 
     if (nextState.sealGauge.value <= 0) {
@@ -301,7 +322,9 @@ function cloneBattleState(state: BattleState): BattleState {
     ...state,
     partyMembers: state.partyMembers.map(cloneActor),
     enemies: state.enemies.map(cloneActor),
-    sealGauge: state.sealGauge ? { ...state.sealGauge } : undefined
+    sealGauge: state.sealGauge ? { ...state.sealGauge } : undefined,
+    windRule: state.windRule,
+    windCharge: state.windCharge
   };
 }
 
