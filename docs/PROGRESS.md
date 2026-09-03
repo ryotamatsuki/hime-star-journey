@@ -2,42 +2,47 @@
 
 ## 現在の状態
 
-- 現在のフェーズ: **P12.1 Shimanami Visual Completion & Manual Hard Gate（実装更新済み／最終判定未成立）**
-- P12.1作業開始時 `origin/main`: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`
-- P12.1作業branch: `feature/p12-1-shimanami-final-validation`
-- P11では大規模runtime実装を行わず、完成版本編の構造・探索・成長・戦闘・物語・愛媛20市町・技術基盤を設計した。
-- P1〜P10で完成したMVPは削除せず、完成版の **Prologue「はじめての星めぐり」** として維持する。
-- P12 Chrome CI run #95は、P12.1変更前のmain由来critical pathとして参照する。P12.1ではActions #100/#102の失敗原因を切り分け、候補修正を追加したが、作業環境にはChrome実体がなく、最新候補をローカル再実行できない。
-- P12.1で本番背景6枚、敵3種、Boss、NPC、Area単位lazy asset loading、walkable/collision、風battle rule、風のコンパス報酬、上島の風壁ゲート、スマホsafe-area修正を実装した。
-- 60〜80分人手通し、discovery中央値、60秒超区間、checkpoint/autosave、production branch QA、iOS/Android実操作は未完了。したがって最終判定は **P12 NO-GO / REVISION REQUIRED** とし、P13を開始しない。
-- 次の必須作業: 最新候補のP7〜P12 Chrome CI再実行、公開候補で通常プレイ、3役以上の手動ログ統合、KPI計算、必要なマップ密度修正。
-- P10 runtime Release Gateは引き続きPrologue回帰基準として維持する。
-- 最終更新日: 2026-08-27
+- 現在のフェーズ: **P12.1 Shimanami Visual Completion & Manual Hard Gate — READY FOR MANUAL HARD GATE**。
+- P12.1作業開始時 `origin/main`: `8bccc0941cbd57a89480406ce5ea1d64e766bdfa`。
+- P12.1作業branch: `feature/p12-1-shimanami-final-validation`、PR #16を継続する。mergeはまだ行わない。
+- Actions #104のP10 failureは、P12.1で導入した安全なbattle return positionに対してP10 verifierが旧帰路を前提としていた **verifier regression / stale navigation assumption** と確定した。runtime battle return自体は戻さず、実道・実interaction・Star Map→松山城→Notebookの現行UI contractへverifierを追随させた。
+- 2026-09-03のcode candidate HEAD `7e9fb2da52108ca620e2bb640594d5d2b2ca7c5d` では、Actions #123 / run `33696821948` で `git diff --check`、`npm ci`、typecheck、lint、maps:validate、editor:smoke、build、P7、P8、P9、P10、P11、P12が **同一HEAD・同一runで全PASS** した。
+- P12 visual QA bundleから本番背景6枚、地域敵3種、Boss、NPCの実PNGを表示して確認し、A2-0〜A2-5のwalkable/collision/guide path overlayをレビューした。A2-0の小舟route walkableが船体へ食い込むHighを検出し、岸壁側へportalを移して船体側walkable枝を撤去した。
+- A2-3の風車／上島portalはproduction-ground上で分離し、progression interactionを任意interactionが奪うHighを解消した。A2-2の星のかけら／portalも分離済みで、星のかけらは重複取得できないよう所持数を1個へ正規化した。
+- battle returnはwalkable内・collision外・enemy collider外のsemantic validationを追加し、A2-E03を含むcritical pathでPASSした。Area-scoped lazy loadingはTitleでP12全画像を一括loadせず、現在A2 Areaのbackground/enemy/NPCのみをloadする構造を維持している。
+- 8つの独立reviewer roleでruntime/save、P10 compatibility、map/geometry、production visual、interaction、battle/wind/battle-return、lazy loading、PR full diff/test adequacyを分離監査した。**Critical 0 / High 0**。残るMedium/Observationは、人手での小舟route完全E2E、A2-4能力shortcutの視覚理解、非同期asset load時の一時fallback可能性などであり、Manual Hard Gateで確認する。
+- **60〜80分人手通し、探索KPI本計測、iOS/Android実機相当Final QA、merge後production QA、Final P12 PASSは未実施**。これらを自動CIの代替で完了扱いにしない。
+- P13 / A3は開始しない。PR #16はmergeしない。
+- 最終更新日: 2026-09-03。
 
 ## P12.1 現時点の実装・判定
 
-### 完了した実装
+### Final Candidateまでに完了した実装・QA
 
 - A2-0〜A2-5を固有の本番背景へ接続し、主要画面の旧 `bg_shimanami` procedural fallback依存を外した。
 - `docs/asset-prompts/p12.1/manifest.json` と `docs/asset-sources/p12.1/` に、生成prompt・source・runtime・SHA・使用場所を記録した。
 - 風車、帆パズル、景勝点、星のかけら、上島の風守、風の近道をruntimeへ統合した。
 - `風よみ`取得後の風道・風車変化、風battle rule、風のコンパス報酬、上島の物理的な風壁ゲートを追加した。
-- A2のwalkable polygonとcollisionRectsを画像構図に合わせ、Pythonのオブジェクト中心サンプルは6/6 Areaで歩行域内、guide path全点も0件の歩行域外へ修正した。
+- A2全域のwalkable polygon、collisionRects、guide path、playerStart、敵・NPC・interactableをproduction背景へoverlayして再監査し、Critical/Highを解消した。
 - `maps:validate`へA2全域の開始地点、敵コライダー、主要object中心、guide pathのプレイヤーコライダー監査を追加した。
 - core assetとP12 Area assetを分離し、P12入場時は現在Areaに必要な背景・敵・NPCだけを遅延ロードする形へ変更した。
 - 390px横画面のsafe-area、手帳幅、星地図の縦はみ出し、Battle 6-cardの最小可読性を修正した。
 - 戦闘前の安全な復帰位置、勝利時即時保存、route選択／必須敵の進行ゲート、P12 area／battle／Boss／autosave／checkpoint／reloadイベントログを追加した。
 - A2-0〜A2-4の任意敵をcritical guide pathから退避し、A2-4は風の近道→A2-E03→風の灯台の順になるよう調整した。
+- A2-0小舟routeの船体walkable High、A2-3 windmill/portal High、A2-2 reward重複取得Mediumを修正した。
+- GitHub Actions #123でP7〜P12を同一HEAD・同一runでFull PASSし、`git diff --check`もCI gateへ追加した。
 
-### 未成立のHard Gate
+### 次工程へ残すHard Gate
 
-- 実ブラウザChrome/Chromiumが実行環境にないため、P12.1最新候補のP7〜P12 browser verifierは未再実行。Actions #102はA2-4の任意／必須敵導線不整合で失敗した。
-- GitHub Pages公開URLはP12.1 branch未デプロイのため、production候補の画像・ロード・404・consoleを未確認。
-- 3役のsub-agent監査は実施したが、実人間の60〜80分通しプレイではない。探索時間・discovery中央値・longest empty walk・battle/Boss時間は未計測。
-- iOS Safari相当／Android Chrome相当の実操作、safe-area、joystick疲労、BossとUIの重なりは未計測。
-- 座標下限のPython分析では、フィールド移動が短く発見が数秒間隔へ集中するリスクが判明した。60〜80分を満たす証拠には使えない。
+- 通常操作による60〜80分の人手通しプレイ。
+- discovery interval全件、中央値、最大値、60秒超区間、longest empty walkの実測。
+- 分岐→手掛かり／報酬、checkpoint/autosave、Subarea時間、通常戦、Boss時間の実測。
+- 小舟routeを含むalternate pathの通常操作E2E確認。
+- iOS Safari相当／Android Chrome相当の横画面実機相当操作、joystick疲労、safe-area、Boss視認。
+- merge後のGitHub Pages production load、initial/Area transition時間、404、console error、reload/Continue確認。
+- exploration KPIを踏まえたFinal P12 PASS / NO-GO判定。
 
-結論: **P12 NO-GO / REVISION REQUIRED**。画像とruntimeの次候補は作れたが、探索規格の実証とproduction evidenceがないため、P13へ進まない。
+結論: **READY FOR MANUAL HARD GATE**。これは **P12 FINAL PASSではない**。PR #16をmergeせず、60〜80分人手Hard Gateの開始直前で停止する。
 
 ## フェーズ別進捗
 
@@ -53,8 +58,8 @@
 | P9 | 旅の手帳・BGM/SE・セーブ調整 | 完了 |
 | P10 | 通しプレイ・難易度調整・公開確認 | 完了（Release PASS） |
 | P11 | Full Game Design / 本編基盤設計 | 完了（設計） |
-| P12 | しまなみ Adventure Area Vertical Slice | 前段実装は完了（Chrome CI #95／探索KPI条件付き） |
-| P12.1 | Shimanami Visual Completion & Manual Hard Gate | 画像・runtime修正済み／manual・production gate未完、NO-GO保留 |
+| P12 | しまなみ Adventure Area Vertical Slice | 前段実装は完了（探索KPIは人手計測待ち） |
+| P12.1 | Shimanami Visual Completion & Manual Hard Gate | **READY FOR MANUAL HARD GATE / 人手Hard Gate未実施** |
 | P13〜P17 | Full Game Foundation〜Finale / Release Gate | 未着手 |
 
 ## P10 Release基準
@@ -182,10 +187,12 @@ P12で探索密度・迷子・操作疲労・ロード性能のHard Gateを満�
 
 run #95（2026-08-26 JST）で、`npm run p7:browser`〜`npm run p12:browser`、typecheck、lint、maps/editor検証、buildをPASSした。P12 verifierは、6エリア、橋道route、必須敵、見張り台、`風よみ`、同一風車の再訪、上島、Boss、save telemetry、390px touch UI、runtime error 0件を通しで確認する。
 
-判定は **実装／回帰Hard Gate: PASS**。一方、seed済みcritical pathのCI verifierだけでは、60〜80分の人手プレイ、発見間隔中央値20〜45秒、無発見移動60秒以内、checkpoint/autosave 5〜8分を直接証明できないため、**探索KPI Hard Gate: 条件付きPASS** とする。A3以降の量産は、人手プレイの定量記録後にGo/No-Goを決める。
+P12.1の最新code candidateではさらにActions #123（2026-09-03 JST）で、`git diff --check`、`npm ci`、typecheck、lint、maps:validate、editor:smoke、build、P7〜P12 browserを同一HEAD・同一runでFull PASSした。したがって実装／回帰candidateのblocking issueは解消済みである。
+
+一方、CI verifierはseed済みcritical pathであり、60〜80分の人手通しプレイ、発見間隔中央値20〜45秒、無発見移動60秒以内、checkpoint/autosave 5〜8分を直接測定しない。したがって探索KPI Hard Gateは人手計測まで未確定とする。A3以降の量産は、人手プレイの定量記録後にGo/No-Goを決める。
 
 ## 残課題
 
-- P10から残る「公開環境の初期ロード時間の定量計測」はRelease blockerではないが、P12のlazy loading設計時に必ず再計測する。
+- 60〜80分人手Hard Gate、探索KPI本計測、iOS/Android実機相当Final QA、merge後production QAを実施し、P12 Final Go/No-Goを判定する。
+- P10から残る「公開環境の初期ロード時間の定量計測」は、P12のlazy loading効果と合わせてmerge後production QAで記録する。
 - Adventure Areaの地域編ラベルと地理的境界が完全一致しない箇所は、P12以降の章構造実装時に星地図上の見せ方を検証する。
-- P11は設計フェーズのためruntime build内容そのものは変更していない。P12で初めてFull Game基盤のruntime検証に入る。
