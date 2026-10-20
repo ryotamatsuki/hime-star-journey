@@ -204,3 +204,11 @@ P12のChrome CI run #95で、P7〜P12の全browser gate、typecheck、lint、map
 - `docs/research/EHIME_GAME_DESIGN_RESEARCH.md`
 - `docs/ROADMAP.md`
 - `docs/archive/DECISIONS_PRE_P11.md`（P0〜P10 Decision Log）
+
+## 2026-10-21 公開ライセンス方針
+
+### DEC-LIC-01 ソースコードはMIT、創作素材は別途権利確認
+
+**決定**: 作者が権利を保有するソースコード・開発スクリプト・技術文書はMIT Licenseで公開し、商用利用を含む自由な再利用を認める。著作権表示とライセンス文の維持を条件とし、元リポジトリへのリンクを推奨するが義務化しない。画像、音声、音楽、物語、キャラクター造形などの創作素材と第三者素材は、一括MIT適用の対象外とする。
+
+**理由**: GitHub上で学習・改変・再利用を促進しつつ、AI生成素材や第三者素材の再許諾範囲が未確認であることを明示するため。

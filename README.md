@@ -143,3 +143,13 @@ https://ryotamatsuki.github.io/hime-star-journey/
 P10最終CI #84（P7起動フレークの失敗ジョブ再実行後）は `npm ci`、typecheck、lint、map/editor検証、build、P7/P8/P9/P10実Chrome回帰、Pages deployをすべてPASSしています。GitHub Pages本番QAではtitle、新規開始、道後到達、手帳のpointer操作、ミュート、閉じる、reload後のContinueを確認しました。P12 Chrome CI #95ではP7〜P12を全てPASSしています。
 
 P12ではruntime codeを追加し、P10 Release GateをPrologue回帰基準として維持しました。P12の探索KPIは、手動計測で確定するまで条件付き判定として扱います。
+
+## ライセンス / License
+
+本プロジェクトのうち、作者が権利を保有する**ソースコード・開発スクリプト・技術的な開発文書**（例: `src/`、`scripts/`、`AGENTS.md`）は、[MIT License](./LICENSE) で公開します。改変、再配布、商用利用が可能です。コード等のコピーや相当部分の再配布時には、MITライセンス文と著作権表示を維持してください。
+
+**MITライセンスの対象外**: ゲーム用の画像・イラスト・音声・音楽・映像などの素材（特に `public/assets/`、`docs/images/`、`docs/visual-reference/`）、キャラクターの造形、ストーリー・台詞などの創作的表現。これらは、コードや技術文書に含まれる場合もMITによる再利用許諾の対象とせず、権利者による別途の許諾・明示されたライセンスがない限り、他作品への再利用や再配布を許諾するものではありません。AI生成素材等の権利条件は今後個別に確認します。
+
+外部ライブラリ・第三者に権利がある素材には、それぞれのライセンス・利用条件が適用されます。本リポジトリのMIT表記によって変更されません。
+
+元プロジェクトへのリンク（[hime-star-journey](https://github.com/ryotamatsuki/hime-star-journey)）を記載していただけると嬉しいです。ただし、**元URLの掲載はMITライセンスの法的な必須条件ではありません**。
